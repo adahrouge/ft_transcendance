@@ -1,0 +1,14 @@
+{
+  "name": "ft_transcendence-mandatory",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --minify --sourcemap --outfile=dist/app.js",
+    "dev": "esbuild src/main.ts --bundle --sourcemap --outfile=app.js --servedir=.",
+    "clean": "rm -rf dist app.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  },
+  "type": "module"
+}

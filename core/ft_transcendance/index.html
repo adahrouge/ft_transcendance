@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ft_transcendence · The Ultimate Pong Challenge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&family=Rubik:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+    body { background: #1b1b1b; color: #f0f0f0; font-size: 16px; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    header {
+      background: #111;
+      padding: 32px;
+      color: #fff;
+      text-align: center;
+      font-size: 32px;
+      letter-spacing: 2px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    header nav { margin-top: 16px; }
+    header nav a { color: #ddd; margin: 0 20px; font-weight: 600; opacity: 0.8; transition: all 0.3s ease; }
+    header nav a:hover, header nav a.active { opacity: 1; transform: scale(1.05); }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    .card { background: #222; border-radius: 16px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6); padding: 32px; margin-bottom: 32px; transition: all 0.3s ease; }
+    .card:hover { box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6); }
+    .btn { padding: 14px 32px; background: #5e81f4; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 18px; transition: all 0.3s ease; }
+    .btn.primary { background: #3b7af2; }
+    .btn:hover { background: #4a6bf2; transform: translateY(-2px); }
+    .input-field { padding: 12px; width: 100%; background: #333; color: #ddd; border-radius: 8px; border: none; margin-bottom: 24px; font-size: 16px; }
+    .input-field:focus { outline: none; border: 1px solid #5e81f4; }
+    .error-message { color: #e74c3c; font-size: 14px; margin-top: -12px; margin-bottom: 12px; }
+    .score { font-size: 32px; font-weight: 600; letter-spacing: 1px; color: #5e81f4; }
+    .matchup { font-size: 24px; font-weight: 500; color: #ddd; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
+    .row > * { flex: 1; }
+    .card h3 { margin-bottom: 16px; font-size: 28px; font-weight: 600; }
+    .muted { opacity: 0.6; color: #aaa; }
+    .align-center { text-align: center; }
+    canvas { width: 100%; height: 400px; background-color: #1a1a1a; border-radius: 12px; border: 1px solid #333; margin-bottom: 16px; }
+    footer { text-align: center; font-size: 14px; color: #bbb; margin-top: 40px; }
+    footer a { color: #5e81f4; text-decoration: none; }
+    footer a:hover { opacity: 0.8; }
+    @media (max-width: 768px) {
+      .row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>ft_transcendence</strong> · The Ultimate Pong Challenge</div>
+    <nav>
+      <a href="/" data-link class="active">Home</a>
+      <a href="/tournament" data-link>Tournament</a>
+    </nav>
+  </header>
+  <main id="app" class="container">
+    <div class="card">
+      <h2>Welcome to Pong Tournament</h2>
+      <p>Single-Page App in TypeScript · Local 2-player · Deterministic paddle speed · Dockerized with HTTPS.</p>
+      <div class="row">
+        <button class="btn primary" id="start-tournament">Start Tournament</button>
+        <button class="btn primary" id="open-tournament-page">Open Tournament Page</button>
+      </div>
+      <h3>How to play</h3>
+      <ul>
+        <li>Two players on the same keyboard.</li>
+        <li>Left paddle: W / S · Right paddle: ↑ / ↓</li>
+        <li>First to 5 points wins the match.</li>
+      </ul>
+      <div class="row">
+        <button class="btn primary" id="play-local">Play Local (2-player)</button>
+        <button class="btn primary" id="play-ai">Play vs AI</button>
+      </div>
+    </div>
+  </main>
+  <footer>
+    <p>&copy; 2025 <a href="https://github.com/your-profile">Your Name</a> · Pong Tournament Game</p>
+  </footer>
+  <script src="/app.js" defer></script>
+</body>
+</html>
