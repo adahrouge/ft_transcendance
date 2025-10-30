@@ -1,6 +1,7 @@
-import { HomeView } from './views/Home.js';
-import { TournamentView } from './views/Tournament.js';
-import { GameView } from './views/Game.js';
+import { HomeView } from './views/Home';
+import { TournamentView } from './views/Tournament';
+import { GameView } from './views/Game';
+import { LocalGameView } from './views/Local'; // ⬅️ add this
 
 export type View = (params: Record<string, string>) => HTMLElement;
 
@@ -8,6 +9,7 @@ const routes: { pattern: RegExp; keys: string[]; view: View }[] = [
   route('/', HomeView),
   route('/tournament', TournamentView),
   route('/game/:id', GameView),
+  route('/local', LocalGameView), // ⬅️ new route
 ];
 
 function route(pattern: string, view: View) {

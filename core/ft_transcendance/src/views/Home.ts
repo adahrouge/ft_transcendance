@@ -1,4 +1,4 @@
-import { navigate } from '../router.js';
+import { navigate } from '../router';
 
 export const HomeView = () => {
   const wrap = document.createElement('div');
@@ -7,7 +7,7 @@ export const HomeView = () => {
       <h2>Welcome to Pong Tournament</h2>
       <p class="muted">Single-Page App in TypeScript · Local 2-player · Deterministic paddle speed · Dockerized with HTTPS.</p>
       <div class="row">
-        <button class="btn primary" id="start">Start Tournament</button>
+        <button class="btn primary" id="local">Play 1v1 (Local)</button>
         <a href="/tournament" class="btn" data-link>Open tournament page</a>
       </div>
     </div>
@@ -20,7 +20,6 @@ export const HomeView = () => {
       </ul>
     </div>
   `;
-  const start = wrap.querySelector('#start') as HTMLButtonElement;
-  start.addEventListener('click', () => navigate('/tournament'));
+  (wrap.querySelector('#local') as HTMLButtonElement).onclick = () => navigate('/local');
   return wrap;
 };

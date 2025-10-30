@@ -1,5 +1,5 @@
-import { initRouter, navigate } from './router.js';
-import { loadState, saveState } from './state.js';
+import { initRouter, navigate } from './router';
+import { loadState, saveState } from './state';
 
 // Global error guards – ensure no unhandled errors during browsing
 window.addEventListener('error', (e) => {
@@ -27,13 +27,15 @@ function markActive() {
   });
 }
 window.addEventListener('popstate', markActive);
+
 window.addEventListener('click', (e) => {
-  const t = e.target as HTMLElement;
-  if (t && t.matches('a[data-link]')) {
+  const target = (e.target as HTMLElement)?.closest?.('a[data-link]') as HTMLAnchorElement | null;
+  if (target) {
     e.preventDefault();
-    const href = (t as HTMLAnchorElement).getAttribute('href')!;
+    const href = target.getAttribute('href')!;
     navigate(href);
     markActive();
   }
 });
+
 markActive();

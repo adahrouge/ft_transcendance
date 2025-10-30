@@ -8,6 +8,7 @@ COPY src ./src
 RUN npx esbuild src/main.ts --bundle --minify --sourcemap --outfile=dist/app.js
 
 FROM nginx:1.27-alpine
+
 # Generate self-signed cert for dev HTTPS
 RUN apk add --no-cache openssl \
  && mkdir -p /etc/ssl/private \
@@ -19,7 +20,12 @@ RUN apk add --no-cache openssl \
 # Copy built assets
 COPY --from=build /app/dist/app.js /usr/share/nginx/html/app.js
 COPY --from=build /app/index.html /usr/share/nginx/html/index.html
+
+# Use our nginx.conf with security headers + HTTPS redirect
 COPY nginx.conf /etc/nginx/nginx.conf
+
+# (New) Remove the default Nginx vhost so only our config is used
+RUN rm -f /etc/nginx/conf.d/default.conf || true
 
 EXPOSE 80 443
 CMD ["nginx", "-g", "daemon off;"]
