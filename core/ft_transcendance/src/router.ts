@@ -1,3 +1,4 @@
+// src/router.ts
 import { HomeView } from './views/Home';
 import { TournamentView } from './views/Tournament';
 import { GameView } from './views/Game';

@@ -1,21 +1,18 @@
-// src/views/AI.ts
-// Play vs AI using deterministic 1 Hz controller with mirrored-wall prediction,
-// hysteresis lock/unlock, deadzone, and emergency intercept.
+// src/views/ai.ts
+// Ready-to-play AI (no training). Predicts impact Y with bounce mirroring,
+// simulates ArrowUp/ArrowDown at 1 Hz, respects identical paddle speed.
 
 import { navigate } from '../router.js';
 import { escapeHTML } from '../utils.js';
-import { AIController } from '../ai/controller.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
 const PADDLE_W = 14;
 const PADDLE_H = 90;
 const BALL_R = 8;
-const PADDLE_SPEED = 360; // must match human
+const PADDLE_SPEED = 360; // must match human speed
 const BALL_SPEED = 340;
 const SCORE_TO_WIN = 5;
-
-const MIN_PRESS_MS = 140; // avoid rapid flip-flop
 
 export const AIGameView = () => {
   const wrap = document.createElement('div');
@@ -23,6 +20,7 @@ export const AIGameView = () => {
   const p1Alias = 'You';
   const p2Alias = 'AI';
 
+  // Lobby card with Start button
   wrap.innerHTML = `
     <div class="card">
       <h2>Play vs AI</h2>
@@ -56,25 +54,23 @@ export const AIGameView = () => {
     canvas.width = WIDTH;
     canvas.height = HEIGHT;
     host.appendChild(canvas);
-
     const ctx = canvas.getContext('2d')!;
 
-    // ---- Game State ----
+    // --- Game state ---
     let lY = HEIGHT / 2 - PADDLE_H / 2; // human (W/S)
     let rY = HEIGHT / 2 - PADDLE_H / 2; // AI (ArrowUp/ArrowDown via synthetic events)
+
     let ballX = WIDTH / 2, ballY = HEIGHT / 2;
     let ballVX = Math.random() < 0.5 ? BALL_SPEED : -BALL_SPEED;
     let ballVY = (Math.random() * 2 - 1) * BALL_SPEED * 0.6;
 
-    let keys = { w: false, s: false, up: false, down: false };
+    const keys = { w: false, s: false, up: false, down: false };
     let scoreL = 0, scoreR = 0;
     let paused = false;
-    let raf = 0;
     let gameStarted = false;
+    let raf = 0;
 
-    const ctrl = new AIController();
-
-    // ---- Countdown overlay ----
+    // Countdown overlay
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
       position: 'absolute',
@@ -95,20 +91,15 @@ export const AIGameView = () => {
       overlay.textContent = String(t);
       const iv = setInterval(() => {
         t -= 1;
-        if (t > 0) {
-          overlay.textContent = String(t);
-        } else {
+        if (t > 0) overlay.textContent = String(t);
+        else {
           overlay.textContent = 'Go!';
-          setTimeout(() => {
-            overlay.remove();
-            clearInterval(iv);
-            done();
-          }, 400);
+          setTimeout(() => { overlay.remove(); clearInterval(iv); done(); }, 400);
         }
       }, 1000);
     }
 
-    // ---- Drawing ----
+    // --- Drawing ---
     function drawTable() {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
       ctx.save();
@@ -135,14 +126,14 @@ export const AIGameView = () => {
       el.textContent = `${scoreL} : ${scoreR}`;
     }
 
-    // ---- Input Handling ----
+    // --- Input: Human = W/S only; AI uses synthetic Arrow events only ---
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
 
       if (e.key === 'w' || e.key === 'W') keys.w = true;
       if (e.key === 's' || e.key === 'S') keys.s = true;
 
-      // Only synthetic Arrow keys (AI) are honored
+      // Only accept Arrow keys if event is NOT trusted (i.e., dispatched by our AI)
       if (!e.isTrusted) {
         if (e.key === 'ArrowUp') keys.up = true;
         if (e.key === 'ArrowDown') keys.down = true;
@@ -167,8 +158,8 @@ export const AIGameView = () => {
       if (confirm('Quit this match?')) { teardown(); navigate('/'); }
     };
 
-    // ---- Physics loop (fixed timestep) ----
-    let last = 0;
+    // --- Physics loop (fixed timestep) ---
+    let last = performance.now();
     let acc = 0;
     const dt = 1000 / 60;
 
@@ -192,10 +183,11 @@ export const AIGameView = () => {
       if (keys.w) lY -= PADDLE_SPEED * dtSec;
       if (keys.s) lY += PADDLE_SPEED * dtSec;
 
-      // AI (synthetic Arrow keys)
+      // AI (ArrowUp/ArrowDown) – set by synthetic events
       if (keys.up) rY -= PADDLE_SPEED * dtSec;
       if (keys.down) rY += PADDLE_SPEED * dtSec;
 
+      // Clamp paddles
       lY = Math.max(0, Math.min(HEIGHT - PADDLE_H, lY));
       rY = Math.max(0, Math.min(HEIGHT - PADDLE_H, rY));
 
@@ -203,7 +195,7 @@ export const AIGameView = () => {
       ballX += ballVX * dtSec;
       ballY += ballVY * dtSec;
 
-      // Walls
+      // Top/bottom walls
       if (ballY - BALL_R <= 0 && ballVY < 0) { ballVY *= -1; ballY = BALL_R; }
       if (ballY + BALL_R >= HEIGHT && ballVY > 0) { ballVY *= -1; ballY = HEIGHT - BALL_R; }
 
@@ -214,7 +206,7 @@ export const AIGameView = () => {
           const rel = (ballY - (lY + PADDLE_H / 2)) / (PADDLE_H / 2);
           ballVY = rel * BALL_SPEED;
           ballX = PADDLE_W + 10 + BALL_R;
-        } else if (ballX < 0) { scoreR++; onPointOver(+1); }
+        } else if (ballX < 0) { scoreR++; serve(+1); }
       }
 
       // Right paddle collision / score
@@ -224,7 +216,7 @@ export const AIGameView = () => {
           const rel = (ballY - (rY + PADDLE_H / 2)) / (PADDLE_H / 2);
           ballVY = rel * BALL_SPEED;
           ballX = WIDTH - (PADDLE_W + 10) - BALL_R;
-        } else if (ballX > WIDTH) { scoreL++; onPointOver(-1); }
+        } else if (ballX > WIDTH) { scoreL++; serve(-1); }
       }
 
       updateScoreboard();
@@ -242,14 +234,9 @@ export const AIGameView = () => {
       ballVX = dir * BALL_SPEED;
       ballVY = (Math.random() * 2 - 1) * BALL_SPEED * 0.6;
 
-      // Reset AI intent
-      ctrl.reset();
-      releaseKey('ArrowUp'); releaseKey('ArrowDown');
+      // Reset AI intent on every serve
+      releaseBoth();
       lastPress = 'none';
-    }
-
-    function onPointOver(nextDir: number) {
-      serve(nextDir);
     }
 
     function isOver() { return scoreL >= SCORE_TO_WIN || scoreR >= SCORE_TO_WIN; }
@@ -260,86 +247,112 @@ export const AIGameView = () => {
       navigate('/');
     }
 
-    // ---- AI synthetic key helpers ----
+    function teardown() {
+      cancelAnimationFrame(raf);
+      clearInterval(aiTimer);
+      window.removeEventListener('keydown', keyDown, { capture: true } as any);
+      window.removeEventListener('keyup', keyUp, { capture: true } as any);
+      releaseBoth();
+    }
+
+    // --- AI helpers (no training) ---
+    const FACE_X = WIDTH - (PADDLE_W + 10) - BALL_R; // ball-center x where it meets AI paddle
+    const DEADZONE = 8;                               // avoid fidgeting when close
+    const MIN_PRESS_MS = 120;
     let lastPress: 'up' | 'down' | 'none' = 'none';
     let lastPressAt = 0;
 
     function pressKey(key: 'ArrowUp' | 'ArrowDown') {
       const now = performance.now();
+      // Avoid immediate flip-flop: keep previous press for a minimum duration
       if (lastPress !== 'none' && lastPress !== (key === 'ArrowUp' ? 'up' : 'down')) {
-        if (now - lastPressAt < MIN_PRESS_MS) return; // too soon to flip
+        if (now - lastPressAt < MIN_PRESS_MS) return;
       }
-      if (key === 'ArrowUp') releaseKey('ArrowDown'); else releaseKey('ArrowUp');
-
-      const ev = new KeyboardEvent('keydown', { key, bubbles: true });
-      window.dispatchEvent(ev);
+      // Release opposite
+      const opp = key === 'ArrowUp' ? 'ArrowDown' : 'ArrowUp';
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: opp, bubbles: true }));
+      // Press requested
+      window.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
       lastPress = key === 'ArrowUp' ? 'up' : 'down';
       lastPressAt = now;
     }
-
-    function releaseKey(key: 'ArrowUp' | 'ArrowDown') {
-      const ev = new KeyboardEvent('keyup', { key, bubbles: true });
-      window.dispatchEvent(ev);
-      if ((key === 'ArrowUp' && lastPress === 'up') || (key === 'ArrowDown' && lastPress === 'down')) {
-        lastPress = 'none';
-      }
+    function releaseBoth() {
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowUp', bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { key: 'ArrowDown', bubbles: true }));
+      lastPress = 'none';
     }
 
-    // ---- AI perception @ 1 Hz ----
-    let aiTickTimer = 0;
+    // Mirror y into [min, max] to emulate top/bottom bounces
+    function reflectY(y: number, min: number, max: number) {
+      const span = max - min;
+      if (span <= 0) return min;
+      let m = (y - min) % (2 * span);
+      if (m < 0) m += 2 * span;
+      return min + (m <= span ? m : 2 * span - m);
+    }
 
+    // Predict ball-center Y when it reaches FACE_X; includes bounce mirroring
+    function predictYAtFace(bx: number, by: number, vx: number, vy: number): number | null {
+      if (vx <= 0) return null;                 // not moving toward AI
+      const t = (FACE_X - bx) / vx;             // seconds if vx is px/s
+      if (t <= 0) return null;
+      const rawY = by + vy * t;                 // linear extrapolation
+      return reflectY(rawY, BALL_R, HEIGHT - BALL_R);
+    }
+
+    // 1 Hz “perception” (required by spec)
     function aiTick() {
       if (paused || !gameStarted) return;
 
-      const snapshot = {
-        width: WIDTH,
-        height: HEIGHT,
-        paddleY: rY,
-        paddleH: PADDLE_H,
-        ballX,
-        ballY,
-        ballVX,
-        ballVY,
-        towardAI: ballVX > 0,
-      } as const;
+      // Optional human-like delay: don’t commit until ball crosses midline
+      // if (ballX < WIDTH / 2) { home(); return; }
 
-      const action = ctrl.decide(snapshot);
+      const targetBallY = predictYAtFace(ballX, ballY, ballVX, ballVY);
 
-      const now = performance.now();
-      const canFlip = lastPress === 'none' || now - lastPressAt >= MIN_PRESS_MS;
+      // If ball is moving away or prediction invalid: drift to center
+      if (targetBallY == null) { home(); return; }
 
-      if (action === 'none') {
-        releaseKey('ArrowUp'); releaseKey('ArrowDown');
-      } else if (action === 'up') {
-        if (lastPress !== 'up' && !canFlip) return;
-        pressKey('ArrowUp');
-      } else if (action === 'down') {
-        if (lastPress !== 'down' && !canFlip) return;
+      const targetCenter = clampCenter(targetBallY);
+      const rCenter = rY + PADDLE_H / 2;
+      const diff = targetCenter - rCenter;
+
+      if (Math.abs(diff) <= DEADZONE) {
+        releaseBoth();
+      } else if (diff > 0) {
         pressKey('ArrowDown');
+      } else {
+        pressKey('ArrowUp');
       }
     }
 
-    function teardown() {
-      cancelAnimationFrame(raf);
-      clearInterval(aiTickTimer);
-      window.removeEventListener('keydown', keyDown, { capture: true } as any);
-      window.removeEventListener('keyup', keyUp, { capture: true } as any);
-      releaseKey('ArrowUp'); releaseKey('ArrowDown');
+    function home() {
+      const center = HEIGHT / 2;
+      const rCenter = rY + PADDLE_H / 2;
+      const diff = center - rCenter;
+      if (Math.abs(diff) <= DEADZONE) releaseBoth();
+      else if (diff > 0) pressKey('ArrowDown');
+      else pressKey('ArrowUp');
     }
 
-    // Bind inputs and start after countdown
+    function clampCenter(y: number) {
+      const minC = PADDLE_H / 2, maxC = HEIGHT - PADDLE_H / 2;
+      return Math.max(minC, Math.min(maxC, y));
+    }
+
+    // Bind keys and start after countdown
     window.addEventListener('keydown', keyDown, { capture: true });
     window.addEventListener('keyup', keyUp, { capture: true });
 
     startCountdown(3, () => {
       gameStarted = true;
-      let first = performance.now();
-      last = first;
+      last = performance.now();
       updateScoreboard();
       aiTick(); // first look
-      aiTickTimer = window.setInterval(aiTick, 1000); // 1 Hz perception
+      aiTimer = window.setInterval(aiTick, 1000); // 1 Hz decisions
       raf = requestAnimationFrame(frame);
     });
+
+    let aiTimer = 0;
   }
 
   return wrap;
