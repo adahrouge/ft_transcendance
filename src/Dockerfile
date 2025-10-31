@@ -1,11 +1,18 @@
 # Multi-stage build: build TS with esbuild, then serve via nginx with HTTPS
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package.json ./
-RUN npm ci || npm install
-COPY index.html ./
-COPY src ./src
-RUN npx esbuild src/main.ts --bundle --minify --sourcemap --outfile=dist/app.js
+
+# Copy package files first
+COPY package.json package-lock.json* ./
+RUN npm install
+
+# Copy source files explicitly - ADD WEBSOCKET-SERVICE
+COPY index.html .
+COPY ai.ts main.ts router.ts state.ts utils.ts websocket-service.ts .
+COPY views/ ./views/
+
+# Build the application
+RUN npx esbuild main.ts --bundle --minify --sourcemap --outfile=dist/app.js
 
 FROM nginx:1.27-alpine
 
@@ -24,7 +31,7 @@ COPY --from=build /app/index.html /usr/share/nginx/html/index.html
 # Use our nginx.conf with security headers + HTTPS redirect
 COPY nginx.conf /etc/nginx/nginx.conf
 
-# (New) Remove the default Nginx vhost so only our config is used
+# Remove the default Nginx vhost
 RUN rm -f /etc/nginx/conf.d/default.conf || true
 
 EXPOSE 80 443

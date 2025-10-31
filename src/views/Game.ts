@@ -1,10 +1,11 @@
 // src/views/Game.ts
 // Tournament match view, now gated behind a "Start Match" button.
-// Countdown (3-2-1) can be paused/resumed with Space or the Pause button.
+// Updated to use WebSocket backend for real-time multiplayer
 
 import { aliasOf, getState, reportScore, setMatchStatus } from '../state.js';
 import { navigate } from '../router.js';
 import { escapeHTML } from '../utils.js';
+import { webSocketService } from '../websocket-service.js'; // New import
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -40,20 +41,62 @@ export const GameView = (params: Record<string, string>) => {
       </div>
     </div>
     <div id="host" style="position:relative;"></div>
+    <div id="connection-status" style="margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
   `;
+
+  let currentPlayerId: string | null = null;
+  let gameConnected = false;
 
   (wrap.querySelector('#start') as HTMLButtonElement).onclick = () => startMatch();
 
+  function updateConnectionStatus(message: string, isError: boolean = false) {
+    const statusEl = wrap.querySelector('#connection-status') as HTMLDivElement;
+    statusEl.textContent = message;
+    statusEl.style.background = isError ? '#ffebee' : '#e8f5e8';
+    statusEl.style.color = isError ? '#c62828' : '#2e7d32';
+    statusEl.style.display = 'block';
+  }
+
   function startMatch() {
-    const host = wrap.querySelector('#host') as HTMLDivElement;
+    // Connect to WebSocket backend
+    webSocketService.connect();
+    updateConnectionStatus('🔄 Connecting to game server...');
+
+    // Set up WebSocket listeners
+    webSocketService.onGameStateUpdate((gameState) => {
+      if (!gameState) return;
+      
+      updateGameFromBackend(gameState);
+      
+      if (!gameConnected) {
+        gameConnected = true;
+        updateConnectionStatus('✅ Connected to game server!');
+        startLocalGame(); // Start the local game loop once connected
+      }
+    });
+
+    // Create game on backend
+    setTimeout(() => {
+      webSocketService.createGame(
+        aliasOf(m.p1) || 'Player 1',
+        aliasOf(m.p2) || 'Player 2'
+      );
+    }, 1000);
 
     // Mark match as playing on start
     setMatchStatus(matchId, 'playing');
+  }
+
+  function startLocalGame() {
+    const host = wrap.querySelector('#host') as HTMLDivElement;
 
     host.innerHTML = `
       <div class="row" style="margin-top:8px; gap:12px;">
         <button class="btn" id="pause">Pause</button>
         <button class="btn" id="quit">Quit match</button>
+      </div>
+      <div style="margin-top: 8px; color: #666;">
+        <small>Playing as: <strong id="player-role">Connecting...</strong></small>
       </div>
     `;
 
@@ -64,19 +107,17 @@ export const GameView = (params: Record<string, string>) => {
 
     const ctx = canvas.getContext('2d')!;
 
-    // State
+    // State - now synced with backend
     let lY = HEIGHT / 2 - PADDLE_H / 2;
     let rY = HEIGHT / 2 - PADDLE_H / 2;
     let ballX = WIDTH / 2, ballY = HEIGHT / 2;
-    let ballVX = Math.random() < 0.5 ? BALL_SPEED : -BALL_SPEED;
-    let ballVY = (Math.random() * 2 - 1) * BALL_SPEED * 0.6;
-    let keys = { w: false, s: false, up: false, down: false };
+    let ballVX = 0, ballVY = 0;
     let scoreL = 0, scoreR = 0;
     let paused = false;
     let raf = 0;
     let gameStarted = false;
 
-    // Countdown overlay (shown before the game starts)
+    // Countdown overlay
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
       position: 'absolute',
@@ -93,10 +134,40 @@ export const GameView = (params: Record<string, string>) => {
     host.appendChild(overlay);
 
     // Pause / Quit
-    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { paused = !paused; };
+    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { 
+      paused = !paused; 
+    };
     (wrap.querySelector('#quit') as HTMLButtonElement).onclick = () => {
       if (confirm('Quit this match? Current score will be saved.')) endMatch();
     };
+
+    function updateGameFromBackend(gameState: any) {
+      if (!gameState || !gameState.players || !gameState.ball) return;
+
+      // Update scores
+      scoreL = gameState.players[0]?.score || 0;
+      scoreR = gameState.players[1]?.score || 0;
+
+      // Update paddle positions
+      lY = gameState.players[0]?.paddleY || lY;
+      rY = gameState.players[1]?.paddleY || rY;
+
+      // Update ball position
+      ballX = gameState.ball.x || ballX;
+      ballY = gameState.ball.y || ballY;
+      ballVX = gameState.ball.velocityX || ballVX;
+      ballVY = gameState.ball.velocityY || ballVY;
+
+      // Update player role display
+      const playerRoleEl = wrap.querySelector('#player-role') as HTMLElement;
+      if (currentPlayerId === 'player1') {
+        playerRoleEl.textContent = `${aliasOf(m.p1)} (Left Paddle - W/S Keys)`;
+      } else if (currentPlayerId === 'player2') {
+        playerRoleEl.textContent = `${aliasOf(m.p2)} (Right Paddle - Arrow Keys)`;
+      }
+
+      updateScoreboard();
+    }
 
     function drawTable() {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -109,37 +180,54 @@ export const GameView = (params: Record<string, string>) => {
       ctx.stroke();
       ctx.restore();
     }
+
     function drawPaddle(x: number, y: number) {
       ctx.fillStyle = '#e8e8f0';
       ctx.fillRect(x, y, PADDLE_W, PADDLE_H);
     }
+
     function drawBall(x: number, y: number) {
       ctx.beginPath();
       ctx.arc(x, y, BALL_R, 0, Math.PI * 2);
       ctx.fillStyle = '#f2f2ff';
       ctx.fill();
     }
+
     function updateScoreboard() {
       const el = wrap.querySelector('#score')!;
       el.textContent = `${scoreL} : ${scoreR}`;
     }
 
-    // Input (Space toggles pause — also freezes countdown)
+    // Input handling - send movements to backend
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
-      if (e.key === 'w' || e.key === 'W') keys.w = true;
-      if (e.key === 's' || e.key === 'S') keys.s = true;
-      if (e.key === 'ArrowUp') keys.up = true;
-      if (e.key === 'ArrowDown') keys.down = true;
+      
+      let newPosition: number | null = null;
+      
+      if ((e.key === 'w' || e.key === 'W') && currentPlayerId === 'player1') {
+        newPosition = lY - 20;
+      }
+      if ((e.key === 's' || e.key === 'S') && currentPlayerId === 'player1') {
+        newPosition = lY + 20;
+      }
+      if (e.key === 'ArrowUp' && currentPlayerId === 'player2') {
+        newPosition = rY - 20;
+      }
+      if (e.key === 'ArrowDown' && currentPlayerId === 'player2') {
+        newPosition = rY + 20;
+      }
+      
+      if (newPosition !== null && gameConnected) {
+        webSocketService.movePaddle(newPosition);
+      }
+
       if (e.key === ' ') paused = !paused;
     };
+
     const keyUp = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
-      if (e.key === 'w' || e.key === 'W') keys.w = false;
-      if (e.key === 's' || e.key === 'S') keys.s = false;
-      if (e.key === 'ArrowUp') keys.up = false;
-      if (e.key === 'ArrowDown') keys.down = false;
     };
+
     window.addEventListener('keydown', keyDown, { capture: true });
     window.addEventListener('keyup', keyUp, { capture: true });
 
@@ -152,50 +240,22 @@ export const GameView = (params: Record<string, string>) => {
       last = now;
       acc += elapsed;
       while (acc >= dt) {
-        step(dt / 1000);
+        if (!paused && gameStarted) {
+          step(dt / 1000);
+        }
         acc -= dt;
       }
       render();
-      if (isOver()) { endMatch(); return; }
+      if (isOver()) { 
+        endMatch(); 
+        return; 
+      }
       raf = requestAnimationFrame(frame);
     }
 
     function step(dtSec: number) {
-      if (paused || !gameStarted) return;
-
-      if (keys.w) lY -= PADDLE_SPEED * dtSec;
-      if (keys.s) lY += PADDLE_SPEED * dtSec;
-      if (keys.up) rY -= PADDLE_SPEED * dtSec;
-      if (keys.down) rY += PADDLE_SPEED * dtSec;
-      lY = Math.max(0, Math.min(HEIGHT - PADDLE_H, lY));
-      rY = Math.max(0, Math.min(HEIGHT - PADDLE_H, rY));
-
-      ballX += ballVX * dtSec;
-      ballY += ballVY * dtSec;
-
-      if (ballY - BALL_R <= 0 && ballVY < 0) { ballVY *= -1; ballY = BALL_R; }
-      if (ballY + BALL_R >= HEIGHT && ballVY > 0) { ballVY *= -1; ballY = HEIGHT - BALL_R; }
-
-      if (ballX - BALL_R <= PADDLE_W + 10) {
-        if (ballY >= lY && ballY <= lY + PADDLE_H && ballVX < 0) {
-          ballVX *= -1;
-          const rel = (ballY - (lY + PADDLE_H / 2)) / (PADDLE_H / 2);
-          ballVY = rel * BALL_SPEED;
-          ballX = PADDLE_W + 10 + BALL_R;
-        } else if (ballX < 0) {
-          scoreR++; serve(+1);
-        }
-      }
-      if (ballX + BALL_R >= WIDTH - (PADDLE_W + 10)) {
-        if (ballY >= rY && ballY <= rY + PADDLE_H && ballVX > 0) {
-          ballVX *= -1;
-          const rel = (ballY - (rY + PADDLE_H / 2)) / (PADDLE_H / 2);
-          ballVY = rel * BALL_SPEED;
-          ballX = WIDTH - (PADDLE_W + 10) - BALL_R;
-        } else if (ballX > WIDTH) {
-          scoreL++; serve(-1);
-        }
-      }
+      // Game logic is now handled by the backend
+      // We just render the state we receive via WebSocket
       updateScoreboard();
     }
 
@@ -206,29 +266,45 @@ export const GameView = (params: Record<string, string>) => {
       drawBall(ballX, ballY);
     }
 
-    function serve(dir: number) {
-      ballX = WIDTH / 2; ballY = HEIGHT / 2;
-      ballVX = dir * BALL_SPEED;
-      ballVY = (Math.random() * 2 - 1) * BALL_SPEED * 0.6;
+    function isOver() { 
+      return scoreL >= SCORE_TO_WIN || scoreR >= SCORE_TO_WIN; 
     }
-
-    function isOver() { return scoreL >= SCORE_TO_WIN || scoreR >= SCORE_TO_WIN; }
 
     function teardown() {
       cancelAnimationFrame(raf);
       window.removeEventListener('keydown', keyDown, { capture: true } as any);
       window.removeEventListener('keyup', keyUp, { capture: true } as any);
+      webSocketService.disconnect();
     }
 
     function endMatch() {
       teardown();
       setMatchStatus(matchId, 'finished');
       reportScore(matchId, scoreL, scoreR);
-      alert(`Match ended. Final score: ${scoreL} : ${scoreR}`);
+      
+      // Determine winner
+      let winnerMessage = '';
+      if (scoreL >= SCORE_TO_WIN) {
+        winnerMessage = `${aliasOf(m.p1)} wins!`;
+      } else if (scoreR >= SCORE_TO_WIN) {
+        winnerMessage = `${aliasOf(m.p2)} wins!`;
+      }
+      
+      alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
       navigate('/tournament');
     }
 
-    // ---- Countdown that respects Pause (Space/btn) ----
+    // Handle WebSocket connection events
+    const originalOnGameState = webSocketService.onGameStateUpdate;
+    webSocketService.onGameStateUpdate((gameState) => {
+      if (gameState && gameState.yourPlayerId) {
+        currentPlayerId = gameState.yourPlayerId;
+      }
+      updateGameFromBackend(gameState);
+      originalOnGameState.call(webSocketService, gameState);
+    });
+
+    // Countdown that respects Pause
     function startCountdown(seconds: number, onDone: () => void) {
       let remainingMs = seconds * 1000;
       let lastTs = 0;
