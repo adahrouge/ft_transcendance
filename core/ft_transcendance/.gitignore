@@ -1,9 +1,0 @@
-# Secrets & local config
-.env
-.env.*
-*.key
-*.crt
-
-# Build artifacts
-dist/
-app.js
