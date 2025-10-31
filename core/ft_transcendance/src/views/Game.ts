@@ -1,6 +1,6 @@
 // src/views/Game.ts
 // Tournament match view, now gated behind a "Start Match" button.
-// Nothing starts until the user clicks Start Match.
+// Countdown (3-2-1) can be paused/resumed with Space or the Pause button.
 
 import { aliasOf, getState, reportScore, setMatchStatus } from '../state.js';
 import { navigate } from '../router.js';
@@ -76,7 +76,7 @@ export const GameView = (params: Record<string, string>) => {
     let raf = 0;
     let gameStarted = false;
 
-    // Countdown overlay
+    // Countdown overlay (shown before the game starts)
     const overlay = document.createElement('div');
     Object.assign(overlay.style, {
       position: 'absolute',
@@ -92,23 +92,11 @@ export const GameView = (params: Record<string, string>) => {
     } as CSSStyleDeclaration);
     host.appendChild(overlay);
 
-    function startCountdown(seconds = 3, done: () => void) {
-      let t = seconds;
-      overlay.textContent = String(t);
-      const iv = setInterval(() => {
-        t -= 1;
-        if (t > 0) {
-          overlay.textContent = String(t);
-        } else {
-          overlay.textContent = 'Go!';
-          setTimeout(() => {
-            overlay.remove();
-            clearInterval(iv);
-            done();
-          }, 400);
-        }
-      }, 1000);
-    }
+    // Pause / Quit
+    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { paused = !paused; };
+    (wrap.querySelector('#quit') as HTMLButtonElement).onclick = () => {
+      if (confirm('Quit this match? Current score will be saved.')) endMatch();
+    };
 
     function drawTable() {
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
@@ -136,7 +124,7 @@ export const GameView = (params: Record<string, string>) => {
       el.textContent = `${scoreL} : ${scoreR}`;
     }
 
-    // Prevent page scroll while playing
+    // Input (Space toggles pause — also freezes countdown)
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
       if (e.key === 'w' || e.key === 'W') keys.w = true;
@@ -154,11 +142,6 @@ export const GameView = (params: Record<string, string>) => {
     };
     window.addEventListener('keydown', keyDown, { capture: true });
     window.addEventListener('keyup', keyUp, { capture: true });
-
-    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { paused = !paused; };
-    (wrap.querySelector('#quit') as HTMLButtonElement).onclick = () => {
-      if (confirm('Quit this match? Current score will be saved.')) endMatch();
-    };
 
     let last = 0;
     let acc = 0;
@@ -245,13 +228,48 @@ export const GameView = (params: Record<string, string>) => {
       navigate('/tournament');
     }
 
+    // ---- Countdown that respects Pause (Space/btn) ----
+    function startCountdown(seconds: number, onDone: () => void) {
+      let remainingMs = seconds * 1000;
+      let lastTs = 0;
+      let running = true;
+
+      function tick(ts: number) {
+        if (!running) return;
+        if (!lastTs) lastTs = ts;
+
+        const d = paused ? 0 : (ts - lastTs);
+        lastTs = ts;
+        remainingMs = Math.max(0, remainingMs - d);
+
+        const secsInt = Math.ceil(remainingMs / 1000);
+        if (secsInt > 0) {
+          overlay.textContent = String(secsInt);
+          requestAnimationFrame(tick);
+        } else {
+          overlay.textContent = 'Go!';
+          setTimeout(() => {
+            overlay.remove();
+            running = false;
+            onDone();
+          }, 300);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
     // Start AFTER countdown
+    updateScoreboard();
+    drawTable();
+    drawPaddle(10, lY);
+    drawPaddle(WIDTH - PADDLE_W - 10, rY);
+    drawBall(ballX, ballY);
+
     startCountdown(3, () => {
       gameStarted = true;
       const now = performance.now();
       let lastRef = now;
       last = lastRef;
-      updateScoreboard();
       raf = requestAnimationFrame(frame);
     });
   }

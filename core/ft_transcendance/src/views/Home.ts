@@ -10,7 +10,7 @@ export const HomeView = () => {
       <div class="row">
         <button class="btn primary" id="local">Play 1v1 (Local)</button>
         <button class="btn" id="ai">Play vs AI</button>
-        <a href="/tournament" class="btn" data-link>Open tournament page</a>
+        <button class="btn" id="tournament">Open tournament page</button>
       </div>
     </div>
     <div class="card">
@@ -22,7 +22,10 @@ export const HomeView = () => {
       </ul>
     </div>
   `;
+
   (wrap.querySelector('#local') as HTMLButtonElement).onclick = () => navigate('/local');
   (wrap.querySelector('#ai') as HTMLButtonElement).onclick = () => navigate('/ai');
+  (wrap.querySelector('#tournament') as HTMLButtonElement).onclick = () => navigate('/tournament');
+
   return wrap;
 };

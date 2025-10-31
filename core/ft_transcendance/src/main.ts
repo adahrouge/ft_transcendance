@@ -1,3 +1,5 @@
+// src/main.ts
+
 import { initRouter, navigate } from './router';
 import { loadState, saveState } from './state';
 

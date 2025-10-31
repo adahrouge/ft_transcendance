@@ -78,24 +78,6 @@ export const LocalGameView = () => {
     } as CSSStyleDeclaration);
     host.appendChild(overlay);
 
-    function startCountdown(seconds = 3, done: () => void) {
-      let t = seconds;
-      overlay.textContent = String(t);
-      const iv = setInterval(() => {
-        t -= 1;
-        if (t > 0) {
-          overlay.textContent = String(t);
-        } else {
-          overlay.textContent = 'Go!';
-          setTimeout(() => {
-            overlay.remove();
-            clearInterval(iv);
-            done();
-          }, 400);
-        }
-      }, 1000);
-    }
-
     // State
     let lY = HEIGHT / 2 - PADDLE_H / 2;
     let rY = HEIGHT / 2 - PADDLE_H / 2;
@@ -108,14 +90,14 @@ export const LocalGameView = () => {
     let raf = 0;
     let gameStarted = false;
 
-    // Prevent page scroll while playing
+    // Prevent page scroll while playing & allow pause during countdown
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
       if (e.key === 'w' || e.key === 'W') keys.w = true;
       if (e.key === 's' || e.key === 'S') keys.s = true;
       if (e.key === 'ArrowUp') keys.up = true;
       if (e.key === 'ArrowDown') keys.down = true;
-      if (e.key === ' ') paused = !paused;
+      if (e.key === ' ') paused = !paused;   // ← freezes countdown too
     };
     const keyUp = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
@@ -230,11 +212,43 @@ export const LocalGameView = () => {
       window.removeEventListener('keyup', keyUp, { capture: true } as any);
     }
 
+    // ---- Countdown that respects Pause (just like AI view) ----
+    function startCountdown(seconds: number, done: () => void) {
+      let remainingMs = seconds * 1000;
+      let lastTs = 0;
+      let running = true;
+
+      function tick(ts: number) {
+        if (!running) return;
+        if (!lastTs) lastTs = ts;
+
+        const d = paused ? 0 : (ts - lastTs);
+        lastTs = ts;
+        remainingMs = Math.max(0, remainingMs - d);
+
+        const secsInt = Math.ceil(remainingMs / 1000);
+        if (secsInt > 0) {
+          overlay.textContent = String(secsInt);
+          requestAnimationFrame(tick);
+        } else {
+          overlay.textContent = 'Go!';
+          setTimeout(() => {
+            overlay.remove();
+            running = false;
+            done();
+          }, 300);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+
+    // Start AFTER countdown (which can be paused)
+    updateScoreboard();
+    render(); // draw initial table/paddles/ball
     startCountdown(3, () => {
       gameStarted = true;
       last = performance.now();
       raf = requestAnimationFrame(frame);
-      updateScoreboard();
     });
   }
 
