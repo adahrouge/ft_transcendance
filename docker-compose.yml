@@ -16,4 +16,4 @@ services:
       - DATABASE_PATH=/app/database/data/database.db
     volumes:
       - ./src/backend/database/data:/app/database/data
-      - ./src/backend/database/uploads:/app/uploads
+      - ./src/backend/database/uploads:/app/database/uploads

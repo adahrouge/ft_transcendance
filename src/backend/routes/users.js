@@ -16,7 +16,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const AVATAR_DIR = path.join(__dirname, '..', 'database', 'uploads', 'avatars');
+const AVATAR_DIR = path.join(__dirname, '..', 'database', 'uploads');
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Helper to get user from JWT token
@@ -226,7 +226,7 @@ export async function userRoutes(fastify) {
 
       // Update user avatar URL (relative path or full URL depending on setup)
       // For simplicity, store relative path - in production, use absolute URL
-      const avatarUrl = `/uploads/avatars/${filename}`;
+      const avatarUrl = `/uploads/${filename}`;
       const updatedUser = await updateUser(user.id, { avatar_url: avatarUrl });
       
       const { password_hash, ...userData } = updatedUser;
@@ -240,7 +240,7 @@ export async function userRoutes(fastify) {
 
 // Helper to serve avatar files
 export async function avatarRoutes(fastify) {
-  fastify.get('/uploads/avatars/:filename', async (request, reply) => {
+  fastify.get('/uploads/:filename', async (request, reply) => {
     const { filename } = request.params;
     const filepath = path.join(AVATAR_DIR, filename);
     
