@@ -2,13 +2,31 @@ export class WebSocketService {
   private ws: WebSocket | null = null;
   private gameState: any = null;
   private onGameStateCallbacks: ((gameState: any) => void)[] = [];
+  private onChatMessageCallbacks: ((message: any) => void)[] = [];
+  private currentGameId: string | null = null;
+  private userRole: string = 'spectator';
 
-  connect() {
+  connect(token?: string) {
     try {
-      this.ws = new WebSocket('ws://localhost:3001/ws');
+      // Use wss for HTTPS or ws for HTTP, based on current protocol
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.host;
+      const wsUrl = token 
+        ? `${protocol}//${host}/ws?token=${encodeURIComponent(token)}`
+        : `${protocol}//${host}/ws`;
+      
+      this.ws = new WebSocket(wsUrl);
       
       this.ws.onopen = () => {
         console.log('✅ Connected to Pong backend');
+        
+        // Authenticate if token provided
+        if (token) {
+          this.send({
+            type: 'AUTHENTICATE',
+            token: token
+          });
+        }
       };
 
       this.ws.onmessage = (event) => {
@@ -38,6 +56,15 @@ export class WebSocketService {
     switch (data.type) {
       case 'GAME_CREATED':
         this.gameState = data.gameState;
+        this.currentGameId = data.gameId;
+        this.userRole = data.yourRole || 'spectator';
+        this.notifyGameStateCallbacks();
+        break;
+        
+      case 'JOINED_GAME':
+        this.gameState = data.gameState;
+        this.currentGameId = data.gameId;
+        this.userRole = data.yourRole || 'spectator';
         this.notifyGameStateCallbacks();
         break;
         
@@ -46,12 +73,42 @@ export class WebSocketService {
         this.notifyGameStateCallbacks();
         break;
         
+      case 'CHAT_MESSAGE':
+        this.notifyChatCallbacks(data.chatMessage);
+        break;
+        
+      case 'CHAT_HISTORY':
+        // Notify for each message in history
+        if (data.messages && Array.isArray(data.messages)) {
+          data.messages.forEach((msg: any) => {
+            this.notifyChatCallbacks(msg);
+          });
+        }
+        break;
+        
       case 'WELCOME':
         console.log('🎮', data.message);
         break;
         
+      case 'AUTHENTICATED':
+        console.log('✅ Authenticated as', data.user?.username);
+        break;
+        
       case 'PONG':
         console.log('🏓 Pong received');
+        break;
+        
+      case 'ERROR':
+        console.error('❌ Error from server:', data.message || data.error);
+        // Notify callbacks about errors (especially auth errors)
+        this.onGameStateCallbacks.forEach(callback => {
+          callback(null); // Pass null to indicate error
+        });
+        break;
+        
+      case 'SPECTATOR_JOINED':
+      case 'SPECTATOR_LEFT':
+        // Could notify UI about spectator count changes
         break;
     }
   }
@@ -65,6 +122,13 @@ export class WebSocketService {
     });
   }
 
+  joinGame(gameId: string) {
+    this.send({
+      type: 'JOIN_GAME',
+      gameId
+    });
+  }
+
   movePaddle(position: number) {
     this.send({
       type: 'MOVE_PADDLE',
@@ -72,11 +136,13 @@ export class WebSocketService {
     });
   }
 
-  joinGame(gameId: string) {
-    this.send({
-      type: 'JOIN_GAME',
-      gameId
-    });
+  sendChatMessage(message: string) {
+    if (message.trim()) {
+      this.send({
+        type: 'SEND_CHAT',
+        message: message.trim()
+      });
+    }
   }
 
   // Utility methods
@@ -93,9 +159,20 @@ export class WebSocketService {
     this.onGameStateCallbacks.push(callback);
   }
 
+  // Subscribe to chat messages
+  onChatMessage(callback: (message: any) => void) {
+    this.onChatMessageCallbacks.push(callback);
+  }
+
   private notifyGameStateCallbacks() {
     this.onGameStateCallbacks.forEach(callback => {
       callback(this.gameState);
+    });
+  }
+
+  private notifyChatCallbacks(message: any) {
+    this.onChatMessageCallbacks.forEach(callback => {
+      callback(message);
     });
   }
 
@@ -103,10 +180,20 @@ export class WebSocketService {
     return this.gameState;
   }
 
+  getCurrentGameId() {
+    return this.currentGameId;
+  }
+
+  getUserRole() {
+    return this.userRole;
+  }
+
   disconnect() {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
+      this.currentGameId = null;
+      this.gameState = null;
     }
   }
 }

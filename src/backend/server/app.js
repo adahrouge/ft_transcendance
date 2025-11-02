@@ -1,11 +1,24 @@
 import Fastify from 'fastify';
 import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import staticFiles from '@fastify/static';
 import { GameWebSocket } from '../websocket/GameWebSocket.js';
+import { initDatabase } from '../database/db.js';
+import { userRoutes, avatarRoutes } from '../routes/users.js';
+import { gameEngine } from '../game/GameEngine.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({
   logger: true
 });
+
+// Initialize database
+await initDatabase();
 
 // Register plugins
 await fastify.register(cors, {
@@ -14,6 +27,17 @@ await fastify.register(cors, {
 });
 
 await fastify.register(websocket);
+await fastify.register(multipart);
+
+// Register routes
+await fastify.register(userRoutes);
+await fastify.register(avatarRoutes);
+
+// Serve uploaded avatars
+await fastify.register(staticFiles, {
+  root: path.join(__dirname, '..', 'database', 'uploads'),
+  prefix: '/uploads/'
+});
 
 // WebSocket for real-time gameplay
 fastify.register(async (fastify) => {
@@ -25,9 +49,20 @@ fastify.get('/health', async (request, reply) => {
   return { status: 'OK', message: 'Pong server running' };
 });
 
-// Game routes
-fastify.get('/games', async (request, reply) => {
-  return { games: [] };
+// Game routes - get active games for spectators
+fastify.get('/api/games', async (request, reply) => {
+  const activeGames = gameEngine.getAllActiveGames();
+  return { games: activeGames };
+});
+
+// Get specific active game info
+fastify.get('/api/games/:gameId', async (request, reply) => {
+  const { gameId } = request.params;
+  const game = gameEngine.getActiveGame(gameId);
+  if (!game) {
+    return reply.code(404).send({ error: 'Game not found or not active' });
+  }
+  return game;
 });
 
 // Start server

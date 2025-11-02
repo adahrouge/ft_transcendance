@@ -5,7 +5,9 @@
 import { aliasOf, getState, reportScore, setMatchStatus } from '../state.js';
 import { navigate } from '../router.js';
 import { escapeHTML } from '../utils.js';
-import { webSocketService } from '../websocket-service.js'; // New import
+import { webSocketService } from '../websocket-service.js';
+import { getToken } from '../api.js';
+import { gameAPI } from '../api.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -37,17 +39,79 @@ export const GameView = (params: Record<string, string>) => {
       </div>
       <div class="row" style="margin-top:8px;">
         <button class="btn primary" id="start">Start Match</button>
+        <button class="btn outline" id="join-spectator" style="display:none;">Join as Spectator</button>
         <a class="btn" data-link href="/tournament">Back</a>
       </div>
+      <div id="spectator-count" style="margin-top:8px; color:#aaa; font-size:14px; display:none;">
+        <span id="spectator-count-value">0</span> spectator(s) watching
+      </div>
     </div>
-    <div id="host" style="position:relative;"></div>
-    <div id="connection-status" style="margin-top: 10px; padding: 10px; border-radius: 4px;"></div>
+    <div style="display:flex; gap:16px; margin-top:16px;">
+      <div id="host" style="position:relative; flex:2; min-width:0;"></div>
+      <div class="card" style="flex:1; min-width:300px; max-height:600px; display:flex; flex-direction:column;">
+        <h3 style="margin-bottom:12px;">Live Chat</h3>
+        <div id="chat-messages" style="flex:1; overflow-y:auto; min-height:200px; max-height:450px; padding:8px; background:#1a1a1a; border-radius:8px; margin-bottom:12px;">
+          <div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding:8px; background:#333; border:none; border-radius:6px; color:#fff; font-size:14px;" />
+          <button class="btn primary" id="chat-send" style="padding:8px 16px;">Send</button>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:#888;">
+          <span id="spectator-info">Join to watch and chat!</span>
+        </div>
+      </div>
+    </div>
+    <div id="connection-status" style="margin-top: 10px; padding: 10px; border-radius: 4px; display:none;"></div>
   `;
 
   let currentPlayerId: string | null = null;
   let gameConnected = false;
+  let isSpectator = false;
+  let currentGameId: string | null = null;
+  const chatMessages: any[] = [];
+
+  const token = getToken();
+  
+  // Connect WebSocket with authentication if available
+  function connectWebSocket() {
+    webSocketService.connect(token || undefined);
+  }
+
+  // Check for existing active game on load
+  checkForActiveGame();
 
   (wrap.querySelector('#start') as HTMLButtonElement).onclick = () => startMatch();
+  (wrap.querySelector('#join-spectator') as HTMLButtonElement).onclick = () => joinAsSpectator();
+  (wrap.querySelector('#chat-send') as HTMLButtonElement).onclick = () => sendChatMessage();
+
+  async function checkForActiveGame() {
+    try {
+      // Try to find an active game by checking all active games
+      // In a real scenario, you'd map matchId to gameId, but for now we'll use a simple approach
+      const response = await gameAPI.getActiveGames();
+      if (response.games && response.games.length > 0) {
+        // Show join button
+        const joinBtn = wrap.querySelector('#join-spectator') as HTMLButtonElement;
+        if (joinBtn) {
+          joinBtn.style.display = 'inline-block';
+          joinBtn.textContent = `Join as Spectator (${response.games.length} active game${response.games.length > 1 ? 's' : ''})`;
+        }
+        
+        // If there's exactly one game, we could auto-join
+        // For now, user needs to click the button
+      }
+    } catch (err) {
+      console.log('No active games found or error checking:', err);
+    }
+  }
+  
+  const chatInput = wrap.querySelector('#chat-input') as HTMLInputElement;
+  chatInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  });
 
   function updateConnectionStatus(message: string, isError: boolean = false) {
     const statusEl = wrap.querySelector('#connection-status') as HTMLDivElement;
@@ -57,34 +121,221 @@ export const GameView = (params: Record<string, string>) => {
     statusEl.style.display = 'block';
   }
 
+  function updateSpectatorCount(count: number) {
+    const countEl = wrap.querySelector('#spectator-count-value') as HTMLElement;
+    const countContainer = wrap.querySelector('#spectator-count') as HTMLElement;
+    if (countEl) countEl.textContent = String(count);
+    if (countContainer) countContainer.style.display = count > 0 ? 'block' : 'none';
+  }
+
+  function addChatMessage(message: any) {
+    chatMessages.push(message);
+    renderChatMessages();
+  }
+
+  function renderChatMessages() {
+    const chatContainer = wrap.querySelector('#chat-messages') as HTMLDivElement;
+    if (!chatContainer) return;
+
+    if (chatMessages.length === 0) {
+      chatContainer.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>';
+      return;
+    }
+
+    chatContainer.innerHTML = chatMessages.map(msg => {
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      return `
+        <div style="margin-bottom:8px; padding:6px; background:#222; border-radius:4px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong style="color:#5e81f4; font-size:12px;">${escapeHTML(msg.username)}</strong>
+            <span style="color:#666; font-size:11px;">${time}</span>
+          </div>
+          <div style="color:#ddd; font-size:13px; word-wrap:break-word;">${escapeHTML(msg.message)}</div>
+        </div>
+      `;
+    }).join('');
+
+    // Auto-scroll to bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function sendChatMessage() {
+    const input = chatInput;
+    if (!input || !input.value.trim() || !gameConnected) return;
+    
+    webSocketService.sendChatMessage(input.value);
+    input.value = '';
+  }
+
   function startMatch() {
-    // Connect to WebSocket backend
-    webSocketService.connect();
+    // Check if user is authenticated
+    if (!token) {
+      updateConnectionStatus('❌ You must be logged in to start a match. Please login first.', true);
+      setTimeout(() => {
+        navigate('/profile');
+      }, 2000);
+      return;
+    }
+
+    connectWebSocket();
     updateConnectionStatus('🔄 Connecting to game server...');
 
     // Set up WebSocket listeners
-    webSocketService.onGameStateUpdate((gameState) => {
-      if (!gameState) return;
-      
-      updateGameFromBackend(gameState);
-      
-      if (!gameConnected) {
-        gameConnected = true;
-        updateConnectionStatus('✅ Connected to game server!');
-        startLocalGame(); // Start the local game loop once connected
-      }
-    });
+    setupWebSocketListeners();
 
-    // Create game on backend
+    // Create game on backend (requires authentication)
     setTimeout(() => {
-      webSocketService.createGame(
-        aliasOf(m.p1) || 'Player 1',
-        aliasOf(m.p2) || 'Player 2'
-      );
+      if (m) {
+        webSocketService.createGame(
+          aliasOf(m.p1) || 'Player 1',
+          aliasOf(m.p2) || 'Player 2'
+        );
+      }
     }, 1000);
 
     // Mark match as playing on start
     setMatchStatus(matchId, 'playing');
+  }
+
+  async function joinAsSpectator() {
+    isSpectator = true;
+    updateConnectionStatus('🔄 Looking for active games...');
+    
+    try {
+      // Get list of active games
+      const response = await gameAPI.getActiveGames();
+      if (response.games && response.games.length > 0) {
+        // Join the first active game (or you could show a list to choose)
+        const gameToJoin = response.games[0];
+        currentGameId = gameToJoin.id;
+        
+        connectWebSocket();
+        setupWebSocketListeners();
+        
+        setTimeout(() => {
+          webSocketService.joinGame(currentGameId!);
+        }, 500);
+      } else {
+        updateConnectionStatus('❌ No active games found. Start a match first!', true);
+      }
+    } catch (err) {
+      updateConnectionStatus('❌ Error finding games. Please try again.', true);
+      console.error('Error joining as spectator:', err);
+    }
+  }
+
+  function setupWebSocketListeners() {
+    webSocketService.onGameStateUpdate((gameState) => {
+      if (!gameState) return;
+      
+      // This will be handled inside startLocalGame or startSpectatorView
+      if (!gameConnected) {
+        gameConnected = true;
+        updateConnectionStatus('✅ Connected to game server!');
+        currentGameId = webSocketService.getCurrentGameId();
+        
+        if (!isSpectator) {
+          startLocalGame(); // Start the local game loop once connected
+        } else {
+          startSpectatorView(); // Start spectator view
+        }
+      }
+      // Game state updates are handled within startLocalGame/startSpectatorView
+    });
+
+    webSocketService.onChatMessage((message) => {
+      addChatMessage(message);
+    });
+  }
+
+  function startSpectatorView() {
+    const host = wrap.querySelector('#host') as HTMLDivElement;
+    
+    host.innerHTML = `
+      <div style="padding:16px; background:#222; border-radius:8px; margin-bottom:16px;">
+        <h3 style="margin-bottom:8px;">Spectator Mode</h3>
+        <p style="color:#aaa; font-size:14px;">You are watching this match live. Chat with other spectators below!</p>
+      </div>
+    `;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+    host.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d')!;
+
+    // State
+    let lY = HEIGHT / 2 - PADDLE_H / 2;
+    let rY = HEIGHT / 2 - PADDLE_H / 2;
+    let ballX = WIDTH / 2, ballY = HEIGHT / 2;
+    let scoreL = 0, scoreR = 0;
+
+    function updateSpectatorGameState(gameState: any) {
+      if (!gameState || !gameState.players || !gameState.ball) return;
+
+      scoreL = gameState.players[0]?.score || 0;
+      scoreR = gameState.players[1]?.score || 0;
+      lY = gameState.players[0]?.paddleY || lY;
+      rY = gameState.players[1]?.paddleY || rY;
+      ballX = gameState.ball.x || ballX;
+      ballY = gameState.ball.y || ballY;
+
+      updateScoreboard();
+    }
+
+    function drawTable() {
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      ctx.save();
+      ctx.setLineDash([10, 15]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(WIDTH / 2, 10);
+      ctx.lineTo(WIDTH / 2, HEIGHT - 10);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawPaddle(x: number, y: number) {
+      ctx.fillStyle = '#e8e8f0';
+      ctx.fillRect(x, y, PADDLE_W, PADDLE_H);
+    }
+
+    function drawBall(x: number, y: number) {
+      ctx.beginPath();
+      ctx.arc(x, y, BALL_R, 0, Math.PI * 2);
+      ctx.fillStyle = '#f2f2ff';
+      ctx.fill();
+    }
+
+    function updateScoreboard() {
+      const el = wrap.querySelector('#score')!;
+      el.textContent = `${scoreL} : ${scoreR}`;
+    }
+
+    function render() {
+      drawTable();
+      drawPaddle(10, lY);
+      drawPaddle(WIDTH - PADDLE_W - 10, rY);
+      drawBall(ballX, ballY);
+    }
+
+    updateScoreboard();
+    render();
+
+    // Render loop for spectators (visual only)
+    let lastFrame = performance.now();
+    function frame(now: number) {
+      render();
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+
+    // Update spectator info
+    const spectatorInfo = wrap.querySelector('#spectator-info') as HTMLElement;
+    if (spectatorInfo) {
+      spectatorInfo.textContent = 'You are watching as a spectator';
+    }
   }
 
   function startLocalGame() {
@@ -160,10 +411,13 @@ export const GameView = (params: Record<string, string>) => {
 
       // Update player role display
       const playerRoleEl = wrap.querySelector('#player-role') as HTMLElement;
-      if (currentPlayerId === 'player1') {
+      const role = webSocketService.getUserRole();
+      if (role === 'player1' && m) {
         playerRoleEl.textContent = `${aliasOf(m.p1)} (Left Paddle - W/S Keys)`;
-      } else if (currentPlayerId === 'player2') {
+        currentPlayerId = 'player1';
+      } else if (role === 'player2' && m) {
         playerRoleEl.textContent = `${aliasOf(m.p2)} (Right Paddle - Arrow Keys)`;
+        currentPlayerId = 'player2';
       }
 
       updateScoreboard();
@@ -284,25 +538,17 @@ export const GameView = (params: Record<string, string>) => {
       
       // Determine winner
       let winnerMessage = '';
-      if (scoreL >= SCORE_TO_WIN) {
-        winnerMessage = `${aliasOf(m.p1)} wins!`;
-      } else if (scoreR >= SCORE_TO_WIN) {
-        winnerMessage = `${aliasOf(m.p2)} wins!`;
+      if (m) {
+        if (scoreL >= SCORE_TO_WIN) {
+          winnerMessage = `${aliasOf(m.p1)} wins!`;
+        } else if (scoreR >= SCORE_TO_WIN) {
+          winnerMessage = `${aliasOf(m.p2)} wins!`;
+        }
       }
       
       alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
       navigate('/tournament');
     }
-
-    // Handle WebSocket connection events
-    const originalOnGameState = webSocketService.onGameStateUpdate;
-    webSocketService.onGameStateUpdate((gameState) => {
-      if (gameState && gameState.yourPlayerId) {
-        currentPlayerId = gameState.yourPlayerId;
-      }
-      updateGameFromBackend(gameState);
-      originalOnGameState.call(webSocketService, gameState);
-    });
 
     // Countdown that respects Pause
     function startCountdown(seconds: number, onDone: () => void) {

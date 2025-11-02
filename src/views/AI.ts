@@ -7,6 +7,7 @@
 
 import { navigate } from '../router.js';
 import { StrongPaddleAI } from '../ai.js';
+import { getCurrentUser } from '../user-state.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -19,6 +20,22 @@ const SCORE_TO_WIN = 5;
 
 export const AIGameView = () => {
   const wrap = document.createElement('div');
+  const user = getCurrentUser();
+  
+  // Require authentication to play vs AI
+  if (!user) {
+    wrap.innerHTML = `
+      <div class="card">
+        <h2>Play vs AI</h2>
+        <p class="muted">You must be logged in to play against the AI.</p>
+        <div class="row" style="margin-top:16px;">
+          <a href="/profile" data-link class="btn primary">Login / Register</a>
+          <a class="btn" data-link href="/">Back</a>
+        </div>
+      </div>
+    `;
+    return wrap;
+  }
 
   // --- Pre-game UI: Start Match ---
   wrap.innerHTML = `

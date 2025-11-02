@@ -8,7 +8,7 @@ RUN npm install
 
 # Copy source files explicitly - ADD WEBSOCKET-SERVICE
 COPY index.html .
-COPY ai.ts main.ts router.ts state.ts utils.ts websocket-service.ts .
+COPY ai.ts main.ts router.ts state.ts utils.ts websocket-service.ts api.ts user-state.ts navbar.ts .
 COPY views/ ./views/
 
 # Build the application

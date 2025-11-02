@@ -1,8 +1,10 @@
-export class GameEngine {
+class GameEngine {
   constructor() {
     this.games = new Map();
     this.connectedPlayers = new Map();
     this.gameIntervals = new Map();
+    this.gameConnections = new Map(); // gameId -> Set of WebSocket connections
+    this.gameChat = new Map(); // gameId -> Array of chat messages
     console.log('🎮 Game Engine initialized');
   }
 
@@ -27,17 +29,88 @@ export class GameEngine {
     };
     
     this.games.set(gameId, gameState);
+    this.gameConnections.set(gameId, new Set());
+    this.gameChat.set(gameId, []);
     
     // Start game loop
     this.startGameLoop(gameId);
     
-    console.log(`�� New game created: ${gameId}`);
+    console.log(`🎮 New game created: ${gameId}`);
     return this.getGameState(gameId); // Return the clean game state
+  }
+
+  addConnection(gameId, connection) {
+    if (!this.gameConnections.has(gameId)) {
+      this.gameConnections.set(gameId, new Set());
+    }
+    this.gameConnections.get(gameId).add(connection);
+  }
+
+  removeConnection(gameId, connection) {
+    const connections = this.gameConnections.get(gameId);
+    if (connections) {
+      connections.delete(connection);
+    }
+  }
+
+  broadcastToGame(gameId, message, excludeConnection = null) {
+    const connections = this.gameConnections.get(gameId);
+    if (!connections) return;
+    
+    const messageStr = JSON.stringify(message);
+    connections.forEach(conn => {
+      if (conn !== excludeConnection && conn.readyState === 1) { // WebSocket.OPEN = 1
+        try {
+          conn.send(messageStr);
+        } catch (err) {
+          console.error('Error broadcasting to connection:', err);
+        }
+      }
+    });
+  }
+
+  addChatMessage(gameId, userId, username, message) {
+    if (!this.gameChat.has(gameId)) {
+      this.gameChat.set(gameId, []);
+    }
+    
+    const chatEntry = {
+      id: `msg_${Date.now()}_${Math.random()}`,
+      userId,
+      username,
+      message: message.substring(0, 500), // Limit message length
+      timestamp: Date.now()
+    };
+    
+    const chat = this.gameChat.get(gameId);
+    chat.push(chatEntry);
+    
+    // Keep only last 100 messages
+    if (chat.length > 100) {
+      chat.shift();
+    }
+    
+    // Broadcast chat message to all connections in this game
+    this.broadcastToGame(gameId, {
+      type: 'CHAT_MESSAGE',
+      chatMessage: chatEntry
+    });
+    
+    return chatEntry;
+  }
+
+  getChatHistory(gameId) {
+    return this.gameChat.get(gameId) || [];
   }
 
   startGameLoop(gameId) {
     const interval = setInterval(() => {
       this.updateBallPosition(gameId);
+      // Broadcast game state to all connections (players and spectators)
+      this.broadcastToGame(gameId, {
+        type: 'GAME_STATE_UPDATE',
+        gameState: this.getGameState(gameId)
+      });
     }, 1000 / 60); // 60 FPS
     
     this.gameIntervals.set(gameId, interval);
@@ -153,6 +226,12 @@ export class GameEngine {
       game.status = 'finished';
       game.finishedAt = new Date();
       
+      // Broadcast game end to all connections
+      this.broadcastToGame(gameId, {
+        type: 'GAME_ENDED',
+        gameState: this.getGameState(gameId)
+      });
+      
       const interval = this.gameIntervals.get(gameId);
       if (interval) {
         clearInterval(interval);
@@ -161,4 +240,43 @@ export class GameEngine {
     }
     return this.getGameState(gameId);
   }
+
+  getSpectatorCount(gameId) {
+    const connections = this.gameConnections.get(gameId);
+    if (!connections) return 0;
+    // Subtract 2 for the players, rest are spectators
+    return Math.max(0, connections.size - 2);
+  }
+
+  getAllActiveGames() {
+    const activeGames = [];
+    for (const [gameId, game] of this.games.entries()) {
+      if (game.status === 'playing') {
+        activeGames.push({
+          id: gameId,
+          players: game.players.map(p => ({ id: p.id, name: p.name })),
+          spectatorCount: this.getSpectatorCount(gameId),
+          createdAt: game.createdAt
+        });
+      }
+    }
+    return activeGames;
+  }
+
+  getActiveGame(gameId) {
+    const game = this.games.get(gameId);
+    if (game && game.status === 'playing') {
+      return {
+        id: gameId,
+        players: game.players.map(p => ({ id: p.id, name: p.name })),
+        spectatorCount: this.getSpectatorCount(gameId),
+        createdAt: game.createdAt
+      };
+    }
+    return null;
+  }
 }
+
+// Export singleton instance
+export const gameEngine = new GameEngine();
+export { GameEngine };

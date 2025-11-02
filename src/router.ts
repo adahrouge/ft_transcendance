@@ -2,19 +2,17 @@
 import { HomeView } from './views/Home';
 import { TournamentView } from './views/Tournament';
 import { GameView } from './views/Game';
-import { LocalGameView } from './views/Local';
 import { AIGameView } from './views/AI';
-import { ProfileView } from './views/Profile'; // <-- add this import
+import { ProfileView } from './views/Profile';
 
-export type View = (params: Record<string, string>) => HTMLElement;
+export type View = (params: Record<string, string>) => HTMLElement | Promise<HTMLElement>;
 
 const routes: { pattern: RegExp; keys: string[]; view: View }[] = [
   route('/', HomeView),
   route('/tournament', TournamentView),
   route('/game/:id', GameView),
-  route('/local', LocalGameView),
   route('/ai', AIGameView),
-  route('/profile', ProfileView), // <-- add this route
+  route('/profile', ProfileView),
 ];
 
 function route(pattern: string, view: View) {
@@ -42,13 +40,15 @@ export function navigate(path: string) {
   render();
 }
 
-function render() {
+async function render() {
   const app = document.getElementById('app')!;
   const m = match(location.pathname);
   const view = m?.view ?? HomeView;
   const params = m?.params ?? {};
+  app.innerHTML = '<div style="text-align:center; padding:40px; color:#ddd;">Loading...</div>';
+  const element = await view(params);
   app.innerHTML = '';
-  app.appendChild(view(params));
+  app.appendChild(element);
 }
 
 function match(path: string) {

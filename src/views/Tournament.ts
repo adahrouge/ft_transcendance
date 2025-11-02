@@ -12,8 +12,26 @@ import {
 } from '../state.js';
 import { navigate } from '../router.js';
 import { sanitizeAlias, escapeHTML } from '../utils.js';
+import { getCurrentUser } from '../user-state.js';
 
 export const TournamentView = () => {
+  const user = getCurrentUser();
+  
+  // Require authentication
+  if (!user) {
+    const root = document.createElement('div');
+    root.innerHTML = `
+      <div class="card">
+        <h2>Tournament</h2>
+        <p class="muted">You must be logged in to access tournaments.</p>
+        <div class="row" style="margin-top:16px;">
+          <a href="/profile" data-link class="btn primary">Login / Register</a>
+        </div>
+      </div>
+    `;
+    return root;
+  }
+  
   const s = getState();
   const root = document.createElement('div');
 

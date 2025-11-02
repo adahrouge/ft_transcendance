@@ -1,0 +1,21 @@
+# Database files
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+.env.*
+
+# Node modules
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Logs
+logs
+*.log
+

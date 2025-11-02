@@ -2,6 +2,8 @@
 
 import { initRouter, navigate } from './router';
 import { loadState, saveState } from './state';
+import { initUserState, subscribeToUser } from './user-state';
+import { updateNavbarUser } from './navbar';
 
 // Global error guards – ensure no unhandled errors during browsing
 window.addEventListener('error', (e) => {
@@ -18,6 +20,13 @@ window.addEventListener('beforeunload', () => {
 
 // Init app
 loadState();
+initUserState().then(() => {
+  // Subscribe to user changes to update navbar
+  subscribeToUser((user) => {
+    updateNavbarUser(user);
+  });
+});
+
 initRouter();
 
 // Mark active nav link on route change
