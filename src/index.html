@@ -77,7 +77,7 @@
 
     @media (max-width: 768px) {
       .row { flex-direction: column; }
-      nav { display: none; } /* keep header clean on mobile */
+      nav { display: none; }
     }
   </style>
 </head>
@@ -86,10 +86,6 @@
     <div class="header-inner">
       <div class="brand-and-nav">
         <div class="brand"><strong>ft_transcendence</strong></div>
-        <nav>
-          <a href="/" data-link class="active">Home</a>
-          <!-- No Tournament tab in header (as requested) -->
-        </nav>
       </div>
 
       <!-- Top-right: Home + My Profile -->
@@ -107,8 +103,7 @@
 
       <div class="row" style="margin-top:8px;">
         <button class="btn primary" id="start-tournament">Start Tournament</button>
-        <!-- Make this an anchor so SPA router handles it -->
-        <a class="btn primary" id="open-tournament-page" href="/tournament" data-link>Open tournament page</a>
+        <a class="btn primary" id="play-local" href="/local" data-link>Play 1v1 (Local)</a>
       </div>
 
       <h3>How to play</h3>

@@ -1,37 +1,45 @@
 APP=ft_pong
 PORT=8443
 
-.PHONY: build run clean logs stop restart
+# Auto-detect Compose command: prefer 'docker compose', fallback to 'docker-compose'
+DOCKER_COMPOSE := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
+                      elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
+                      else echo "MISSING"; fi)
+
+ifeq ($(DOCKER_COMPOSE),MISSING)
+$(error Docker Compose not found. Install Docker Desktop (with WSL integration) or \
+       'sudo apt-get install docker-compose-plugin' on Ubuntu to get 'docker compose')
+endif
+
+.PHONY: build run clean logs stop restart detach backend frontend status
 
 run:
-	docker-compose up --build
-
+	$(DOCKER_COMPOSE) up --build
 
 build:
-	docker-compose build
-
+	$(DOCKER_COMPOSE) build
 
 stop:
-	docker-compose down
+	$(DOCKER_COMPOSE) down
 
 logs:
-	docker-compose logs -f
+	$(DOCKER_COMPOSE) logs -f
 
 clean:
-	docker-compose down -v --rmi all
+	$(DOCKER_COMPOSE) down -v --rmi all
 	docker system prune -f
 
 restart:
-	docker-compose restart
+	$(DOCKER_COMPOSE) restart
 
 detach:
-	docker-compose up --build -d
+	$(DOCKER_COMPOSE) up --build -d
 
 backend:
-	docker-compose up backend
+	$(DOCKER_COMPOSE) up backend
 
 frontend:
-	docker-compose up frontend
+	$(DOCKER_COMPOSE) up frontend
 
 status:
 	docker ps

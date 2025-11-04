@@ -32,10 +32,10 @@ export const HomeView = () => {
   wrap.innerHTML = `
     <div class="card">
       <h2>Welcome back, ${escapeHTML(user.display_name || user.username)}!</h2>
-      <p class="muted">Ready to play? Start a tournament, play vs AI, or join as a spectator.</p>
+      <p class="muted">Ready to play? Start a tournament, play locally 1v1, or practice vs AI.</p>
       <div class="row" style="margin-top:16px;">
         <button class="btn primary" id="start-tournament">Start Tournament</button>
-        <a class="btn primary" href="/tournament" data-link>Tournament Page</a>
+        <a class="btn primary" href="/local" data-link>Play Locally (1v1)</a>
         <a class="btn primary" href="/ai" data-link id="play-ai">Play vs AI</a>
       </div>
     </div>
@@ -43,6 +43,7 @@ export const HomeView = () => {
       <h3>How to play</h3>
       <ul>
         <li>Start a tournament to create matches with other players.</li>
+        <li>Play locally (1v1) on the same keyboard for quick matches.</li>
         <li>Play vs AI to practice against an AI opponent.</li>
         <li>Join active games as a spectator to watch and chat.</li>
         <li>Left paddle: W / S · Right paddle: ↑ / ↓</li>
@@ -50,6 +51,7 @@ export const HomeView = () => {
       </ul>
     </div>
   `;
+
 
   const startTournamentBtn = wrap.querySelector('#start-tournament') as HTMLButtonElement | null;
   if (startTournamentBtn) {
