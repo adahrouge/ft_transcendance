@@ -139,3 +139,39 @@ export const gameAPI = {
   },
 };
 
+// Tournament API
+export const tournamentAPI = {
+  async createTournament(maxPlayers: 4 | 8) {
+    return apiRequest('/api/tournaments', {
+      method: 'POST',
+      body: JSON.stringify({ max_players: maxPlayers }),
+    });
+  },
+  
+  async getActiveTournaments() {
+    return apiRequest('/api/tournaments/active');
+  },
+  
+  async getTournament(tournamentId: number) {
+    return apiRequest(`/api/tournaments/${tournamentId}`);
+  },
+  
+  async joinTournament(tournamentId: number) {
+    return apiRequest(`/api/tournaments/${tournamentId}/join`, {
+      method: 'POST',
+    });
+  },
+  
+  async fillTournamentWithBots(tournamentId: number) {
+    return apiRequest(`/api/tournaments/${tournamentId}/fill-bots`, {
+      method: 'POST',
+    });
+  },
+  
+  async startTournament(tournamentId: number) {
+    return apiRequest(`/api/tournaments/${tournamentId}/start`, {
+      method: 'POST',
+    });
+  },
+};
+

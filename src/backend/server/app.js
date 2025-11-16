@@ -6,6 +6,7 @@ import staticFiles from '@fastify/static';
 import { GameWebSocket } from '../websocket/GameWebSocket.js';
 import { initDatabase } from '../database/db.js';
 import { userRoutes, avatarRoutes } from '../routes/users.js';
+import { tournamentRoutes } from '../routes/tournaments.js';
 import { gameEngine } from '../game/GameEngine.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -32,6 +33,7 @@ await fastify.register(multipart);
 // Register routes
 await fastify.register(userRoutes);
 await fastify.register(avatarRoutes);
+await fastify.register(tournamentRoutes);
 
 // Serve uploaded avatars
 await fastify.register(staticFiles, {

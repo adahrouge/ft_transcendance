@@ -7,7 +7,7 @@ import { navigate } from '../router.js';
 import { escapeHTML } from '../utils.js';
 import { webSocketService } from '../websocket-service.js';
 import { getToken } from '../api.js';
-import { gameAPI } from '../api.js';
+import { gameAPI, tournamentAPI } from '../api.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -18,23 +18,60 @@ const PADDLE_SPEED = 360; // identical for both players
 const BALL_SPEED = 340;
 const SCORE_TO_WIN = 5;
 
-export const GameView = (params: Record<string, string>) => {
+export const GameView = async (params: Record<string, string>) => {
   const matchId = params.id;
-  const s = getState();
-  const m = s.matches.find((m) => m.id === matchId);
   const wrap = document.createElement('div');
+  
+  // Check if this is a tournament match (format: t{tournamentId}-m{matchId})
+  let tournamentMatch: any = null;
+  let tournamentId: number | null = null;
+  let isTournamentMatch = false;
+  
+  if (matchId.startsWith('t') && matchId.includes('-m')) {
+    isTournamentMatch = true;
+    const parts = matchId.match(/^t(\d+)-m(\d+)$/);
+    if (parts) {
+      tournamentId = parseInt(parts[1]);
+      const dbMatchId = parseInt(parts[2]);
+      try {
+        const result = await tournamentAPI.getTournament(tournamentId);
+        const matches = result.tournament.matches || [];
+        tournamentMatch = matches.find((m: any) => m.id === dbMatchId);
+      } catch (err) {
+        console.error('Error loading tournament match:', err);
+      }
+    }
+  }
+  
+  // If tournament match not found, try client-side state
+  const s = getState();
+  const m = tournamentMatch ? null : s.matches.find((m) => m.id === matchId);
 
-  if (!m) {
+  if (!m && !tournamentMatch) {
     wrap.innerHTML = `<div class="card"><p>Match not found.</p><button class="btn" id="back">Back</button></div>`;
     (wrap.querySelector('#back') as HTMLButtonElement).onclick = () => navigate('/tournament');
     return wrap;
   }
+  
+  // Use tournament match data if available
+  const matchData = tournamentMatch ? {
+    id: matchId,
+    p1: tournamentMatch.p1_is_bot ? tournamentMatch.p1_bot_name : (tournamentMatch.p1_display_name || tournamentMatch.p1_username),
+    p2: tournamentMatch.p2_is_bot ? tournamentMatch.p2_bot_name : (tournamentMatch.p2_display_name || tournamentMatch.p2_username),
+    p1Id: tournamentMatch.player1_id,
+    p2Id: tournamentMatch.player2_id,
+    tournamentId: tournamentId,
+    dbMatchId: tournamentMatch.id
+  } : m;
 
   // Pre-game UI: Start Match button
+  const p1Name = matchData.p1 || 'Player 1';
+  const p2Name = matchData.p2 || 'Player 2';
+  
   wrap.innerHTML = `
     <div class="card">
       <div class="row" style="justify-content: space-between; align-items: baseline;">
-        <div><strong>${escapeHTML(aliasOf(m.p1))}</strong> vs <strong>${escapeHTML(aliasOf(m.p2))}</strong></div>
+        <div><strong>${escapeHTML(p1Name)}</strong> vs <strong>${escapeHTML(p2Name)}</strong></div>
         <div class="score" id="score">0 : 0</div>
       </div>
       <div class="row" style="margin-top:8px;">
@@ -185,16 +222,17 @@ export const GameView = (params: Record<string, string>) => {
 
     // Create game on backend (requires authentication)
     setTimeout(() => {
-      if (m) {
-        webSocketService.createGame(
-          aliasOf(m.p1) || 'Player 1',
-          aliasOf(m.p2) || 'Player 2'
-        );
+      if (matchData) {
+        const p1Name = matchData.p1 || 'Player 1';
+        const p2Name = matchData.p2 || 'Player 2';
+        webSocketService.createGame(p1Name, p2Name);
       }
     }, 1000);
 
-    // Mark match as playing on start
-    setMatchStatus(matchId, 'playing');
+    // Mark match as playing on start (only for client-side matches)
+    if (!isTournamentMatch && m) {
+      setMatchStatus(matchId, 'playing');
+    }
   }
 
   async function joinAsSpectator() {
@@ -531,23 +569,61 @@ export const GameView = (params: Record<string, string>) => {
       webSocketService.disconnect();
     }
 
-    function endMatch() {
+    async function endMatch() {
       teardown();
-      setMatchStatus(matchId, 'finished');
-      reportScore(matchId, scoreL, scoreR);
       
       // Determine winner
       let winnerMessage = '';
-      if (m) {
+      let winnerId: number | null = null;
+      
+      if (isTournamentMatch && matchData.tournamentId && matchData.dbMatchId) {
+        // Tournament match - save to database
+        if (scoreL >= SCORE_TO_WIN) {
+          winnerId = matchData.p1Id;
+          winnerMessage = `${matchData.p1} wins!`;
+        } else if (scoreR >= SCORE_TO_WIN) {
+          winnerId = matchData.p2Id;
+          winnerMessage = `${matchData.p2} wins!`;
+        }
+        
+        try {
+          // Update tournament match result
+          const response = await fetch(`/api/tournaments/${matchData.tournamentId}/matches/${matchData.dbMatchId}/result`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              player1_score: scoreL,
+              player2_score: scoreR,
+              winner_id: winnerId
+            })
+          });
+          
+          if (!response.ok) {
+            console.error('Failed to update tournament match result');
+          }
+        } catch (err) {
+          console.error('Error updating tournament match:', err);
+        }
+        
+        alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
+        navigate(`/tournament/${matchData.tournamentId}`);
+      } else if (m) {
+        // Client-side match
+        setMatchStatus(matchId, 'finished');
+        reportScore(matchId, scoreL, scoreR);
+        
         if (scoreL >= SCORE_TO_WIN) {
           winnerMessage = `${aliasOf(m.p1)} wins!`;
         } else if (scoreR >= SCORE_TO_WIN) {
           winnerMessage = `${aliasOf(m.p2)} wins!`;
         }
+        
+        alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
+        navigate('/tournament');
       }
-      
-      alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
-      navigate('/tournament');
     }
 
     // Countdown that respects Pause

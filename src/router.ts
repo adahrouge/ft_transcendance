@@ -11,6 +11,7 @@ export type View = (params: Record<string, string>) => HTMLElement | Promise<HTM
 const routes: { pattern: RegExp; keys: string[]; view: View }[] = [
   route('/', HomeView),
   route('/tournament', TournamentView),
+  route('/tournament/:id', TournamentView),
   route('/game/:id', GameView),
   route('/ai', AIGameView),
   route('/local', (_params) => LocalGameView()), 

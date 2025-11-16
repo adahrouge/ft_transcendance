@@ -1,20 +1,10 @@
 // src/views/Tournament.ts
-import {
-  getState,
-  addPlayer,
-  addPlayersBulk,
-  removePlayer,
-  generateBracket,
-  resetTournament,
-  aliasOf,
-  nextPendingMatch,
-  pendingQueue,
-} from '../state.js';
 import { navigate } from '../router.js';
-import { sanitizeAlias, escapeHTML } from '../utils.js';
+import { escapeHTML } from '../utils.js';
 import { getCurrentUser } from '../user-state.js';
+import { tournamentAPI } from '../api.js';
 
-export const TournamentView = () => {
+export const TournamentView = async (params: Record<string, string>) => {
   const user = getCurrentUser();
   
   // Require authentication
@@ -32,147 +22,513 @@ export const TournamentView = () => {
     return root;
   }
   
-  const s = getState();
   const root = document.createElement('div');
 
-  const playersList = () => `
-    <ul>
-      ${
-        s.players.length
-          ? s.players
-              .map(
-                (p) =>
-                  `<li>${escapeHTML(p.alias)} <button class="btn" data-del="${p.id}">Remove</button></li>`
-              )
-              .join('')
-          : '<li class="muted">No players yet.</li>'
-      }
-    </ul>
-  `;
-
-  const matchesList = () => `
-    <ol>
-      ${
-        s.matches.length
-          ? s.matches
-              .map((m, i) => {
-                const label = `${i + 1}. ${escapeHTML(aliasOf(m.p1))} vs ${escapeHTML(aliasOf(m.p2))} — ${m.status}`;
-                return `<li>${label}</li>`;
-              })
-              .join('')
-          : '<li class="muted">No matches yet.</li>'
-      }
-    </ol>
-  `;
-
-  const next = nextPendingMatch();
-  const queue = pendingQueue();
-
-  const nextBlock = () => `
-    ${
-      next
-        ? `<div class="card">
-             <h3>Now / Next</h3>
-             <p class="matchup"><strong>Next match:</strong> ${escapeHTML(aliasOf(next.p1))} vs ${escapeHTML(aliasOf(next.p2))}</p>
-             <div class="row">
-               <button class="btn primary" id="play-next">Play Next Match</button>
-             </div>
-           </div>`
-        : '<div class="card"><h3>Now / Next</h3><p class="muted">No pending matches.</p></div>'
-    }
-  `;
-
-  const queueBlock = () => `
-    <div class="card">
-      <h3>Matchmaking Order</h3>
-      ${
-        queue.length
-          ? `<ol>${queue
-              .map((m) => `<li>${escapeHTML(aliasOf(m.p1))} vs ${escapeHTML(aliasOf(m.p2))}</li>`)
-              .join('')}</ol>`
-          : '<p class="muted">Empty.</p>'
-      }
-    </div>
-  `;
-
+  // If viewing a specific tournament
+  if (params.id) {
+    return await renderTournamentDetail(root, parseInt(params.id), user);
+  }
+  
+  // Main tournament list view
   root.innerHTML = `
     <div class="card">
-      <h2>Tournament Registration</h2>
-      <p class="muted">Enter unique aliases (1–16 chars, letters/numbers/space/_/-). Aliases reset when you start a new tournament.</p>
-      <div class="row">
-        <input class="input-field" id="alias" placeholder="Enter alias" />
-        <button class="btn primary" id="add">Add Player</button>
-      </div>
-      <div class="row">
-        <textarea class="input-field" id="bulk" placeholder="Bulk add (one alias per line)" rows="4"></textarea>
-        <button class="btn" id="bulk-add">Add All</button>
-      </div>
-      <h3>Registered Players</h3>
-      <div id="players">${playersList()}</div>
-      <div class="row">
-        <button class="btn" id="generate" ${s.players.length < 2 ? 'disabled' : ''}>Generate Tournament</button>
-        <button class="btn" id="reset">New Tournament (Reset)</button>
+      <h2>Tournaments</h2>
+      <p class="muted">Create a new tournament or join an active one.</p>
+      
+      <h3 style="margin-top:24px;">Create Tournament</h3>
+      <div class="row" style="gap:12px; margin-top:12px;">
+        <button class="btn primary" id="create-4">Create 4-Player Tournament</button>
+        <button class="btn primary" id="create-8">Create 8-Player Tournament</button>
       </div>
     </div>
 
-    ${nextBlock()}
-    ${queueBlock()}
-
-    <div class="card">
-      <h3>All Matches</h3>
-      <div id="matches">${matchesList()}</div>
+    <div class="card" style="margin-top:16px;">
+      <h3>Active Tournaments</h3>
+      <div id="tournaments-list" style="margin-top:12px;">
+        <p class="muted">Loading tournaments...</p>
+      </div>
     </div>
   `;
 
-  (root.querySelector('#add') as HTMLButtonElement).onclick = () => {
-    const input = root.querySelector('#alias') as HTMLInputElement;
+  // Create tournament handlers
+  (root.querySelector('#create-4') as HTMLButtonElement).onclick = async () => {
     try {
-      const alias = sanitizeAlias(input.value);
-      addPlayer(alias);
-      navigate('/tournament');
-    } catch (e: any) {
-      alert(e?.message || 'Invalid alias');
+      const result = await tournamentAPI.createTournament(4);
+      navigate(`/tournament/${result.tournament.id}`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create tournament');
     }
   };
-
-  (root.querySelector('#bulk-add') as HTMLButtonElement).onclick = () => {
-    const ta = root.querySelector('#bulk') as HTMLTextAreaElement;
-    const raw = ta.value || '';
-    const lines = raw.split('\n').map((l) => l.trim()).filter(Boolean);
+  
+  (root.querySelector('#create-8') as HTMLButtonElement).onclick = async () => {
     try {
-      const sanitized = lines.map(sanitizeAlias);
-      addPlayersBulk(sanitized);
-      navigate('/tournament');
-    } catch (e: any) {
-      alert(e?.message || 'Failed to add players');
+      const result = await tournamentAPI.createTournament(8);
+      navigate(`/tournament/${result.tournament.id}`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to create tournament');
     }
   };
-
-  (root.querySelector('#generate') as HTMLButtonElement).onclick = () => {
-    if (s.players.length < 2) { alert('Need at least 2 unique players.'); return; }
-    generateBracket();
-    navigate('/tournament');
-  };
-
-  (root.querySelector('#reset') as HTMLButtonElement).onclick = () => {
-    if (confirm('Start a new tournament? All aliases and matches will be cleared.')) {
-      resetTournament();
-      navigate('/tournament');
+  
+  // Load active tournaments
+  loadActiveTournaments(root);
+  
+  // Auto-refresh tournaments list every 3 seconds
+  const refreshInterval = setInterval(() => {
+    if (document.contains(root)) {
+      loadActiveTournaments(root);
+    } else {
+      clearInterval(refreshInterval);
     }
-  };
+  }, 3000);
+  
+  return root;
+}
 
-  const playBtn = root.querySelector('#play-next') as HTMLButtonElement | null;
-  if (playBtn && next) {
-    playBtn.onclick = () => { navigate(`/game/${next.id}`); };
+function setupTournamentChat(root: HTMLElement, tournamentId: number) {
+  const chatInput = root.querySelector('#chat-input') as HTMLInputElement | null;
+  const chatSend = root.querySelector('#chat-send') as HTMLButtonElement | null;
+  const chatMessages = root.querySelector('#chat-messages') as HTMLElement | null;
+  
+  if (!chatInput || !chatSend || !chatMessages) return;
+  
+  const user = getCurrentUser();
+  const messages: Array<{username: string, message: string, timestamp: Date}> = [];
+  
+  function renderMessages() {
+    if (messages.length === 0) {
+      chatMessages.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>';
+      return;
+    }
+    
+    chatMessages.innerHTML = messages.map(msg => {
+      const time = new Date(msg.timestamp).toLocaleTimeString();
+      return `
+        <div style="margin-bottom:8px; padding:6px; background:#222; border-radius:4px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <strong style="color:#5e81f4; font-size:12px;">${escapeHTML(msg.username)}</strong>
+            <span style="color:#666; font-size:11px;">${time}</span>
+          </div>
+          <div style="color:#ddd; font-size:13px; word-wrap:break-word;">${escapeHTML(msg.message)}</div>
+        </div>
+      `;
+    }).join('');
+    
+    chatMessages.scrollTop = chatMessages.scrollHeight;
   }
+  
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text || !user) return;
+    
+    messages.push({
+      username: user.display_name || user.username,
+      message: text,
+      timestamp: new Date()
+    });
+    
+    chatInput.value = '';
+    renderMessages();
+  }
+  
+  chatSend.onclick = sendMessage;
+  chatInput.onkeypress = (e) => {
+    if (e.key === 'Enter') {
+      sendMessage();
+    }
+  };
+  
+  renderMessages();
+}
 
-  root.querySelectorAll('[data-del]').forEach((btn) => {
-    (btn as HTMLButtonElement).onclick = () => {
-      const id = (btn as HTMLElement).getAttribute('data-del')!;
-      removePlayer(id);
-      navigate('/tournament');
-    };
-  });
+async function loadActiveTournaments(root: HTMLElement) {
+  const listEl = root.querySelector('#tournaments-list');
+  if (!listEl) return;
+  
+  try {
+    const result = await tournamentAPI.getActiveTournaments();
+    const tournaments = result.tournaments || [];
+    
+    if (tournaments.length === 0) {
+      listEl.innerHTML = '<p class="muted">No active tournaments. Create one to get started!</p>';
+      return;
+    }
+    
+    listEl.innerHTML = tournaments.map((t: any) => `
+      <div style="padding:12px; border:1px solid #444; border-radius:8px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <strong>${escapeHTML(t.creator_display_name || t.creator_username)}'s Tournament</strong>
+          <div style="font-size:14px; color:#aaa; margin-top:4px;">
+            ${t.max_players} players • ${t.current_players || 0}/${t.max_players} joined
+          </div>
+        </div>
+        <a href="/tournament/${t.id}" data-link class="btn primary">View / Join</a>
+      </div>
+    `).join('');
+  } catch (err: any) {
+    listEl.innerHTML = `<p class="muted" style="color:#f44;">Error loading tournaments: ${err.message}</p>`;
+  }
+}
+
+async function renderTournamentDetail(root: HTMLElement, tournamentId: number, user: any) {
+  try {
+    const result = await tournamentAPI.getTournament(tournamentId);
+    const tournament = result.tournament;
+    
+    if (!tournament) {
+      root.innerHTML = `
+        <div class="card">
+          <h2>Tournament Not Found</h2>
+          <a href="/tournament" data-link class="btn">Back to Tournaments</a>
+        </div>
+      `;
+      return root;
+    }
+    
+    const isCreator = tournament.creator_id === user.id;
+    const players = tournament.players || [];
+    const isJoined = players.some((p: any) => p.user_id === user.id);
+    const isFull = players.length >= tournament.max_players;
+    const canStart = isCreator && isFull && tournament.status === 'waiting';
+    
+    // Render based on tournament status
+    if (tournament.status === 'active') {
+      return await renderActiveTournament(root, tournament, user);
+    }
+    
+    // Waiting room view with bracket style
+    root.innerHTML = `
+      <div style="display:flex; gap:20px; align-items:flex-start;">
+        <div style="flex:1; min-width:0;">
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h2>Tournament Lobby</h2>
+                <p class="muted">${tournament.max_players}-Player Tournament</p>
+              </div>
+              <a href="/tournament" data-link class="btn">Back</a>
+            </div>
+          </div>
+          
+          <div class="card" style="margin-top:16px;">
+            <h3 style="margin-bottom:16px;">Tournament Bracket</h3>
+            <div id="bracket-container" style="overflow-x:auto;">
+              ${renderBracketView(players, tournament.max_players)}
+            </div>
+            
+            ${!isJoined && !isFull ? `
+              <div style="margin-top:20px; text-align:center;">
+                <button class="btn primary" id="join-tournament">Join Tournament</button>
+              </div>
+            ` : ''}
+            
+            ${isCreator && !isFull ? `
+              <div style="margin-top:20px; padding-top:20px; border-top:2px solid #444; text-align:center;">
+                <p class="muted" style="margin-bottom:12px;">Waiting for users to join...</p>
+                <button class="btn outline" id="fill-bots">Fill Tournament with bots instead</button>
+              </div>
+            ` : ''}
+            
+            ${canStart ? `
+              <div style="margin-top:20px; padding-top:20px; border-top:2px solid #444; text-align:center;">
+                <button class="btn primary" id="start-tournament" style="font-size:16px; padding:12px 24px;">Start Tournament</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        
+        <div style="width:350px; flex-shrink:0;">
+          <div class="card">
+            <h3 style="margin-bottom:12px;">Live Chat</h3>
+            <div id="chat-messages" style="min-height:300px; max-height:500px; overflow-y:auto; padding:12px; background:#1a1a1a; border-radius:8px; margin-top:12px; margin-bottom:12px;">
+              <div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding:8px; background:#333; border:none; border-radius:6px; color:#fff; font-size:14px;" />
+              <button class="btn primary" id="chat-send" style="padding:8px 16px;">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Join tournament handler
+    const joinBtn = root.querySelector('#join-tournament') as HTMLButtonElement | null;
+    if (joinBtn) {
+      joinBtn.onclick = async () => {
+        try {
+          await tournamentAPI.joinTournament(tournamentId);
+          navigate(`/tournament/${tournamentId}`);
+        } catch (err: any) {
+          alert(err.message || 'Failed to join tournament');
+        }
+      };
+    }
+    
+    // Fill with bots handler
+    const fillBotsBtn = root.querySelector('#fill-bots') as HTMLButtonElement | null;
+    if (fillBotsBtn) {
+      fillBotsBtn.onclick = async () => {
+        if (!confirm('Fill remaining slots with AI bots? This will immediately fill all empty positions.')) {
+          return;
+        }
+        try {
+          await tournamentAPI.fillTournamentWithBots(tournamentId);
+          navigate(`/tournament/${tournamentId}`);
+        } catch (err: any) {
+          alert(err.message || 'Failed to fill with bots');
+        }
+      };
+    }
+    
+    // Start tournament handler
+    const startBtn = root.querySelector('#start-tournament') as HTMLButtonElement | null;
+    if (startBtn) {
+      startBtn.onclick = async () => {
+        if (!confirm('Start the tournament? This will generate the bracket and begin matches.')) {
+          return;
+        }
+        try {
+          await tournamentAPI.startTournament(tournamentId);
+          navigate(`/tournament/${tournamentId}`);
+        } catch (err: any) {
+          alert(err.message || 'Failed to start tournament');
+        }
+      };
+    }
+    
+    // Setup chat functionality (always available)
+    setupTournamentChat(root, tournamentId);
+    
+    // Auto-refresh tournament state every 2 seconds
+    const refreshInterval = setInterval(async () => {
+      if (document.contains(root)) {
+        try {
+          const result = await tournamentAPI.getTournament(tournamentId);
+          const updatedTournament = result.tournament;
+          if (updatedTournament.status === 'active') {
+            clearInterval(refreshInterval);
+            navigate(`/tournament/${tournamentId}`);
+          } else {
+            const bracketContainer = root.querySelector('#bracket-container');
+            if (bracketContainer) {
+              bracketContainer.innerHTML = renderBracketView(updatedTournament.players || [], updatedTournament.max_players);
+            }
+          }
+        } catch (err) {
+          console.error('Error refreshing tournament:', err);
+        }
+      } else {
+        clearInterval(refreshInterval);
+      }
+    }, 2000);
+    
+    return root;
+  } catch (err: any) {
+    root.innerHTML = `
+      <div class="card">
+        <h2>Error</h2>
+        <p class="muted">${escapeHTML(err.message || 'Failed to load tournament')}</p>
+        <a href="/tournament" data-link class="btn" style="margin-top:16px;">Back to Tournaments</a>
+      </div>
+    `;
+    return root;
+  }
+}
+
+function renderPlayersList(players: any[], maxPlayers: number): string {
+  const slots: string[] = [];
+  
+  for (let i = 0; i < maxPlayers; i++) {
+    const player = players.find((p: any) => p.bracket_position === i);
+    if (player) {
+      const name = player.is_bot 
+        ? escapeHTML(player.bot_name || 'AI Bot')
+        : escapeHTML(player.display_name || player.username || 'Unknown');
+      const badge = player.is_bot ? '<span style="font-size:11px; background:#555; padding:2px 6px; border-radius:4px; margin-left:8px;">BOT</span>' : '';
+      slots.push(`<div style="padding:8px; background:#2a2a2a; border-radius:6px; margin-bottom:6px;">${name}${badge}</div>`);
+    } else {
+      slots.push(`<div style="padding:8px; background:#1a1a1a; border-radius:6px; margin-bottom:6px; color:#666; border:1px dashed #444;">Empty Slot</div>`);
+    }
+  }
+  
+  return slots.join('');
+}
+
+function renderBracketView(players: any[], maxPlayers: number): string {
+  // Create a FIFA World Cup style bracket
+  const rounds = maxPlayers === 4 ? 2 : 3; // 4 players = 2 rounds, 8 players = 3 rounds
+  const firstRoundMatches = maxPlayers / 2;
+  
+  let html = '<div style="display:flex; gap:40px; justify-content:center; padding:20px; background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius:12px; min-height:400px;">';
+  
+  // First Round (Quarterfinals for 8 players, Semifinals for 4 players)
+  html += '<div style="display:flex; flex-direction:column; gap:20px; justify-content:space-around;">';
+  for (let i = 0; i < firstRoundMatches; i++) {
+    const pos1 = i * 2;
+    const pos2 = i * 2 + 1;
+    const player1 = players.find((p: any) => p.bracket_position === pos1);
+    const player2 = players.find((p: any) => p.bracket_position === pos2);
+    
+    html += renderMatchSlot(player1, player2, i + 1);
+  }
+  html += '</div>';
+  
+  // Semi-finals (only for 8 players)
+  if (maxPlayers === 8) {
+    html += '<div style="display:flex; flex-direction:column; gap:80px; justify-content:center; align-items:center;">';
+    html += '<div style="width:2px; height:60px; background:#4a5568;"></div>';
+    html += renderMatchSlot(null, null, 0, true);
+    html += '<div style="width:2px; height:60px; background:#4a5568;"></div>';
+    html += renderMatchSlot(null, null, 0, true);
+    html += '<div style="width:2px; height:60px; background:#4a5568;"></div>';
+    html += '</div>';
+  }
+  
+  // Final
+  html += '<div style="display:flex; flex-direction:column; justify-content:center; align-items:center;">';
+  if (maxPlayers === 8) {
+    html += '<div style="width:2px; height:120px; background:#4a5568;"></div>';
+  }
+  html += renderMatchSlot(null, null, 0, false, true);
+  html += '</div>';
+  
+  html += '</div>';
+  return html;
+}
+
+function renderMatchSlot(player1: any, player2: any, matchNum: number, isSemi: boolean = false, isFinal: boolean = false): string {
+  const matchLabel = isFinal ? 'FINAL' : isSemi ? 'SEMI-FINAL' : `Match ${matchNum}`;
+  const slotStyle = isFinal 
+    ? 'background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border:3px solid #d97706; box-shadow:0 4px 20px rgba(251, 191, 36, 0.3);'
+    : 'background:#2d3748; border:2px solid #4a5568;';
+  
+  const player1Name = player1 
+    ? (player1.is_bot ? escapeHTML(player1.bot_name || 'AI Bot') : escapeHTML(player1.display_name || player1.username || 'Unknown'))
+    : 'TBD';
+  const player2Name = player2 
+    ? (player2.is_bot ? escapeHTML(player2.bot_name || 'AI Bot') : escapeHTML(player2.display_name || player2.username || 'Unknown'))
+    : 'TBD';
+  
+  const player1Style = player1 ? 'color:#fff; font-weight:600;' : 'color:#888; font-style:italic;';
+  const player2Style = player2 ? 'color:#fff; font-weight:600;' : 'color:#888; font-style:italic;';
+  const player1Badge = player1 && player1.is_bot ? '<span style="font-size:10px; background:#555; padding:2px 5px; border-radius:3px; margin-left:6px;">BOT</span>' : '';
+  const player2Badge = player2 && player2.is_bot ? '<span style="font-size:10px; background:#555; padding:2px 5px; border-radius:3px; margin-left:6px;">BOT</span>' : '';
+  
+  return `
+    <div style="${slotStyle} border-radius:8px; padding:16px; min-width:220px; position:relative;">
+      <div style="font-size:11px; color:#a0aec0; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; text-align:center; font-weight:600;">${matchLabel}</div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:${player1 ? '#1a202c' : '#0f1419'}; border-radius:6px;">
+          <span style="${player1Style}">${player1Name}${player1Badge}</span>
+          <span style="color:#4a5568; font-size:12px;">VS</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px; background:${player2 ? '#1a202c' : '#0f1419'}; border-radius:6px;">
+          <span style="${player2Style}">${player2Name}${player2Badge}</span>
+          <span style="color:#4a5568; font-size:12px;">VS</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function renderActiveTournament(root: HTMLElement, tournament: any, user: any) {
+  const matches = tournament.matches || [];
+  const players = tournament.players || [];
+  
+  root.innerHTML = `
+    <div style="display:flex; gap:20px; align-items:flex-start;">
+      <div style="flex:1; min-width:0;">
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2>Tournament in Progress</h2>
+              <p class="muted">${tournament.max_players}-Player Tournament</p>
+            </div>
+            <a href="/tournament" data-link class="btn">Back</a>
+          </div>
+        </div>
+        
+        <div class="card" style="margin-top:16px;">
+          <h3>Matches</h3>
+          <div id="matches-list" style="margin-top:12px;">
+            ${matches.length === 0 ? '<p class="muted">No matches yet.</p>' : ''}
+            ${matches.map((m: any) => {
+              const p1Name = m.p1_is_bot ? m.p1_bot_name : (m.p1_display_name || m.p1_username || 'Unknown');
+              const p2Name = m.p2_is_bot ? m.p2_bot_name : (m.p2_display_name || m.p2_username || 'Unknown');
+              const status = m.status === 'finished' ? 'Finished' : m.status === 'playing' ? 'Playing' : 'Pending';
+              return `
+                <div style="padding:12px; border:1px solid #444; border-radius:8px; margin-bottom:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                      <strong>${escapeHTML(p1Name)}</strong> vs <strong>${escapeHTML(p2Name)}</strong>
+                      ${m.status === 'finished' ? ` - ${m.player1_score} : ${m.player2_score}` : ''}
+                    </div>
+                    <div>
+                      <span style="font-size:12px; color:#aaa;">${status}</span>
+                      ${m.status === 'pending' ? `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>` : ''}
+                    </div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+      
+      <div style="width:350px; flex-shrink:0;">
+        <div class="card">
+          <h3 style="margin-bottom:12px;">Live Chat</h3>
+          <div id="chat-messages" style="min-height:300px; max-height:500px; overflow-y:auto; padding:12px; background:#1a1a1a; border-radius:8px; margin-top:12px; margin-bottom:12px;">
+            <div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding:8px; background:#333; border:none; border-radius:6px; color:#fff; font-size:14px;" />
+            <button class="btn primary" id="chat-send" style="padding:8px 16px;">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Setup chat functionality (always available)
+  setupTournamentChat(root, tournament.id);
+  
+  // Auto-refresh matches every 3 seconds
+  const refreshInterval = setInterval(async () => {
+    if (document.contains(root)) {
+      try {
+        const result = await tournamentAPI.getTournament(tournament.id);
+        const updatedTournament = result.tournament;
+        const matchesListEl = root.querySelector('#matches-list');
+        if (matchesListEl) {
+          const updatedMatches = updatedTournament.matches || [];
+          matchesListEl.innerHTML = updatedMatches.length === 0 ? '<p class="muted">No matches yet.</p>' : updatedMatches.map((m: any) => {
+            const p1Name = m.p1_is_bot ? m.p1_bot_name : (m.p1_display_name || m.p1_username || 'Unknown');
+            const p2Name = m.p2_is_bot ? m.p2_bot_name : (m.p2_display_name || m.p2_username || 'Unknown');
+            const status = m.status === 'finished' ? 'Finished' : m.status === 'playing' ? 'Playing' : 'Pending';
+            return `
+              <div style="padding:12px; border:1px solid #444; border-radius:8px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <strong>${escapeHTML(p1Name)}</strong> vs <strong>${escapeHTML(p2Name)}</strong>
+                    ${m.status === 'finished' ? ` - ${m.player1_score} : ${m.player2_score}` : ''}
+                  </div>
+                  <div>
+                    <span style="font-size:12px; color:#aaa;">${status}</span>
+                    ${m.status === 'pending' ? `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>` : ''}
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error refreshing tournament:', err);
+      }
+    } else {
+      clearInterval(refreshInterval);
+    }
+  }, 3000);
 
   return root;
-};
+}
