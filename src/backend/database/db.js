@@ -191,6 +191,17 @@ export async function getAllUsers() {
   return await dbAll('SELECT id, username, email, display_name, avatar_url FROM users');
 }
 
+export async function searchUsers(query) {
+  const searchTerm = `%${query}%`;
+  return await dbAll(
+    `SELECT id, username, email, display_name, avatar_url 
+     FROM users 
+     WHERE username LIKE ? OR display_name LIKE ?
+     LIMIT 20`,
+    [searchTerm, searchTerm]
+  );
+}
+
 // Match history operations
 export async function addMatchHistory(userId, opponentId, userScore, opponentScore, result) {
   await dbRun(
@@ -354,12 +365,22 @@ export async function joinTournament(tournamentId, userId) {
 
 export async function fillTournamentWithBots(tournamentId) {
   const tournament = await getTournamentById(tournamentId);
-  if (!tournament || tournament.status !== 'waiting') {
-    throw new Error('Tournament not found or not accepting players');
+  if (!tournament) {
+    throw new Error('Tournament not found');
+  }
+  
+  if (tournament.status !== 'waiting') {
+    throw new Error('Tournament is not accepting players');
   }
   
   const players = await getTournamentPlayers(tournamentId);
   const occupied = new Set(players.map(p => p.bracket_position));
+  
+  // Check if tournament is already full
+  if (occupied.size >= tournament.max_players) {
+    throw new Error('Tournament is already full');
+  }
+  
   const botNames = ['AI Bot Alpha', 'AI Bot Beta', 'AI Bot Gamma', 'AI Bot Delta', 
                      'AI Bot Echo', 'AI Bot Foxtrot', 'AI Bot Golf', 'AI Bot Hotel'];
   let botIndex = 0;
@@ -371,6 +392,11 @@ export async function fillTournamentWithBots(tournamentId) {
       botInserts.push({ position: i, name: botNames[botIndex % botNames.length] });
       botIndex++;
     }
+  }
+  
+  // Check if there are any slots to fill
+  if (botInserts.length === 0) {
+    throw new Error('No empty slots to fill');
   }
   
   // Insert all bots
@@ -458,6 +484,35 @@ export async function updateTournamentMatch(matchId, player1Score, player2Score,
      WHERE id = ?`,
     [player1Score, player2Score, winnerId, matchId]
   );
+}
+
+export async function deleteTournament(tournamentId) {
+  // Delete in order: matches, players, then tournament (due to foreign keys)
+  await dbRun(`DELETE FROM tournament_matches WHERE tournament_id = ?`, [tournamentId]);
+  await dbRun(`DELETE FROM tournament_players WHERE tournament_id = ?`, [tournamentId]);
+  await dbRun(`DELETE FROM tournaments WHERE id = ?`, [tournamentId]);
+}
+
+export async function cleanupEmptyTournaments() {
+  // Delete tournaments that have been waiting for more than 5 minutes with only the creator
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  
+  const emptyTournaments = await dbAll(
+    `SELECT t.id, COUNT(tp.id) as player_count
+     FROM tournaments t
+     LEFT JOIN tournament_players tp ON t.id = tp.tournament_id
+     WHERE t.status = 'waiting' 
+       AND t.created_at < ?
+     GROUP BY t.id
+     HAVING player_count <= 1`,
+    [fiveMinutesAgo]
+  );
+  
+  for (const tournament of emptyTournaments) {
+    await deleteTournament(tournament.id);
+  }
+  
+  return emptyTournaments.length;
 }
 
 // Close database connection (for graceful shutdown)

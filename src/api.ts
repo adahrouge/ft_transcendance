@@ -173,5 +173,11 @@ export const tournamentAPI = {
       method: 'POST',
     });
   },
+  
+  async deleteTournament(tournamentId: number) {
+    return apiRequest(`/api/tournaments/${tournamentId}`, {
+      method: 'DELETE',
+    });
+  },
 };
 

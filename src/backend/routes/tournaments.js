@@ -9,6 +9,8 @@ import {
   generateTournamentBracket,
   getTournamentMatches,
   updateTournamentMatch,
+  deleteTournament,
+  cleanupEmptyTournaments,
   getUserById
 } from '../database/db.js';
 
@@ -203,6 +205,36 @@ export async function tournamentRoutes(fastify) {
     
     try {
       await updateTournamentMatch(parseInt(matchId), player1_score, player2_score, winner_id);
+      return { success: true };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+  
+  // Delete tournament (creator only)
+  fastify.delete('/api/tournaments/:id', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Authentication required' });
+    }
+    
+    const { id } = request.params;
+    try {
+      const tournament = await getTournamentById(id);
+      if (!tournament) {
+        return reply.code(404).send({ error: 'Tournament not found' });
+      }
+      
+      if (tournament.creator_id !== user.id) {
+        return reply.code(403).send({ error: 'Only the tournament creator can delete the tournament' });
+      }
+      
+      // Only allow deletion if tournament hasn't started
+      if (tournament.status === 'active') {
+        return reply.code(400).send({ error: 'Cannot delete an active tournament' });
+      }
+      
+      await deleteTournament(parseInt(id));
       return { success: true };
     } catch (err) {
       return reply.code(500).send({ error: err.message });

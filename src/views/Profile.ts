@@ -1,4 +1,5 @@
 // src/views/Profile.ts
+import { navigate } from '../router.js';
 import { authAPI, userAPI } from '../api.js';
 import { escapeHTML } from '../utils.js';
 import { setCurrentUser, getUserAvatar } from '../user-state.js';
@@ -220,8 +221,8 @@ function setupAuthForms(wrap: HTMLElement) {
     try {
       const data = await authAPI.login(username, password);
       setCurrentUser(data.user);
-      // Reload to show updated navbar
-      window.location.reload();
+      // Navigate to homepage after login
+      navigate('/');
     } catch (err: any) {
       loginError.textContent = err.message || 'Login failed';
       loginError.style.display = 'block';
@@ -240,8 +241,8 @@ function setupAuthForms(wrap: HTMLElement) {
     try {
       const data = await authAPI.register(username, email, password, displayName || undefined);
       setCurrentUser(data.user);
-      // Reload to show updated navbar
-      window.location.reload();
+      // Navigate to homepage after registration
+      navigate('/');
     } catch (err: any) {
       registerError.textContent = err.message || 'Registration failed';
       registerError.style.display = 'block';

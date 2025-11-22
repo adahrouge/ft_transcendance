@@ -4,7 +4,7 @@ import { TournamentView } from './views/Tournament';
 import { GameView } from './views/Game';
 import { AIGameView } from './views/AI';
 import { ProfileView } from './views/Profile';
-import { LocalGameView } from './views/Local';
+import { FriendGameView } from './views/Friend';
 
 export type View = (params: Record<string, string>) => HTMLElement | Promise<HTMLElement>;
 
@@ -14,7 +14,7 @@ const routes: { pattern: RegExp; keys: string[]; view: View }[] = [
   route('/tournament/:id', TournamentView),
   route('/game/:id', GameView),
   route('/ai', AIGameView),
-  route('/local', (_params) => LocalGameView()), 
+  route('/friend', FriendGameView),
   route('/profile', ProfileView),
 ];
 

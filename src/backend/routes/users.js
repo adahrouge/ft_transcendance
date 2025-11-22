@@ -11,7 +11,8 @@ import {
   updateUser,
   getMatchHistory,
   getFriends,
-  addFriend
+  addFriend,
+  searchUsers
 } from '../database/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -44,10 +45,16 @@ export async function userRoutes(fastify) {
       return reply.code(400).send({ error: 'Username, email, and password are required' });
     }
     
-    // Check if user already exists
-    const existingUser = await getUserByUsername(username) || await getUserByEmail(email);
-    if (existingUser) {
-      return reply.code(409).send({ error: 'User already exists' });
+    // Check if username already exists
+    const existingUsername = await getUserByUsername(username);
+    if (existingUsername) {
+      return reply.code(409).send({ error: 'Username already taken' });
+    }
+    
+    // Check if email already exists
+    const existingEmail = await getUserByEmail(email);
+    if (existingEmail) {
+      return reply.code(409).send({ error: 'Email already in use' });
     }
     
     // Hash password
@@ -177,14 +184,45 @@ export async function userRoutes(fastify) {
 
   // Search users
   fastify.get('/api/users/search', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+    
     const { q } = request.query;
     if (!q || q.length < 2) {
       return { users: [] };
     }
     
-    // This would need a search implementation in db.js
-    // For now, return empty array
-    return { users: [] };
+    const users = await searchUsers(q);
+    return { users };
+  });
+
+  // Add friend
+  fastify.post('/api/users/me/friends', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+    
+    const { friend_id } = request.body;
+    if (!friend_id) {
+      return reply.code(400).send({ error: 'friend_id is required' });
+    }
+    
+    if (friend_id === user.id) {
+      return reply.code(400).send({ error: 'Cannot add yourself as a friend' });
+    }
+    
+    try {
+      const success = await addFriend(user.id, friend_id);
+      if (!success) {
+        return reply.code(409).send({ error: 'Already friends with this user' });
+      }
+      return { success: true };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message || 'Failed to add friend' });
+    }
   });
 
   // Upload avatar

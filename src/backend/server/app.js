@@ -4,7 +4,7 @@ import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import staticFiles from '@fastify/static';
 import { GameWebSocket } from '../websocket/GameWebSocket.js';
-import { initDatabase } from '../database/db.js';
+import { initDatabase, cleanupEmptyTournaments } from '../database/db.js';
 import { userRoutes, avatarRoutes } from '../routes/users.js';
 import { tournamentRoutes } from '../routes/tournaments.js';
 import { gameEngine } from '../game/GameEngine.js';
@@ -66,6 +66,18 @@ fastify.get('/api/games/:gameId', async (request, reply) => {
   }
   return game;
 });
+
+// Auto-cleanup empty tournaments every minute
+setInterval(async () => {
+  try {
+    const deletedCount = await cleanupEmptyTournaments();
+    if (deletedCount > 0) {
+      fastify.log.info(`Cleaned up ${deletedCount} empty tournament(s)`);
+    }
+  } catch (err) {
+    fastify.log.error('Error cleaning up tournaments:', err);
+  }
+}, 60000); // Run every 60 seconds
 
 // Start server
 const start = async () => {
