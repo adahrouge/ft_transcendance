@@ -114,11 +114,12 @@ export class WebSocketService {
   }
 
   // Game actions
-  createGame(player1Name: string, player2Name: string) {
+  createGame(player1Name: string, player2Name: string, player2Id?: string) {
     this.send({
       type: 'CREATE_GAME',
       player1Name,
-      player2Name
+      player2Name,
+      player2Id
     });
   }
 
@@ -129,10 +130,11 @@ export class WebSocketService {
     });
   }
 
-  movePaddle(position: number) {
+  movePaddle(position: number, forBot?: 'player1' | 'player2') {
     this.send({
       type: 'MOVE_PADDLE',
-      position
+      position,
+      ...(forBot && { forBot })
     });
   }
 

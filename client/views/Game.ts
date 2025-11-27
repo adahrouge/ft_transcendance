@@ -8,6 +8,8 @@ import { escapeHTML } from '../utils.js';
 import { webSocketService } from '../websocket-service.js';
 import { getToken } from '../api.js';
 import { gameAPI, tournamentAPI } from '../api.js';
+import { StrongPaddleAI, type AIConfig, type BallState } from '../ai.js';
+import { getCurrentUser } from '../user-state.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -60,9 +62,22 @@ export const GameView = async (params: Record<string, string>) => {
     p2: tournamentMatch.p2_is_bot ? tournamentMatch.p2_bot_name : (tournamentMatch.p2_display_name || tournamentMatch.p2_username),
     p1Id: tournamentMatch.player1_id,
     p2Id: tournamentMatch.player2_id,
+    p1IsBot: tournamentMatch.p1_is_bot || false,
+    p2IsBot: tournamentMatch.p2_is_bot || false,
+    p1UserId: tournamentMatch.p1_user_id,
+    p2UserId: tournamentMatch.p2_user_id,
     tournamentId: tournamentId,
     dbMatchId: tournamentMatch.id
   } : m;
+  
+  // Check if either player is a bot (for AI control)
+  const isP1Bot = tournamentMatch ? (tournamentMatch.p1_is_bot || false) : false;
+  const isP2Bot = tournamentMatch ? (tournamentMatch.p2_is_bot || false) : false;
+  const currentUser = getCurrentUser();
+  const isUserP1 = currentUser && tournamentMatch && !isP1Bot && 
+    (tournamentMatch.p1_user_id === currentUser.id);
+  const isUserP2 = currentUser && tournamentMatch && !isP2Bot && 
+    (tournamentMatch.p2_user_id === currentUser.id);
 
   // Pre-game UI: Start Match button
   const p1Name = matchData.p1 || 'Player 1';
@@ -107,6 +122,7 @@ export const GameView = async (params: Record<string, string>) => {
   let isSpectator = false;
   let currentGameId: string | null = null;
   const chatMessages: any[] = [];
+  let updateGameStateRef: ((gameState: any) => void) | null = null;
 
   const token = getToken();
   
@@ -225,7 +241,9 @@ export const GameView = async (params: Record<string, string>) => {
       if (matchData) {
         const p1Name = matchData.p1 || 'Player 1';
         const p2Name = matchData.p2 || 'Player 2';
-        webSocketService.createGame(p1Name, p2Name);
+        // Include bot information if this is a tournament match with bots
+        const p2Id = isTournamentMatch && isP2Bot ? 'bot_' + matchData.p2Id : undefined;
+        webSocketService.createGame(p1Name, p2Name, p2Id);
       }
     }, 1000);
 
@@ -262,6 +280,8 @@ export const GameView = async (params: Record<string, string>) => {
     }
   }
 
+  // Store updateGameFromBackend function reference for WebSocket updates
+
   function setupWebSocketListeners() {
     webSocketService.onGameStateUpdate((gameState) => {
       if (!gameState) return;
@@ -278,7 +298,11 @@ export const GameView = async (params: Record<string, string>) => {
           startSpectatorView(); // Start spectator view
         }
       }
-      // Game state updates are handled within startLocalGame/startSpectatorView
+      
+      // Update game state for rendering and AI calculations
+      if (gameState.id === currentGameId && updateGameStateRef) {
+        updateGameStateRef(gameState);
+      }
     });
 
     webSocketService.onChatMessage((message) => {
@@ -405,6 +429,57 @@ export const GameView = async (params: Record<string, string>) => {
     let paused = false;
     let raf = 0;
     let gameStarted = false;
+    
+    // AI for bot players
+    let aiP1: StrongPaddleAI | null = null;
+    let aiP2: StrongPaddleAI | null = null;
+    const VISION_MS = 1000;
+    let nextVisionTs = 0;
+    let sampledBall: BallState = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
+    
+    // Initialize AI if bots are present
+    if (isTournamentMatch) {
+      const aiConfig: AIConfig = {
+        tableW: WIDTH,
+        tableH: HEIGHT,
+        paddleH: PADDLE_H,
+        paddleX: 10, // left paddle x position
+        ballR: BALL_R,
+        baseBallSpeed: BALL_SPEED,
+        maxSpeed: 420,
+        maxAccel: 2200,
+        reactionMs: 180,
+        aimJitter: 18,
+        steadyJitter: 1.25,
+        overshootBias: 0.15,
+        minReactionMs: 120,
+        maxReactionMs: 260,
+        minJitter: 6,
+        maxJitter: 22,
+        focusCycleMs: 2600,
+        defocusFrac: 0.25,
+        defocusMultiplier: 1.35,
+      };
+      
+      if (isP1Bot) {
+        aiP1 = new StrongPaddleAI(aiConfig);
+      }
+      
+      if (isP2Bot) {
+        // For right paddle, adjust paddleX
+        aiP2 = new StrongPaddleAI({
+          ...aiConfig,
+          paddleX: WIDTH - (PADDLE_W + 10), // right paddle x position
+        });
+      }
+    }
+    
+    function updateAIVision(nowMs: number) {
+      if (nowMs >= nextVisionTs) {
+        sampledBall = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
+        nextVisionTs = nowMs + VISION_MS;
+      }
+    }
 
     // Countdown overlay
     const overlay = document.createElement('div');
@@ -449,13 +524,34 @@ export const GameView = async (params: Record<string, string>) => {
 
       // Update player role display
       const playerRoleEl = wrap.querySelector('#player-role') as HTMLElement;
-      const role = webSocketService.getUserRole();
-      if (role === 'player1' && m) {
-        playerRoleEl.textContent = `${aliasOf(m.p1)} (Left Paddle - W/S Keys)`;
-        currentPlayerId = 'player1';
-      } else if (role === 'player2' && m) {
-        playerRoleEl.textContent = `${aliasOf(m.p2)} (Right Paddle - Arrow Keys)`;
-        currentPlayerId = 'player2';
+      if (isTournamentMatch) {
+        if (isUserP1) {
+          playerRoleEl.textContent = `${escapeHTML(p1Name)} (Left Paddle - W/S Keys)`;
+          currentPlayerId = 'player1';
+        } else if (isUserP2) {
+          playerRoleEl.textContent = `${escapeHTML(p2Name)} (Right Paddle - Arrow Keys)`;
+          currentPlayerId = 'player2';
+        } else if (isP1Bot || isP2Bot) {
+          // User is playing against AI
+          if (isP1Bot && !isP2Bot) {
+            playerRoleEl.textContent = `${escapeHTML(p2Name)} (Right Paddle - Arrow Keys) vs AI`;
+            currentPlayerId = 'player2';
+          } else if (isP2Bot && !isP1Bot) {
+            playerRoleEl.textContent = `${escapeHTML(p1Name)} (Left Paddle - W/S Keys) vs AI`;
+            currentPlayerId = 'player1';
+          }
+        } else {
+          playerRoleEl.textContent = 'Spectator';
+        }
+      } else {
+        const role = webSocketService.getUserRole();
+        if (role === 'player1' && m) {
+          playerRoleEl.textContent = `${aliasOf(m.p1)} (Left Paddle - W/S Keys)`;
+          currentPlayerId = 'player1';
+        } else if (role === 'player2' && m) {
+          playerRoleEl.textContent = `${aliasOf(m.p2)} (Right Paddle - Arrow Keys)`;
+          currentPlayerId = 'player2';
+        }
       }
 
       updateScoreboard();
@@ -494,19 +590,42 @@ export const GameView = async (params: Record<string, string>) => {
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
       
+      // Don't process input if paused or game not started
+      if (paused || !gameStarted) {
+        if (e.key === ' ') paused = !paused;
+        return;
+      }
+      
       let newPosition: number | null = null;
       
-      if ((e.key === 'w' || e.key === 'W') && currentPlayerId === 'player1') {
-        newPosition = lY - 20;
-      }
-      if ((e.key === 's' || e.key === 'S') && currentPlayerId === 'player1') {
-        newPosition = lY + 20;
-      }
-      if (e.key === 'ArrowUp' && currentPlayerId === 'player2') {
-        newPosition = rY - 20;
-      }
-      if (e.key === 'ArrowDown' && currentPlayerId === 'player2') {
-        newPosition = rY + 20;
+      // Only allow human player to control their paddle
+      if (isTournamentMatch) {
+        if ((e.key === 'w' || e.key === 'W') && isUserP1 && !isP1Bot) {
+          newPosition = Math.max(0, lY - PADDLE_SPEED * (1/60));
+        }
+        if ((e.key === 's' || e.key === 'S') && isUserP1 && !isP1Bot) {
+          newPosition = Math.min(HEIGHT - PADDLE_H, lY + PADDLE_SPEED * (1/60));
+        }
+        if (e.key === 'ArrowUp' && isUserP2 && !isP2Bot) {
+          newPosition = Math.max(0, rY - PADDLE_SPEED * (1/60));
+        }
+        if (e.key === 'ArrowDown' && isUserP2 && !isP2Bot) {
+          newPosition = Math.min(HEIGHT - PADDLE_H, rY + PADDLE_SPEED * (1/60));
+        }
+      } else {
+        // Non-tournament match (original logic)
+        if ((e.key === 'w' || e.key === 'W') && currentPlayerId === 'player1') {
+          newPosition = lY - 20;
+        }
+        if ((e.key === 's' || e.key === 'S') && currentPlayerId === 'player1') {
+          newPosition = lY + 20;
+        }
+        if (e.key === 'ArrowUp' && currentPlayerId === 'player2') {
+          newPosition = rY - 20;
+        }
+        if (e.key === 'ArrowDown' && currentPlayerId === 'player2') {
+          newPosition = rY + 20;
+        }
       }
       
       if (newPosition !== null && gameConnected) {
@@ -533,7 +652,7 @@ export const GameView = async (params: Record<string, string>) => {
       acc += elapsed;
       while (acc >= dt) {
         if (!paused && gameStarted) {
-          step(dt / 1000);
+          step(dt / 1000, now);
         }
         acc -= dt;
       }
@@ -545,9 +664,41 @@ export const GameView = async (params: Record<string, string>) => {
       raf = requestAnimationFrame(frame);
     }
 
-    function step(dtSec: number) {
-      // Game logic is now handled by the backend
-      // We just render the state we receive via WebSocket
+    function step(dtSec: number, nowMs?: number) {
+      // Update AI vision (throttled to 1 Hz)
+      if (nowMs !== undefined) {
+        updateAIVision(nowMs);
+      }
+      
+      // Update AI and send paddle movements for bots
+      if (isTournamentMatch && gameConnected && gameStarted) {
+        // AI for Player 1 (left paddle) - bot controls this paddle
+        if (aiP1 && isP1Bot && !isUserP1 && gameConnected) {
+          aiP1.update(dtSec, nowMs || Date.now(), lY, sampledBall, scoreL, scoreR);
+          const snap = aiP1.getSnapshot();
+          const newY = Math.max(0, Math.min(HEIGHT - PADDLE_H, snap.targetY || lY));
+          
+          // Only send if position changed significantly
+          if (Math.abs(newY - lY) > 1) {
+            // Send movement for bot player1
+            webSocketService.movePaddle(newY, 'player1');
+          }
+        }
+        
+        // AI for Player 2 (right paddle) - bot controls this paddle
+        if (aiP2 && isP2Bot && !isUserP2 && gameConnected) {
+          aiP2.update(dtSec, nowMs || Date.now(), rY, sampledBall, scoreL, scoreR);
+          const snap = aiP2.getSnapshot();
+          const newY = Math.max(0, Math.min(HEIGHT - PADDLE_H, snap.targetY || rY));
+          
+          // Only send if position changed significantly
+          if (Math.abs(newY - rY) > 1) {
+            // Send movement for bot player2
+            webSocketService.movePaddle(newY, 'player2');
+          }
+        }
+      }
+      
       updateScoreboard();
     }
 
@@ -656,6 +807,9 @@ export const GameView = async (params: Record<string, string>) => {
       requestAnimationFrame(tick);
     }
 
+    // Store reference to updateGameFromBackend for WebSocket updates
+    updateGameStateRef = updateGameFromBackend;
+    
     // Start AFTER countdown
     updateScoreboard();
     drawTable();
