@@ -1,6 +1,6 @@
 services:
   frontend:
-    build: ./src
+    build: ./client
     ports:
       - "8443:443"
       - "8080:80"
@@ -8,12 +8,12 @@ services:
       - backend
 
   backend:
-    build: ./src/backend
+    build: ./server
     ports:
       - "3001:3001"
     environment:
       - NODE_ENV=development
       - DATABASE_PATH=/app/database/data/database.db
     volumes:
-      - ./src/backend/database/data:/app/database/data
-      - ./src/backend/database/uploads:/app/database/uploads
+      - ./server/database/data:/app/database/data
+      - ./server/database/uploads:/app/database/uploads

@@ -3,19 +3,49 @@ data/
 *.db
 *.sqlite
 *.sqlite3
+server/database/data/
+server/database/uploads/
 
-# Environment
+# Environment variables (if used in future)
 .env
 .env.*
+!.env.example
 
-# Node modules
+# Dependencies
 node_modules/
+client/node_modules/
+server/node_modules/
 
 # Build artifacts
 dist/
 build/
+client/dist/
+server/dist/
 
 # Logs
-logs
+logs/
 *.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Docker
+.dockerignore
+
+# Project subject
+en.subject.pdf
 
