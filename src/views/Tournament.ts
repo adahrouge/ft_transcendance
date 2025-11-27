@@ -219,6 +219,7 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
     }
     
     // Waiting room view with bracket style
+    const showJoinButton = !isJoined && !isFull && players.length < tournament.max_players;
     root.innerHTML = `
       <div style="display:flex; gap:20px; align-items:flex-start;">
         <div style="flex:1; min-width:0;">
@@ -243,7 +244,7 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
               ${renderBracketView(players, tournament.max_players)}
             </div>
             
-            ${!isJoined && !isFull ? `
+            ${showJoinButton ? `
               <div style="margin-top:20px; text-align:center;">
                 <button class="btn primary" id="join-tournament">Join Tournament</button>
               </div>
@@ -296,9 +297,6 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
     const fillBotsBtn = root.querySelector('#fill-bots') as HTMLButtonElement | null;
     if (fillBotsBtn) {
       fillBotsBtn.onclick = async () => {
-        if (!confirm('Fill remaining slots with AI bots? This will immediately fill all empty positions.')) {
-          return;
-        }
         try {
           fillBotsBtn.disabled = true;
           fillBotsBtn.textContent = 'Filling...';
@@ -306,9 +304,7 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
           navigate(`/tournament/${tournamentId}`);
         } catch (err: any) {
           fillBotsBtn.disabled = false;
-          fillBotsBtn.textContent = 'Fill Tournament with bots instead';
-          const errorMsg = err.message || 'Failed to fill with bots';
-          alert(errorMsg);
+          fillBotsBtn.textContent = 'Fill Tournament with bots: No empty slots';
           console.error('Fill bots error:', err);
         }
       };
@@ -460,7 +456,7 @@ function renderBracketView(players: any[], maxPlayers: number): string {
     const player1 = players.find((p: any) => p.bracket_position === pos1);
     const player2 = players.find((p: any) => p.bracket_position === pos2);
     
-    html += renderMatchSlot(player1, player2, i + 1, false, false, maxPlayers === 8 ? 'Quarterfinal' : 'Semifinal', is8Player);
+    html += renderMatchSlot(player1, player2, i + 1, false, false, maxPlayers === 8 ? 'Quarterfinal' : 'Semifinal', is8Player, pos1, pos2, players);
   }
   html += '</div>';
   
@@ -477,8 +473,8 @@ function renderBracketView(players: any[], maxPlayers: number): string {
         <div style="position:absolute; left:0; top:${is8Player ? '65px' : '130px'}; width:20px; height:2px; background:#718096;"></div>
         
         <div style="display:flex; flex-direction:column; gap:${semiGap};">
-          ${renderMatchSlot(null, null, 0, true, false, 'Semifinal', is8Player)}
-          ${renderMatchSlot(null, null, 0, true, false, 'Semifinal', is8Player)}
+          ${renderMatchSlot(null, null, 0, true, false, 'Semifinal', is8Player, 0, 0, players)}
+          ${renderMatchSlot(null, null, 0, true, false, 'Semifinal', is8Player, 0, 0, players)}
         </div>
         
         <!-- Vertical connecting lines -->
@@ -513,25 +509,34 @@ function renderBracketView(players: any[], maxPlayers: number): string {
     `;
   }
   
-  html += renderMatchSlot(null, null, 0, false, true, 'Final', is8Player);
+  html += renderMatchSlot(null, null, 0, false, true, 'Final', is8Player, 0, 0, players);
   html += '</div>';
   
   html += '</div>';
   return html;
 }
 
-function renderMatchSlot(player1: any, player2: any, matchNum: number, isSemi: boolean = false, isFinal: boolean = false, roundLabel?: string, isCompact: boolean = false): string {
+function renderMatchSlot(player1: any, player2: any, matchNum: number, isSemi: boolean = false, isFinal: boolean = false, roundLabel?: string, isCompact: boolean = false, pos1?: number, pos2?: number, playersList?: any[]): string {
   const matchLabel = roundLabel || (isFinal ? 'FINAL' : isSemi ? 'SEMI-FINAL' : `Match ${matchNum}`);
   const slotStyle = isFinal 
     ? 'background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); border:3px solid #d97706; box-shadow:0 8px 32px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);'
     : 'background:linear-gradient(135deg, #2d3748 0%, #1a202c 100%); border:2px solid #4a5568; box-shadow:0 4px 16px rgba(0, 0, 0, 0.3);';
   
-  const player1Name = player1 
+  // Improved: For null player, check if there is a bot for this position and show AI Bot n
+  function positionalBotName(position?: number): string {
+    if (typeof position === 'number' && Array.isArray(playersList)) {
+      const found = playersList.find((p: any) => p.bracket_position === position && p.is_bot);
+      if (found && found.bot_name) return escapeHTML(found.bot_name);
+    }
+    return 'TBD';
+  }
+
+  const player1Name = player1
     ? (player1.is_bot ? escapeHTML(player1.bot_name || 'AI Bot') : escapeHTML(player1.display_name || player1.username || 'Unknown'))
-    : 'TBD';
-  const player2Name = player2 
+    : positionalBotName(pos1);
+  const player2Name = player2
     ? (player2.is_bot ? escapeHTML(player2.bot_name || 'AI Bot') : escapeHTML(player2.display_name || player2.username || 'Unknown'))
-    : 'TBD';
+    : positionalBotName(pos2);
   
   const player1Style = player1 
     ? 'color:#fff; font-weight:600; text-shadow:0 1px 2px rgba(0,0,0,0.3);' 

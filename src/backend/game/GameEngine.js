@@ -8,13 +8,13 @@ class GameEngine {
     console.log('🎮 Game Engine initialized');
   }
 
-  createGame(player1, player2) {
+  createGame(player1, player2, isP1Bot = false, isP2Bot = false) {
     const gameId = `pong_${Date.now()}`;
     const gameState = {
       id: gameId,
       players: [
-        { id: player1.id, name: player1.name, score: 0, paddleY: 250 },
-        { id: player2.id, name: player2.name, score: 0, paddleY: 250 }
+        { id: player1.id, name: player1.name, score: 0, paddleY: 250, isBot: isP1Bot },
+        { id: player2.id, name: player2.name, score: 0, paddleY: 250, isBot: isP2Bot }
       ],
       ball: { 
         x: 400, 
@@ -25,7 +25,9 @@ class GameEngine {
       board: { width: 800, height: 600 },
       status: 'playing',
       createdAt: new Date(),
-      lastUpdate: Date.now()
+      lastUpdate: Date.now(),
+      isP1Bot,
+      isP2Bot
     };
     
     this.games.set(gameId, gameState);
@@ -202,7 +204,8 @@ class GameEngine {
         id: p.id,
         name: p.name,
         score: p.score,
-        paddleY: p.paddleY
+        paddleY: p.paddleY,
+        isBot: p.isBot || false
       })),
       ball: { 
         x: game.ball.x,
@@ -216,7 +219,9 @@ class GameEngine {
       },
       status: game.status,
       createdAt: game.createdAt,
-      lastUpdate: game.lastUpdate
+      lastUpdate: game.lastUpdate,
+      isP1Bot: game.isP1Bot || false,
+      isP2Bot: game.isP2Bot || false
     };
   }
 

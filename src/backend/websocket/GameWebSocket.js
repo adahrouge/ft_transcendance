@@ -101,9 +101,15 @@ export function GameWebSocket(connection, req) {
             break;
           }
           
+          // Check if player2 is a bot (indicated by player2Id starting with 'bot_')
+          const isP2Bot = data.player2Id && data.player2Id.toString().startsWith('bot_');
+          const isP1Bot = false; // Player 1 is always the human who creates the game
+          
           const game = gameEngine.createGame(
             { id: userId.toString(), name: data.player1Name || username },
-            { id: data.player2Id || 'player2', name: data.player2Name || 'Player 2' }
+            { id: data.player2Id || 'player2', name: data.player2Name || 'Player 2' },
+            isP1Bot,
+            isP2Bot
           );
           currentGameId = game.id;
           playerId = userId.toString();
@@ -122,9 +128,10 @@ export function GameWebSocket(connection, req) {
           send({
             type: 'GAME_CREATED',
             gameId: game.id,
-            gameState: gameEngine.getGameState(game.id),
+            gameState: gameEngine.getGameState(currentGameId),
             yourPlayerId: playerId,
-            yourRole: role
+            yourRole: role,
+            isP2Bot: isP2Bot
           });
           break;
 
@@ -173,20 +180,38 @@ export function GameWebSocket(connection, req) {
           break;
 
         case 'MOVE_PADDLE':
-          if (currentGameId && (role === 'player1' || role === 'player2')) {
-            const playerIdToUse = role === 'player1' ? 'player1' : 'player2';
-            const updatedGame = gameEngine.updatePaddlePosition(
-              currentGameId, 
-              playerIdToUse, 
-              data.position
-            );
-            if (updatedGame) {
-              // Broadcast to all (including spectators)
-              gameEngine.broadcastToGame(currentGameId, {
-                type: 'GAME_STATE_UPDATE',
-                gameState: updatedGame,
-                spectatorCount: gameEngine.getSpectatorCount(currentGameId)
-              });
+          if (currentGameId) {
+            // Allow movement for current role OR for bot players
+            const game = gameEngine.getGame(currentGameId);
+            let playerIdToUse = null;
+            
+            if (role === 'player1' || role === 'player2') {
+              playerIdToUse = role === 'player1' ? 'player1' : 'player2';
+            } else if (data.forBot) {
+              // Allow sending movements for bot players
+              playerIdToUse = data.forBot === 'player1' ? 'player1' : 'player2';
+              // Verify this is actually a bot
+              if (game && ((data.forBot === 'player1' && !game.isP1Bot) || 
+                           (data.forBot === 'player2' && !game.isP2Bot))) {
+                // Not a bot, reject
+                break;
+              }
+            }
+            
+            if (playerIdToUse) {
+              const updatedGame = gameEngine.updatePaddlePosition(
+                currentGameId, 
+                playerIdToUse, 
+                data.position
+              );
+              if (updatedGame) {
+                // Broadcast to all (including spectators)
+                gameEngine.broadcastToGame(currentGameId, {
+                  type: 'GAME_STATE_UPDATE',
+                  gameState: updatedGame,
+                  spectatorCount: gameEngine.getSpectatorCount(currentGameId)
+                });
+              }
             }
           }
           break;

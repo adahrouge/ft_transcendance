@@ -368,38 +368,31 @@ export async function fillTournamentWithBots(tournamentId) {
   if (!tournament) {
     throw new Error('Tournament not found');
   }
-  
+
   if (tournament.status !== 'waiting') {
     throw new Error('Tournament is not accepting players');
   }
-  
+
   const players = await getTournamentPlayers(tournamentId);
   const occupied = new Set(players.map(p => p.bracket_position));
-  
+
   // Check if tournament is already full
   if (occupied.size >= tournament.max_players) {
     throw new Error('Tournament is already full');
   }
-  
-  const botNames = ['AI Bot Alpha', 'AI Bot Beta', 'AI Bot Gamma', 'AI Bot Delta', 
-                     'AI Bot Echo', 'AI Bot Foxtrot', 'AI Bot Golf', 'AI Bot Hotel'];
-  let botIndex = 0;
-  
-  // Use a transaction-like approach to ensure all bots are inserted
+
+  // Generate bot `AI Bot n` for each free slot
   const botInserts = [];
   for (let i = 0; i < tournament.max_players; i++) {
     if (!occupied.has(i)) {
-      botInserts.push({ position: i, name: botNames[botIndex % botNames.length] });
-      botIndex++;
+      botInserts.push({ position: i, name: `AI Bot ${i + 1}` });
     }
   }
-  
-  // Check if there are any slots to fill
+
   if (botInserts.length === 0) {
     throw new Error('No empty slots to fill');
   }
-  
-  // Insert all bots
+
   for (const bot of botInserts) {
     try {
       await dbRun(
@@ -408,16 +401,13 @@ export async function fillTournamentWithBots(tournamentId) {
         [tournamentId, bot.position, bot.name]
       );
     } catch (err) {
-      // If there's a unique constraint error, the position might have been filled
-      // Check if it's actually a unique constraint error or something else
       if (err.message && err.message.includes('UNIQUE')) {
-        // Position was filled between check and insert, skip it
         continue;
       }
       throw err;
     }
   }
-  
+
   return getTournamentById(tournamentId);
 }
 
