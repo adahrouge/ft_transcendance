@@ -2,7 +2,8 @@
 import { navigate } from '../router.js';
 import { escapeHTML } from '../utils.js';
 import { getCurrentUser } from '../user-state.js';
-import { tournamentAPI } from '../api.js';
+import { tournamentAPI, getToken } from '../api.js';
+import { webSocketService } from '../websocket-service.js';
 
 export const TournamentView = async (params: Record<string, string>) => {
   const user = getCurrentUser();
@@ -110,15 +111,46 @@ function setupTournamentChat(root: HTMLElement, tournamentId: number) {
   chatSend.disabled = false;
   chatInput.placeholder = 'Type a message...';
   
-  const messages: Array<{username: string, message: string, timestamp: Date}> = [];
+  const messages: Array<{username: string, message: string, timestamp: number}> = [];
+  
+  // Connect to WebSocket and join tournament chat
+  const token = getToken();
+  if (!webSocketService['ws'] || webSocketService['ws'].readyState !== WebSocket.OPEN) {
+    webSocketService.connect(token || undefined);
+    // Wait a bit for connection to establish
+    setTimeout(() => {
+      webSocketService.joinTournamentChat(tournamentId);
+    }, 500);
+  } else {
+    webSocketService.joinTournamentChat(tournamentId);
+  }
+  
+  // Subscribe to tournament chat messages
+  webSocketService.onTournamentChatMessage((msg: any) => {
+    messages.push({
+      username: msg.username,
+      message: msg.message,
+      timestamp: msg.timestamp
+    });
+    
+    // Keep only last 30 messages
+    if (messages.length > 30) {
+      messages.shift();
+    }
+    
+    renderMessages();
+  });
   
   function renderMessages() {
-    if (messages.length === 0) {
+    // Show only last 30 messages
+    const displayMessages = messages.slice(-30);
+    
+    if (displayMessages.length === 0) {
       chatMessages.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>';
       return;
     }
     
-    chatMessages.innerHTML = messages.map(msg => {
+    chatMessages.innerHTML = displayMessages.map(msg => {
       const time = new Date(msg.timestamp).toLocaleTimeString();
       return `
         <div style="margin-bottom:8px; padding:8px; background:#222; border-radius:6px; border-left:3px solid #5e81f4;">
@@ -138,14 +170,10 @@ function setupTournamentChat(root: HTMLElement, tournamentId: number) {
     const text = chatInput.value.trim();
     if (!text || !user) return;
     
-    messages.push({
-      username: user.display_name || user.username,
-      message: text,
-      timestamp: new Date()
-    });
+    // Send to server via WebSocket
+    webSocketService.sendTournamentChatMessage(text);
     
     chatInput.value = '';
-    renderMessages();
   }
   
   chatInput.onkeypress = (e) => {
@@ -301,10 +329,15 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
           fillBotsBtn.disabled = true;
           fillBotsBtn.textContent = 'Filling...';
           await tournamentAPI.fillTournamentWithBots(tournamentId);
+          
+          // Refresh the page by navigating to the same route
+          // This ensures all data is reloaded and UI is updated
           navigate(`/tournament/${tournamentId}`);
         } catch (err: any) {
           fillBotsBtn.disabled = false;
-          fillBotsBtn.textContent = 'Fill Tournament with bots: No empty slots';
+          fillBotsBtn.textContent = 'Fill Tournament with bots instead';
+          const errorMsg = err.message || err.error || 'Failed to fill tournament with bots. Please try again.';
+          alert(errorMsg);
           console.error('Fill bots error:', err);
         }
       };
@@ -314,13 +347,16 @@ async function renderTournamentDetail(root: HTMLElement, tournamentId: number, u
     const startBtn = root.querySelector('#start-tournament') as HTMLButtonElement | null;
     if (startBtn) {
       startBtn.onclick = async () => {
-        if (!confirm('Start the tournament? This will generate the bracket and begin matches.')) {
-          return;
-        }
         try {
+          startBtn.disabled = true;
+          startBtn.textContent = 'Starting...';
           await tournamentAPI.startTournament(tournamentId);
+          
+          // Refresh by navigating to the same route - this will reload with active tournament view
           navigate(`/tournament/${tournamentId}`);
         } catch (err: any) {
+          startBtn.disabled = false;
+          startBtn.textContent = 'Start Tournament';
           alert(err.message || 'Failed to start tournament');
         }
       };
@@ -643,8 +679,18 @@ async function renderActiveTournament(root: HTMLElement, tournament: any, user: 
                     </div>
                     <div>
                       <span style="font-size:12px; color:#aaa;">${status}</span>
-                      ${m.status === 'pending' ? `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>` : ''}
-                    </div>
+                      ${(() => {
+  const user = getCurrentUser();
+  const isP1 = user && m.p1_user_id === user.id && !m.p1_is_bot;
+  const isP2 = user && m.p2_user_id === user.id && !m.p2_is_bot;
+  if (m.status === 'pending' && (isP1 || isP2)) {
+    return `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>`;
+  } else if ((m.status === 'pending' || m.status === 'playing')) {
+    return `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn outline" style="margin-left:8px;">Spectate</a>`;
+  } else {
+    return '';
+  }
+})()}
                   </div>
                 </div>
               `;
@@ -693,8 +739,18 @@ async function renderActiveTournament(root: HTMLElement, tournament: any, user: 
                   </div>
                   <div>
                     <span style="font-size:12px; color:#aaa;">${status}</span>
-                    ${m.status === 'pending' ? `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>` : ''}
-                  </div>
+                    ${(() => {
+                      const user = getCurrentUser();
+                      const isP1 = user && m.p1_user_id === user.id && !m.p1_is_bot;
+                      const isP2 = user && m.p2_user_id === user.id && !m.p2_is_bot;
+                      if (m.status === 'pending' && (isP1 || isP2)) {
+                        return `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn" style="margin-left:8px;">Play</a>`;
+                      } else if ((m.status === 'pending' || m.status === 'playing')) {
+                        return `<a href="/game/t${tournament.id}-m${m.id}" data-link class="btn outline" style="margin-left:8px;">Spectate</a>`;
+                      } else {
+                        return '';
+                      }
+                    })()}
                 </div>
               </div>
             `;

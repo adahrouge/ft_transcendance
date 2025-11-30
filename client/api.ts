@@ -21,9 +21,13 @@ export function setAuthToken(token: string | null) {
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
     ...options.headers,
   };
+  
+  // Only set Content-Type if there's a body
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
   
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
@@ -165,6 +169,7 @@ export const tournamentAPI = {
   async fillTournamentWithBots(tournamentId: number) {
     return apiRequest(`/api/tournaments/${tournamentId}/fill-bots`, {
       method: 'POST',
+      // No body needed - Fastify route accepts empty body
     });
   },
   

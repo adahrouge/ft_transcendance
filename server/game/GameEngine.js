@@ -5,6 +5,8 @@ class GameEngine {
     this.gameIntervals = new Map();
     this.gameConnections = new Map(); // gameId -> Set of WebSocket connections
     this.gameChat = new Map(); // gameId -> Array of chat messages
+    this.tournamentChat = new Map(); // tournamentId -> Array of chat messages
+    this.tournamentConnections = new Map(); // tournamentId -> Set of WebSocket connections
     console.log('🎮 Game Engine initialized');
   }
 
@@ -87,8 +89,8 @@ class GameEngine {
     const chat = this.gameChat.get(gameId);
     chat.push(chatEntry);
     
-    // Keep only last 100 messages
-    if (chat.length > 100) {
+    // Keep only last 30 messages
+    if (chat.length > 30) {
       chat.shift();
     }
     
@@ -103,6 +105,73 @@ class GameEngine {
 
   getChatHistory(gameId) {
     return this.gameChat.get(gameId) || [];
+  }
+
+  // Tournament chat methods
+  addTournamentConnection(tournamentId, connection) {
+    if (!this.tournamentConnections.has(tournamentId)) {
+      this.tournamentConnections.set(tournamentId, new Set());
+    }
+    this.tournamentConnections.get(tournamentId).add(connection);
+  }
+
+  removeTournamentConnection(tournamentId, connection) {
+    const connections = this.tournamentConnections.get(tournamentId);
+    if (connections) {
+      connections.delete(connection);
+    }
+  }
+
+  broadcastToTournament(tournamentId, message, excludeConnection = null) {
+    const connections = this.tournamentConnections.get(tournamentId);
+    if (!connections) return;
+    
+    const messageStr = JSON.stringify(message);
+    connections.forEach(conn => {
+      if (conn !== excludeConnection && conn.readyState === 1) { // WebSocket.OPEN = 1
+        try {
+          conn.send(messageStr);
+        } catch (err) {
+          console.error('Error broadcasting to tournament connection:', err);
+        }
+      }
+    });
+  }
+
+  addTournamentChatMessage(tournamentId, userId, username, message) {
+    if (!this.tournamentChat.has(tournamentId)) {
+      this.tournamentChat.set(tournamentId, []);
+    }
+    
+    const chatEntry = {
+      id: `msg_${Date.now()}_${Math.random()}`,
+      userId,
+      username,
+      message: message.substring(0, 500), // Limit message length
+      timestamp: Date.now()
+    };
+    
+    const chat = this.tournamentChat.get(tournamentId);
+    chat.push(chatEntry);
+    
+    // Keep only last 30 messages
+    if (chat.length > 30) {
+      chat.shift();
+    }
+    
+    // Broadcast chat message to all connections in this tournament
+    this.broadcastToTournament(tournamentId, {
+      type: 'TOURNAMENT_CHAT_MESSAGE',
+      chatMessage: chatEntry
+    });
+    
+    return chatEntry;
+  }
+
+  getTournamentChatHistory(tournamentId) {
+    const chat = this.tournamentChat.get(tournamentId) || [];
+    // Return only last 30 messages
+    return chat.slice(-30);
   }
 
   startGameLoop(gameId) {

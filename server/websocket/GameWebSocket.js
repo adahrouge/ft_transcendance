@@ -19,6 +19,7 @@ async function getUserFromToken(token) {
 export function GameWebSocket(connection, req) {
   console.log('🔌 New WebSocket connection for Pong game');
   let currentGameId = null;
+  let currentTournamentId = null;
   let playerId = null;
   let userId = null;
   let username = 'Guest';
@@ -101,19 +102,31 @@ export function GameWebSocket(connection, req) {
             break;
           }
           
-          // Check if player2 is a bot (indicated by player2Id starting with 'bot_')
+          // Check if players are bots (indicated by playerId starting with 'bot_')
           const isP2Bot = data.player2Id && data.player2Id.toString().startsWith('bot_');
-          const isP1Bot = false; // Player 1 is always the human who creates the game
+          const isP1Bot = data.player1Id && data.player1Id.toString().startsWith('bot_');
+          
+          // For bots, use the bot ID directly; for humans, use userId
+          const p1Id = isP1Bot ? data.player1Id : (data.player1Id || userId.toString());
+          const p2Id = isP2Bot ? data.player2Id : (data.player2Id || userId.toString());
+          
+          // Determine which player the user is
+          let userRole = 'spectator';
+          if (!isP1Bot && p1Id === userId.toString()) {
+            userRole = 'player1';
+          } else if (!isP2Bot && p2Id === userId.toString()) {
+            userRole = 'player2';
+          }
           
           const game = gameEngine.createGame(
-            { id: userId.toString(), name: data.player1Name || username },
-            { id: data.player2Id || 'player2', name: data.player2Name || 'Player 2' },
+            { id: p1Id, name: data.player1Name || username },
+            { id: p2Id, name: data.player2Name || 'Player 2' },
             isP1Bot,
             isP2Bot
           );
           currentGameId = game.id;
           playerId = userId.toString();
-          role = 'player1';
+          role = userRole;
           
           // Add connection to game
           gameEngine.addConnection(currentGameId, connection.socket);
@@ -228,6 +241,32 @@ export function GameWebSocket(connection, req) {
           }
           break;
 
+        case 'JOIN_TOURNAMENT_CHAT':
+          if (data.tournamentId) {
+            currentTournamentId = parseInt(data.tournamentId);
+            gameEngine.addTournamentConnection(currentTournamentId, connection.socket);
+            
+            // Send chat history
+            const tournamentChatHistory = gameEngine.getTournamentChatHistory(currentTournamentId);
+            send({
+              type: 'TOURNAMENT_CHAT_HISTORY',
+              messages: tournamentChatHistory
+            });
+          }
+          break;
+
+        case 'SEND_TOURNAMENT_CHAT':
+          if (currentTournamentId && data.message && data.message.trim()) {
+            const chatMsg = gameEngine.addTournamentChatMessage(
+              currentTournamentId,
+              userId || 'guest',
+              username,
+              data.message.trim()
+            );
+            // Message is already broadcasted by addTournamentChatMessage
+          }
+          break;
+
         case 'REQUEST_GAME_STATE':
           if (currentGameId) {
             sendGameState(currentGameId);
@@ -260,6 +299,10 @@ export function GameWebSocket(connection, req) {
       if (!connections || connections.size === 0) {
         gameEngine.endGame(currentGameId);
       }
+    }
+    
+    if (currentTournamentId) {
+      gameEngine.removeTournamentConnection(currentTournamentId, connection.socket);
     }
   });
 

@@ -3,7 +3,9 @@ export class WebSocketService {
   private gameState: any = null;
   private onGameStateCallbacks: ((gameState: any) => void)[] = [];
   private onChatMessageCallbacks: ((message: any) => void)[] = [];
+  private onTournamentChatCallbacks: ((message: any) => void)[] = [];
   private currentGameId: string | null = null;
+  private currentTournamentId: number | null = null;
   private userRole: string = 'spectator';
 
   connect(token?: string) {
@@ -110,16 +112,30 @@ export class WebSocketService {
       case 'SPECTATOR_LEFT':
         // Could notify UI about spectator count changes
         break;
+        
+      case 'TOURNAMENT_CHAT_MESSAGE':
+        this.notifyTournamentChatCallbacks(data.chatMessage);
+        break;
+        
+      case 'TOURNAMENT_CHAT_HISTORY':
+        // Notify for each message in history
+        if (data.messages && Array.isArray(data.messages)) {
+          data.messages.forEach((msg: any) => {
+            this.notifyTournamentChatCallbacks(msg);
+          });
+        }
+        break;
     }
   }
 
   // Game actions
-  createGame(player1Name: string, player2Name: string, player2Id?: string) {
+  createGame(player1Name: string, player2Name: string, player2Id?: string, player1Id?: string) {
     this.send({
       type: 'CREATE_GAME',
       player1Name,
       player2Name,
-      player2Id
+      player2Id,
+      player1Id
     });
   }
 
@@ -145,6 +161,35 @@ export class WebSocketService {
         message: message.trim()
       });
     }
+  }
+
+  // Tournament chat actions
+  joinTournamentChat(tournamentId: number) {
+    this.currentTournamentId = tournamentId;
+    this.send({
+      type: 'JOIN_TOURNAMENT_CHAT',
+      tournamentId
+    });
+  }
+
+  sendTournamentChatMessage(message: string) {
+    if (message.trim() && this.currentTournamentId) {
+      this.send({
+        type: 'SEND_TOURNAMENT_CHAT',
+        message: message.trim()
+      });
+    }
+  }
+
+  // Subscribe to tournament chat messages
+  onTournamentChatMessage(callback: (message: any) => void) {
+    this.onTournamentChatCallbacks.push(callback);
+  }
+
+  private notifyTournamentChatCallbacks(message: any) {
+    this.onTournamentChatCallbacks.forEach(callback => {
+      callback(message);
+    });
   }
 
   // Utility methods

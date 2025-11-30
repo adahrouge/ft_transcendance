@@ -115,6 +115,11 @@ export const GameView = async (params: Record<string, string>) => {
       </div>
     </div>
     <div id="connection-status" style="margin-top: 10px; padding: 10px; border-radius: 4px; display:none;"></div>
+    <style>
+      #connection-status {
+        display: none !important;
+      }
+    </style>
   `;
 
   let currentPlayerId: string | null = null;
@@ -242,8 +247,12 @@ export const GameView = async (params: Record<string, string>) => {
         const p1Name = matchData.p1 || 'Player 1';
         const p2Name = matchData.p2 || 'Player 2';
         // Include bot information if this is a tournament match with bots
-        const p2Id = isTournamentMatch && isP2Bot ? 'bot_' + matchData.p2Id : undefined;
-        webSocketService.createGame(p1Name, p2Name, p2Id);
+        // For tournament matches, send user IDs (not tournament player IDs) so server can determine role
+        const p1Id = isTournamentMatch && isP1Bot ? 'bot_' + matchData.p1Id : 
+                     (isTournamentMatch && matchData.p1UserId ? matchData.p1UserId.toString() : undefined);
+        const p2Id = isTournamentMatch && isP2Bot ? 'bot_' + matchData.p2Id : 
+                     (isTournamentMatch && matchData.p2UserId ? matchData.p2UserId.toString() : undefined);
+        webSocketService.createGame(p1Name, p2Name, p2Id, p1Id);
       }
     }, 1000);
 
@@ -289,7 +298,7 @@ export const GameView = async (params: Record<string, string>) => {
       // This will be handled inside startLocalGame or startSpectatorView
       if (!gameConnected) {
         gameConnected = true;
-        updateConnectionStatus('✅ Connected to game server!');
+        // Don't show connection status message
         currentGameId = webSocketService.getCurrentGameId();
         
         if (!isSpectator) {
@@ -629,7 +638,16 @@ export const GameView = async (params: Record<string, string>) => {
       }
       
       if (newPosition !== null && gameConnected) {
-        webSocketService.movePaddle(newPosition);
+        // For tournament matches, specify which player is moving
+        if (isTournamentMatch) {
+          if (isUserP1) {
+            webSocketService.movePaddle(newPosition);
+          } else if (isUserP2) {
+            webSocketService.movePaddle(newPosition);
+          }
+        } else {
+          webSocketService.movePaddle(newPosition);
+        }
       }
 
       if (e.key === ' ') paused = !paused;
