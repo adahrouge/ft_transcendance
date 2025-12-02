@@ -6,8 +6,8 @@
 // - AI simulates keyboard input (virtual ↑/↓), no direct rY writes
 
 import { navigate } from '../router.js';
-import { StrongPaddleAI } from '../ai.js';
-import { getCurrentUser } from '../user-state.js';
+import { StrongPaddleAI } from '../utils/ai.js';
+import { getCurrentUser } from '../utils/user.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -21,16 +21,16 @@ const SCORE_TO_WIN = 5;
 export const AIGameView = () => {
   const wrap = document.createElement('div');
   const user = getCurrentUser();
-  
+
   // Require authentication to play vs AI
   if (!user) {
     wrap.innerHTML = `
-      <div class="card">
+      <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65">
         <h2>Play vs AI</h2>
-        <p class="muted">You must be logged in to play against the AI.</p>
-        <div class="row" style="margin-top:16px;">
-          <a href="/profile" data-link class="btn primary">Login / Register</a>
-          <a class="btn" data-link href="/">Back</a>
+        <p class="text-gray-400 text-sm">You must be logged in to play against the AI.</p>
+        <div class="flex items-start gap-5 mt-4 flex-wrap">
+          <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70">Login / Register</a>
+          <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
         </div>
       </div>
     `;
@@ -39,19 +39,19 @@ export const AIGameView = () => {
 
   // --- Pre-game UI: Start Match ---
   wrap.innerHTML = `
-    <div class="card">
+    <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65">
       <h2>Play vs AI</h2>
-      <p class="muted">You: W/S · AI: simulated ↑/↓ (no direct moves)</p>
-      <div class="row" style="justify-content: space-between; align-items: baseline;">
+      <p class="text-gray-400 text-sm">You: W/S · AI: simulated ↑/↓ (no direct moves)</p>
+      <div class="flex items-start gap-5 mt-4 flex-wrap justify-between items-baseline">
         <div><strong>You</strong> vs <strong>AI</strong></div>
-        <div class="score" id="score">0 : 0</div>
+        <div class="inline-flex items-center justify-center min-w-[72px] px-2.5 py-1 rounded-full bg-indigo-500/20 text-gray-200 font-semibold text-sm tracking-wider uppercase border border-indigo-400/60" id="score">0 : 0</div>
       </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="btn primary" id="start">Start Match</button>
-        <a class="btn" data-link href="/">Back</a>
+      <div class="flex items-start gap-5 mt-4 flex-wrap mt-2">
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70" id="start">Start Match</button>
+        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
       </div>
     </div>
-    <div id="host" style="position:relative;"></div>
+    <div id="host" class="relative"></div>
   `;
 
   (wrap.querySelector('#start') as HTMLButtonElement).onclick = () => startMatch();
@@ -61,9 +61,9 @@ export const AIGameView = () => {
 
     // In-game controls appear now, before countdown (so Pause can freeze countdown)
     host.innerHTML = `
-      <div class="row" style="margin-top:8px; gap:12px;">
-        <button class="btn" id="pause">Pause</button>
-        <button class="btn" id="quit">Quit</button>
+      <div class="flex items-start gap-5 mt-4 flex-wrap mt-2 gap-3">
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="pause">Pause</button>
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="quit">Quit</button>
       </div>
     `;
 
@@ -119,7 +119,7 @@ export const AIGameView = () => {
       tableW: WIDTH,
       tableH: HEIGHT,
       paddleH: PADDLE_H,
-      paddleX: WIDTH - (PADDLE_W + 10), // right paddle’s left edge
+      paddleX: WIDTH - (PADDLE_W + 10), // right paddle's left edge
       ballR: BALL_R,
       baseBallSpeed: BALL_SPEED,
       maxSpeed: 420,

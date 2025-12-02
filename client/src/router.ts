@@ -1,10 +1,10 @@
 // src/router.ts
-import { HomeView } from './views/Home';
-import { TournamentView } from './views/Tournament';
-import { GameView } from './views/Game';
-import { AIGameView } from './views/AI';
-import { ProfileView } from './views/Profile';
-import { FriendGameView } from './views/Friend';
+import { HomeView } from './pages/HomePage.js';
+import { TournamentView } from './pages/TournamentPage.js';
+import { GameView } from './pages/GamePage.js';
+import { AIGameView } from './pages/AIPage.js';
+import { ProfileView } from './pages/ProfilePage.js';
+import { FriendGameView } from './pages/FriendPage.js';
 
 export type View = (params: Record<string, string>) => HTMLElement | Promise<HTMLElement>;
 

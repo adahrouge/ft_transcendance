@@ -60,7 +60,7 @@ export class StrongPaddleAI {
    * We simulate reflections off top/bottom walls (no friction).
    */
   private predictImpactY(ball: BallState): number | null {
-    const { tableW, tableH, paddleX, ballR } = this.cfg;
+    const { tableH, paddleX, ballR } = this.cfg;
 
     if (ball.vx <= 0) return null; // Ball going away -> no prediction
 
@@ -87,10 +87,10 @@ export class StrongPaddleAI {
   }
 
   /**
-   * Choose a “shot plan” when we are likely to return the ball.
+   * Choose a "shot plan" when we are likely to return the ball.
    * We bias to corners and mix in a few center-line change-ups.
    */
-  planReturnY(ballY: number): number {
+  planReturnY(_ballY: number): number {
     const { tableH, paddleH } = this.cfg;
     const mid = tableH / 2;
     const third = tableH / 3;

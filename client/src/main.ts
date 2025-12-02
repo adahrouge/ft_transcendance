@@ -1,9 +1,10 @@
 // src/main.ts
 
-import { initRouter, navigate } from './router';
-import { loadState, saveState } from './state';
-import { initUserState, subscribeToUser } from './user-state';
-import { updateNavbarUser } from './navbar';
+import { initRouter, navigate } from './router.js';
+import { loadState, saveState } from './utils/tournament.js';
+import { initUserState, subscribeToUser } from './utils/user.js';
+import { updateNavbarUser } from './components/Navbar.js';
+import './styles/style.css';
 
 // Global error guards – ensure no unhandled errors during browsing
 window.addEventListener('error', (e) => {

@@ -2,14 +2,14 @@
 // Tournament match view, now gated behind a "Start Match" button.
 // Updated to use WebSocket backend for real-time multiplayer
 
-import { aliasOf, getState, reportScore, setMatchStatus } from '../state.js';
+import { aliasOf, getState, reportScore, setMatchStatus } from '../utils/tournament.js';
 import { navigate } from '../router.js';
-import { escapeHTML } from '../utils.js';
-import { webSocketService } from '../websocket-service.js';
-import { getToken } from '../api.js';
-import { gameAPI, tournamentAPI } from '../api.js';
-import { StrongPaddleAI, type AIConfig, type BallState } from '../ai.js';
-import { getCurrentUser } from '../user-state.js';
+import { escapeHTML } from '../utils/utils.js';
+import { webSocketService } from '../services/websocket.js';
+import { getToken } from '../services/api.js';
+import { gameAPI, tournamentAPI } from '../services/api.js';
+import { StrongPaddleAI, type AIConfig, type BallState } from '../utils/ai.js';
+import { getCurrentUser } from '../utils/user.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -23,12 +23,12 @@ const SCORE_TO_WIN = 5;
 export const GameView = async (params: Record<string, string>) => {
   const matchId = params.id;
   const wrap = document.createElement('div');
-  
+
   // Check if this is a tournament match (format: t{tournamentId}-m{matchId})
   let tournamentMatch: any = null;
   let tournamentId: number | null = null;
   let isTournamentMatch = false;
-  
+
   if (matchId.startsWith('t') && matchId.includes('-m')) {
     isTournamentMatch = true;
     const parts = matchId.match(/^t(\d+)-m(\d+)$/);
@@ -39,22 +39,22 @@ export const GameView = async (params: Record<string, string>) => {
         const result = await tournamentAPI.getTournament(tournamentId);
         const matches = result.tournament.matches || [];
         tournamentMatch = matches.find((m: any) => m.id === dbMatchId);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Error loading tournament match:', err);
       }
     }
   }
-  
+
   // If tournament match not found, try client-side state
   const s = getState();
   const m = tournamentMatch ? null : s.matches.find((m) => m.id === matchId);
 
   if (!m && !tournamentMatch) {
-    wrap.innerHTML = `<div class="card"><p>Match not found.</p><button class="btn" id="back">Back</button></div>`;
+    wrap.innerHTML = `<div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65"><p>Match not found.</p><button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="back">Back</button></div>`;
     (wrap.querySelector('#back') as HTMLButtonElement).onclick = () => navigate('/tournament');
     return wrap;
   }
-  
+
   // Use tournament match data if available
   const matchData = tournamentMatch ? {
     id: matchId,
@@ -69,52 +69,59 @@ export const GameView = async (params: Record<string, string>) => {
     tournamentId: tournamentId,
     dbMatchId: tournamentMatch.id
   } : m;
-  
+
+  // Null check for matchData
+  if (!matchData) {
+    wrap.innerHTML = `<div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65"><p>Match data unavailable.</p><button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="back">Back</button></div>`;
+    (wrap.querySelector('#back') as HTMLButtonElement).onclick = () => navigate('/tournament');
+    return wrap;
+  }
+
   // Check if either player is a bot (for AI control)
   const isP1Bot = tournamentMatch ? (tournamentMatch.p1_is_bot || false) : false;
   const isP2Bot = tournamentMatch ? (tournamentMatch.p2_is_bot || false) : false;
   const currentUser = getCurrentUser();
-  const isUserP1 = currentUser && tournamentMatch && !isP1Bot && 
+  const isUserP1 = currentUser && tournamentMatch && !isP1Bot &&
     (tournamentMatch.p1_user_id === currentUser.id);
-  const isUserP2 = currentUser && tournamentMatch && !isP2Bot && 
+  const isUserP2 = currentUser && tournamentMatch && !isP2Bot &&
     (tournamentMatch.p2_user_id === currentUser.id);
 
   // Pre-game UI: Start Match button
   const p1Name = matchData.p1 || 'Player 1';
   const p2Name = matchData.p2 || 'Player 2';
-  
+
   wrap.innerHTML = `
-    <div class="card">
-      <div class="row" style="justify-content: space-between; align-items: baseline;">
+    <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65">
+      <div class="flex items-start gap-5 mt-4 flex-wrap justify-between items-baseline">
         <div><strong>${escapeHTML(p1Name)}</strong> vs <strong>${escapeHTML(p2Name)}</strong></div>
-        <div class="score" id="score">0 : 0</div>
+        <div class="inline-flex items-center justify-center min-w-[72px] px-2.5 py-1 rounded-full bg-indigo-500/20 text-gray-200 font-semibold text-sm tracking-wider uppercase border border-indigo-400/60" id="score">0 : 0</div>
       </div>
-      <div class="row" style="margin-top:8px;">
-        <button class="btn primary" id="start">Start Match</button>
-        <button class="btn outline" id="join-spectator" style="display:none;">Join as Spectator</button>
-        <a class="btn" data-link href="/tournament">Back</a>
+      <div class="flex items-start gap-5 mt-4 flex-wrap mt-2">
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70" id="start">Start Match</button>
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap border-slate-400/50 text-gray-100 bg-gradient-to-br from-slate-400/10 to-transparent hover:bg-slate-900 hover:border-indigo-400/90 hover:shadow-lg hover:-translate-y-px hidden" id="join-spectator">Join as Spectator</button>
+        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/tournament">Back</a>
       </div>
-      <div id="spectator-count" style="margin-top:8px; color:#aaa; font-size:14px; display:none;">
+      <div id="spectator-count" class="mt-2 text-gray-400 text-sm hidden">
         <span id="spectator-count-value">0</span> spectator(s) watching
       </div>
     </div>
-    <div style="display:flex; gap:16px; margin-top:16px;">
-      <div id="host" style="position:relative; flex:2; min-width:0;"></div>
-      <div class="card" style="flex:1; min-width:300px; max-height:600px; display:flex; flex-direction:column;">
-        <h3 style="margin-bottom:12px;">Live Chat</h3>
-        <div id="chat-messages" style="flex:1; overflow-y:auto; min-height:200px; max-height:450px; padding:8px; background:#1a1a1a; border-radius:8px; margin-bottom:12px;">
-          <div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>
+    <div class="flex gap-4 mt-4">
+      <div id="host" class="relative flex-[2] min-w-0"></div>
+      <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65 flex-1 min-w-[300px] max-h-[600px] flex flex-col">
+        <h3 class="mb-3">Live Chat</h3>
+        <div id="chat-messages" class="flex-1 overflow-y-auto min-h-[200px] max-h-[450px] p-2 bg-[#1a1a1a] rounded-lg mb-3">
+          <div class="text-gray-400 text-xs text-center p-4">No messages yet. Start chatting!</div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="chat-input" placeholder="Type a message..." style="flex:1; padding:8px; background:#333; border:none; border-radius:6px; color:#fff; font-size:14px;" />
-          <button class="btn primary" id="chat-send" style="padding:8px 16px;">Send</button>
+        <div class="flex gap-2">
+          <input type="text" id="chat-input" placeholder="Type a message..." class="flex-1 p-2 bg-[#333] border-0 rounded-md text-white text-sm" />
+          <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70" id="chat-send">Send</button>
         </div>
-        <div style="margin-top:8px; font-size:12px; color:#888;">
+        <div class="mt-2 text-xs text-gray-400">
           <span id="spectator-info">Join to watch and chat!</span>
         </div>
       </div>
     </div>
-    <div id="connection-status" style="margin-top: 10px; padding: 10px; border-radius: 4px; display:none;"></div>
+    <div id="connection-status" class="hidden"></div>
     <style>
       #connection-status {
         display: none !important;
@@ -130,7 +137,7 @@ export const GameView = async (params: Record<string, string>) => {
   let updateGameStateRef: ((gameState: any) => void) | null = null;
 
   const token = getToken();
-  
+
   // Connect WebSocket with authentication if available
   function connectWebSocket() {
     webSocketService.connect(token || undefined);
@@ -155,15 +162,15 @@ export const GameView = async (params: Record<string, string>) => {
           joinBtn.style.display = 'inline-block';
           joinBtn.textContent = `Join as Spectator (${response.games.length} active game${response.games.length > 1 ? 's' : ''})`;
         }
-        
+
         // If there's exactly one game, we could auto-join
         // For now, user needs to click the button
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('No active games found or error checking:', err);
     }
   }
-  
+
   const chatInput = wrap.querySelector('#chat-input') as HTMLInputElement;
   chatInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
@@ -179,7 +186,9 @@ export const GameView = async (params: Record<string, string>) => {
     statusEl.style.display = 'block';
   }
 
-  function updateSpectatorCount(count: number) {
+  // Spectator count update function (currently unused but may be needed for future features)
+  // @ts-expect-error - Reserved for future spectator count feature
+  function _updateSpectatorCount(count: number) {
     const countEl = wrap.querySelector('#spectator-count-value') as HTMLElement;
     const countContainer = wrap.querySelector('#spectator-count') as HTMLElement;
     if (countEl) countEl.textContent = String(count);
@@ -196,19 +205,19 @@ export const GameView = async (params: Record<string, string>) => {
     if (!chatContainer) return;
 
     if (chatMessages.length === 0) {
-      chatContainer.innerHTML = '<div style="color:#888; font-size:12px; text-align:center; padding:16px;">No messages yet. Start chatting!</div>';
+      chatContainer.innerHTML = '<div class="text-gray-400 text-xs text-center p-4">No messages yet. Start chatting!</div>';
       return;
     }
 
     chatContainer.innerHTML = chatMessages.map(msg => {
       const time = new Date(msg.timestamp).toLocaleTimeString();
       return `
-        <div style="margin-bottom:8px; padding:6px; background:#222; border-radius:4px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <strong style="color:#5e81f4; font-size:12px;">${escapeHTML(msg.username)}</strong>
-            <span style="color:#666; font-size:11px;">${time}</span>
+        <div class="mb-2 p-1.5 bg-[#222] rounded">
+          <div class="flex justify-between mb-1">
+            <strong class="text-[#5e81f4] text-xs">${escapeHTML(msg.username)}</strong>
+            <span class="text-[#666] text-[11px]">${time}</span>
           </div>
-          <div style="color:#ddd; font-size:13px; word-wrap:break-word;">${escapeHTML(msg.message)}</div>
+          <div class="text-[#ddd] text-[13px] break-words">${escapeHTML(msg.message)}</div>
         </div>
       `;
     }).join('');
@@ -220,7 +229,7 @@ export const GameView = async (params: Record<string, string>) => {
   function sendChatMessage() {
     const input = chatInput;
     if (!input || !input.value.trim() || !gameConnected) return;
-    
+
     webSocketService.sendChatMessage(input.value);
     input.value = '';
   }
@@ -243,17 +252,16 @@ export const GameView = async (params: Record<string, string>) => {
 
     // Create game on backend (requires authentication)
     setTimeout(() => {
-      if (matchData) {
-        const p1Name = matchData.p1 || 'Player 1';
-        const p2Name = matchData.p2 || 'Player 2';
-        // Include bot information if this is a tournament match with bots
-        // For tournament matches, send user IDs (not tournament player IDs) so server can determine role
-        const p1Id = isTournamentMatch && isP1Bot ? 'bot_' + matchData.p1Id : 
-                     (isTournamentMatch && matchData.p1UserId ? matchData.p1UserId.toString() : undefined);
-        const p2Id = isTournamentMatch && isP2Bot ? 'bot_' + matchData.p2Id : 
-                     (isTournamentMatch && matchData.p2UserId ? matchData.p2UserId.toString() : undefined);
-        webSocketService.createGame(p1Name, p2Name, p2Id, p1Id);
-      }
+      if (!matchData) return;
+      const p1NameToSend = matchData.p1 || 'Player 1';
+      const p2NameToSend = matchData.p2 || 'Player 2';
+      // Include bot information if this is a tournament match with bots
+      // For tournament matches, send user IDs (not tournament player IDs) so server can determine role
+      const p1Id = isTournamentMatch && isP1Bot && 'p1Id' in matchData ? 'bot_' + String(matchData.p1Id) :
+                   (isTournamentMatch && 'p1UserId' in matchData && matchData.p1UserId ? matchData.p1UserId.toString() : undefined);
+      const p2Id = isTournamentMatch && isP2Bot && 'p2Id' in matchData ? 'bot_' + String(matchData.p2Id) :
+                   (isTournamentMatch && 'p2UserId' in matchData && matchData.p2UserId ? matchData.p2UserId.toString() : undefined);
+      webSocketService.createGame(p1NameToSend, p2NameToSend, p2Id, p1Id);
     }, 1000);
 
     // Mark match as playing on start (only for client-side matches)
@@ -265,7 +273,7 @@ export const GameView = async (params: Record<string, string>) => {
   async function joinAsSpectator() {
     isSpectator = true;
     updateConnectionStatus('🔄 Looking for active games...');
-    
+
     try {
       // Get list of active games
       const response = await gameAPI.getActiveGames();
@@ -273,17 +281,17 @@ export const GameView = async (params: Record<string, string>) => {
         // Join the first active game (or you could show a list to choose)
         const gameToJoin = response.games[0];
         currentGameId = gameToJoin.id;
-        
+
         connectWebSocket();
         setupWebSocketListeners();
-        
+
         setTimeout(() => {
           webSocketService.joinGame(currentGameId!);
         }, 500);
       } else {
         updateConnectionStatus('❌ No active games found. Start a match first!', true);
       }
-    } catch (err) {
+    } catch (err: any) {
       updateConnectionStatus('❌ Error finding games. Please try again.', true);
       console.error('Error joining as spectator:', err);
     }
@@ -294,20 +302,20 @@ export const GameView = async (params: Record<string, string>) => {
   function setupWebSocketListeners() {
     webSocketService.onGameStateUpdate((gameState) => {
       if (!gameState) return;
-      
+
       // This will be handled inside startLocalGame or startSpectatorView
       if (!gameConnected) {
         gameConnected = true;
         // Don't show connection status message
         currentGameId = webSocketService.getCurrentGameId();
-        
+
         if (!isSpectator) {
           startLocalGame(); // Start the local game loop once connected
         } else {
           startSpectatorView(); // Start spectator view
         }
       }
-      
+
       // Update game state for rendering and AI calculations
       if (gameState.id === currentGameId && updateGameStateRef) {
         updateGameStateRef(gameState);
@@ -321,11 +329,11 @@ export const GameView = async (params: Record<string, string>) => {
 
   function startSpectatorView() {
     const host = wrap.querySelector('#host') as HTMLDivElement;
-    
+
     host.innerHTML = `
-      <div style="padding:16px; background:#222; border-radius:8px; margin-bottom:16px;">
-        <h3 style="margin-bottom:8px;">Spectator Mode</h3>
-        <p style="color:#aaa; font-size:14px;">You are watching this match live. Chat with other spectators below!</p>
+      <div class="p-4 bg-[#222] rounded-lg mb-4">
+        <h3 class="mb-2">Spectator Mode</h3>
+        <p class="text-gray-400 text-sm">You are watching this match live. Chat with other spectators below!</p>
       </div>
     `;
 
@@ -342,7 +350,9 @@ export const GameView = async (params: Record<string, string>) => {
     let ballX = WIDTH / 2, ballY = HEIGHT / 2;
     let scoreL = 0, scoreR = 0;
 
-    function updateSpectatorGameState(gameState: any) {
+    // Spectator game state update function (currently unused but may be needed for future features)
+    // @ts-expect-error - Reserved for future spectator mode enhancements
+    function _updateSpectatorGameState(gameState: any) {
       if (!gameState || !gameState.players || !gameState.ball) return;
 
       scoreL = gameState.players[0]?.score || 0;
@@ -395,8 +405,7 @@ export const GameView = async (params: Record<string, string>) => {
     render();
 
     // Render loop for spectators (visual only)
-    let lastFrame = performance.now();
-    function frame(now: number) {
+    function frame() {
       render();
       requestAnimationFrame(frame);
     }
@@ -413,11 +422,11 @@ export const GameView = async (params: Record<string, string>) => {
     const host = wrap.querySelector('#host') as HTMLDivElement;
 
     host.innerHTML = `
-      <div class="row" style="margin-top:8px; gap:12px;">
-        <button class="btn" id="pause">Pause</button>
-        <button class="btn" id="quit">Quit match</button>
+      <div class="flex items-start gap-5 mt-4 flex-wrap mt-2 gap-3">
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="pause">Pause</button>
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="quit">Quit match</button>
       </div>
-      <div style="margin-top: 8px; color: #666;">
+      <div class="mt-2 text-[#666]">
         <small>Playing as: <strong id="player-role">Connecting...</strong></small>
       </div>
     `;
@@ -438,14 +447,14 @@ export const GameView = async (params: Record<string, string>) => {
     let paused = false;
     let raf = 0;
     let gameStarted = false;
-    
+
     // AI for bot players
     let aiP1: StrongPaddleAI | null = null;
     let aiP2: StrongPaddleAI | null = null;
     const VISION_MS = 1000;
     let nextVisionTs = 0;
     let sampledBall: BallState = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
-    
+
     // Initialize AI if bots are present
     if (isTournamentMatch) {
       const aiConfig: AIConfig = {
@@ -469,11 +478,11 @@ export const GameView = async (params: Record<string, string>) => {
         defocusFrac: 0.25,
         defocusMultiplier: 1.35,
       };
-      
+
       if (isP1Bot) {
         aiP1 = new StrongPaddleAI(aiConfig);
       }
-      
+
       if (isP2Bot) {
         // For right paddle, adjust paddleX
         aiP2 = new StrongPaddleAI({
@@ -482,7 +491,7 @@ export const GameView = async (params: Record<string, string>) => {
         });
       }
     }
-    
+
     function updateAIVision(nowMs: number) {
       if (nowMs >= nextVisionTs) {
         sampledBall = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
@@ -507,8 +516,8 @@ export const GameView = async (params: Record<string, string>) => {
     host.appendChild(overlay);
 
     // Pause / Quit
-    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { 
-      paused = !paused; 
+    (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => {
+      paused = !paused;
     };
     (wrap.querySelector('#quit') as HTMLButtonElement).onclick = () => {
       if (confirm('Quit this match? Current score will be saved.')) endMatch();
@@ -598,15 +607,15 @@ export const GameView = async (params: Record<string, string>) => {
     // Input handling - send movements to backend
     const keyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === ' ') e.preventDefault();
-      
+
       // Don't process input if paused or game not started
       if (paused || !gameStarted) {
         if (e.key === ' ') paused = !paused;
         return;
       }
-      
+
       let newPosition: number | null = null;
-      
+
       // Only allow human player to control their paddle
       if (isTournamentMatch) {
         if ((e.key === 'w' || e.key === 'W') && isUserP1 && !isP1Bot) {
@@ -636,7 +645,7 @@ export const GameView = async (params: Record<string, string>) => {
           newPosition = rY + 20;
         }
       }
-      
+
       if (newPosition !== null && gameConnected) {
         // For tournament matches, specify which player is moving
         if (isTournamentMatch) {
@@ -675,9 +684,9 @@ export const GameView = async (params: Record<string, string>) => {
         acc -= dt;
       }
       render();
-      if (isOver()) { 
-        endMatch(); 
-        return; 
+      if (isOver()) {
+        endMatch();
+        return;
       }
       raf = requestAnimationFrame(frame);
     }
@@ -687,7 +696,7 @@ export const GameView = async (params: Record<string, string>) => {
       if (nowMs !== undefined) {
         updateAIVision(nowMs);
       }
-      
+
       // Update AI and send paddle movements for bots
       if (isTournamentMatch && gameConnected && gameStarted) {
         // AI for Player 1 (left paddle) - bot controls this paddle
@@ -695,20 +704,20 @@ export const GameView = async (params: Record<string, string>) => {
           aiP1.update(dtSec, nowMs || Date.now(), lY, sampledBall, scoreL, scoreR);
           const snap = aiP1.getSnapshot();
           const newY = Math.max(0, Math.min(HEIGHT - PADDLE_H, snap.targetY || lY));
-          
+
           // Only send if position changed significantly
           if (Math.abs(newY - lY) > 1) {
             // Send movement for bot player1
             webSocketService.movePaddle(newY, 'player1');
           }
         }
-        
+
         // AI for Player 2 (right paddle) - bot controls this paddle
         if (aiP2 && isP2Bot && !isUserP2 && gameConnected) {
           aiP2.update(dtSec, nowMs || Date.now(), rY, sampledBall, scoreL, scoreR);
           const snap = aiP2.getSnapshot();
           const newY = Math.max(0, Math.min(HEIGHT - PADDLE_H, snap.targetY || rY));
-          
+
           // Only send if position changed significantly
           if (Math.abs(newY - rY) > 1) {
             // Send movement for bot player2
@@ -716,7 +725,7 @@ export const GameView = async (params: Record<string, string>) => {
           }
         }
       }
-      
+
       updateScoreboard();
     }
 
@@ -727,8 +736,8 @@ export const GameView = async (params: Record<string, string>) => {
       drawBall(ballX, ballY);
     }
 
-    function isOver() { 
-      return scoreL >= SCORE_TO_WIN || scoreR >= SCORE_TO_WIN; 
+    function isOver() {
+      return scoreL >= SCORE_TO_WIN || scoreR >= SCORE_TO_WIN;
     }
 
     function teardown() {
@@ -740,21 +749,24 @@ export const GameView = async (params: Record<string, string>) => {
 
     async function endMatch() {
       teardown();
-      
+
       // Determine winner
       let winnerMessage = '';
       let winnerId: number | null = null;
-      
-      if (isTournamentMatch && matchData.tournamentId && matchData.dbMatchId) {
+
+      if (!matchData) return;
+
+      if (isTournamentMatch && 'tournamentId' in matchData && 'dbMatchId' in matchData &&
+          matchData.tournamentId != null && matchData.dbMatchId != null) {
         // Tournament match - save to database
-        if (scoreL >= SCORE_TO_WIN) {
+        if (scoreL >= SCORE_TO_WIN && 'p1Id' in matchData && matchData.p1Id != null) {
           winnerId = matchData.p1Id;
-          winnerMessage = `${matchData.p1} wins!`;
-        } else if (scoreR >= SCORE_TO_WIN) {
+          winnerMessage = `${matchData.p1 || 'Player 1'} wins!`;
+        } else if (scoreR >= SCORE_TO_WIN && 'p2Id' in matchData && matchData.p2Id != null) {
           winnerId = matchData.p2Id;
-          winnerMessage = `${matchData.p2} wins!`;
+          winnerMessage = `${matchData.p2 || 'Player 2'} wins!`;
         }
-        
+
         try {
           // Update tournament match result
           const response = await fetch(`/api/tournaments/${matchData.tournamentId}/matches/${matchData.dbMatchId}/result`, {
@@ -769,27 +781,27 @@ export const GameView = async (params: Record<string, string>) => {
               winner_id: winnerId
             })
           });
-          
+
           if (!response.ok) {
             console.error('Failed to update tournament match result');
           }
-        } catch (err) {
+        } catch (err: any) {
           console.error('Error updating tournament match:', err);
         }
-        
+
         alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
         navigate(`/tournament/${matchData.tournamentId}`);
       } else if (m) {
         // Client-side match
         setMatchStatus(matchId, 'finished');
         reportScore(matchId, scoreL, scoreR);
-        
+
         if (scoreL >= SCORE_TO_WIN) {
           winnerMessage = `${aliasOf(m.p1)} wins!`;
         } else if (scoreR >= SCORE_TO_WIN) {
           winnerMessage = `${aliasOf(m.p2)} wins!`;
         }
-        
+
         alert(`Match ended. Final score: ${scoreL} : ${scoreR}\n${winnerMessage}`);
         navigate('/tournament');
       }
@@ -827,7 +839,7 @@ export const GameView = async (params: Record<string, string>) => {
 
     // Store reference to updateGameFromBackend for WebSocket updates
     updateGameStateRef = updateGameFromBackend;
-    
+
     // Start AFTER countdown
     updateScoreboard();
     drawTable();

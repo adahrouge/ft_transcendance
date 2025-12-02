@@ -1,34 +1,33 @@
-// src/api.ts - API service for backend communication
-
-// API base URL - use relative path since nginx proxies to backend
-const API_BASE_URL = '';
+// API service for backend communication
+import { API_BASE_URL } from '../constants/api.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 // Get auth token from localStorage
 export function getToken(): string | null {
-  return localStorage.getItem('auth_token');
+  return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
 }
 
 // Set auth token in localStorage
 export function setAuthToken(token: string | null) {
   if (token) {
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
   } else {
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
   }
 }
 
 // API request helper
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
   const token = getToken();
-  const headers: HeadersInit = {
-    ...options.headers,
+  const headers: Record<string, string> = {
+    ...(options.headers as Record<string, string>),
   };
-  
+
   // Only set Content-Type if there's a body
   if (options.body) {
     headers['Content-Type'] = 'application/json';
   }
-  
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -109,9 +108,9 @@ export const userAPI = {
   async uploadAvatar(file: File) {
     const formData = new FormData();
     formData.append('avatar', file);
-    
+
     const token = getToken();
-    const headers: HeadersInit = {};
+    const headers: Record<string, string> = {};
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }

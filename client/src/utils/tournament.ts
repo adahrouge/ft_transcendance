@@ -1,21 +1,7 @@
-// src/state.ts
+// Tournament management utilities
 import { normAlias } from './utils.js';
-
-export type Player = { id: string; alias: string };
-export type Match = {
-  id: string;
-  p1: string;     // player id
-  p2?: string;    // undefined => BYE
-  score1: number;
-  score2: number;
-  status: 'pending' | 'playing' | 'finished';
-};
-
-export type Tournament = {
-  players: Player[];
-  matches: Match[];
-  currentIndex: number;
-};
+import type { Match, Tournament } from '../types/tournament.js';
+import { STORAGE_KEYS } from '../constants/storage.js';
 
 const DEFAULT: Tournament = { players: [], matches: [], currentIndex: 0 };
 let state: Tournament = structuredClone(DEFAULT);
@@ -128,6 +114,15 @@ export function pendingQueue(): Match[] {
 }
 
 // ---- Persistence ----
-const KEY = 'ft_tournament_state_v1';
-export function saveState() { try { sessionStorage.setItem(KEY, JSON.stringify(state)); } catch {} }
-export function loadState() { try { const raw = sessionStorage.getItem(KEY); if (raw) state = JSON.parse(raw); } catch {} }
+export function saveState() {
+  try {
+    sessionStorage.setItem(STORAGE_KEYS.TOURNAMENT_STATE, JSON.stringify(state));
+  } catch {}
+}
+
+export function loadState() {
+  try {
+    const raw = sessionStorage.getItem(STORAGE_KEYS.TOURNAMENT_STATE);
+    if (raw) state = JSON.parse(raw);
+  } catch {}
+}

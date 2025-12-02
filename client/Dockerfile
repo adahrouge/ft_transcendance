@@ -1,38 +1,20 @@
-# Multi-stage build: build TS with esbuild, then serve via nginx with HTTPS
-FROM node:20-alpine AS build
+FROM node:20-alpine
+
 WORKDIR /app
 
-# Copy package files first
+# Copy package files
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy source files explicitly - ADD WEBSOCKET-SERVICE
-COPY index.html .
-COPY ai.ts main.ts router.ts state.ts utils.ts websocket-service.ts api.ts user-state.ts navbar.ts .
-COPY views/ ./views/
+# Copy source files
+COPY . .
 
 # Build the application
-RUN npx esbuild main.ts --bundle --minify --sourcemap --outfile=dist/app.js
+RUN npm run build
 
-FROM nginx:1.27-alpine
+# Expose ports
+EXPOSE 80
 
-# Generate self-signed cert for dev HTTPS
-RUN apk add --no-cache openssl \
- && mkdir -p /etc/ssl/private \
- && openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-      -keyout /etc/ssl/private/self.key \
-      -out /etc/ssl/certs/self.crt \
-      -subj "/CN=localhost"
-
-# Copy built assets
-COPY --from=build /app/dist/app.js /usr/share/nginx/html/app.js
-COPY --from=build /app/index.html /usr/share/nginx/html/index.html
-
-# Use our nginx.conf with security headers + HTTPS redirect
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Remove the default Nginx vhost
-RUN rm -f /etc/nginx/conf.d/default.conf || true
-
-EXPOSE 80 443
-CMD ["nginx", "-g", "daemon off;"]
+# Use Vite preview server for production
+# Runs on port 80 inside container, mapped to 8080 on host via docker-compose
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "80"]

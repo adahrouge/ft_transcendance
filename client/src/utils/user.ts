@@ -1,15 +1,6 @@
-// src/user-state.ts - User state management with persistence
-
-import { authAPI, userAPI } from './api.js';
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  created_at: string;
-}
+// User management utilities
+import { authAPI, userAPI } from '../services/api.js';
+import type { User } from '../types/user.js';
 
 let currentUser: User | null = null;
 let userListeners: ((user: User | null) => void)[] = [];

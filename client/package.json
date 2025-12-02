@@ -1,14 +1,19 @@
 {
-  "name": "ft_transcendence-mandatory",
-  "version": "1.0.0",
+  "name": "client",
   "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --minify --sourcemap --outfile=dist/app.js",
-    "dev": "esbuild src/main.ts --bundle --sourcemap --outfile=app.js --servedir=.",
-    "clean": "rm -rf dist app.js"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "devDependencies": {
-    "esbuild": "^0.24.0"
-  },
-  "type": "module"
+    "@tailwindcss/vite": "^4.1.17",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
+    "typescript": "~5.9.3",
+    "vite": "^5.4.21"
+  }
 }

@@ -1,6 +1,6 @@
 // src/views/Local.ts
 import { navigate } from '../router.js';
-import { escapeHTML, sanitizeAlias } from '../utils.js';
+import { escapeHTML, sanitizeAlias } from '../utils/utils.js';
 
 const WIDTH = 960;
 const HEIGHT = 540;
@@ -15,19 +15,19 @@ export const LocalGameView = () => {
   const wrap = document.createElement('div');
 
   wrap.innerHTML = `
-    <div class="card">
+    <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65">
       <h2>Local 1v1 (Same Keyboard)</h2>
-      <p class="muted">Left paddle: W/S · Right paddle: ↑/↓</p>
-      <div class="row">
-        <input class="input-field" id="p1" placeholder="Player 1 alias" value="Player 1" />
-        <input class="input-field" id="p2" placeholder="Player 2 alias" value="Player 2" />
+      <p class="text-gray-400 text-sm">Left paddle: W/S · Right paddle: ↑/↓</p>
+      <div class="flex items-start gap-5 mt-4 flex-wrap">
+        <input class="rounded-xl border border-slate-400/45 bg-slate-900/90 text-gray-100 px-3 py-2 text-sm outline-none w-full transition-all duration-150 shadow-lg shadow-slate-900/75 focus:border-indigo-500 focus:shadow-indigo-500/90 focus:shadow-xl focus:-translate-y-px focus:bg-slate-900" id="p1" placeholder="Player 1 alias" value="Player 1" />
+        <input class="rounded-xl border border-slate-400/45 bg-slate-900/90 text-gray-100 px-3 py-2 text-sm outline-none w-full transition-all duration-150 shadow-lg shadow-slate-900/75 focus:border-indigo-500 focus:shadow-indigo-500/90 focus:shadow-xl focus:-translate-y-px focus:bg-slate-900" id="p2" placeholder="Player 2 alias" value="Player 2" />
       </div>
-      <div class="row">
-        <button class="btn primary" id="start">Start Match</button>
-        <a class="btn" data-link href="/">Back</a>
+      <div class="flex items-start gap-5 mt-4 flex-wrap">
+        <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70" id="start">Start Match</button>
+        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
       </div>
     </div>
-    <div id="game-host" style="position:relative;"></div>
+    <div id="game-host" class="relative"></div>
   `;
 
   const host = wrap.querySelector('#game-host') as HTMLDivElement;
@@ -44,14 +44,14 @@ export const LocalGameView = () => {
 
   function startGame(p1Alias: string, p2Alias: string) {
     host.innerHTML = `
-      <div class="card">
-        <div class="row" style="justify-content: space-between; align-items: baseline;">
+      <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg transition-all duration-150 ease-out hover:-translate-y-0.5 hover:shadow-3xl hover:border-indigo-400/65">
+        <div class="flex items-start gap-5 mt-4 flex-wrap justify-between items-baseline">
           <div><strong>${escapeHTML(p1Alias)}</strong> vs <strong>${escapeHTML(p2Alias)}</strong></div>
-          <div class="score" id="score">0 : 0</div>
+          <div class="inline-flex items-center justify-center min-w-[72px] px-2.5 py-1 rounded-full bg-indigo-500/20 text-gray-200 font-semibold text-sm tracking-wider uppercase border border-indigo-400/60" id="score">0 : 0</div>
         </div>
-        <div class="row" style="margin-top:8px;">
-          <button class="btn" id="pause">Pause</button>
-          <button class="btn" id="quit">Quit</button>
+        <div class="flex items-start gap-5 mt-4 flex-wrap mt-2">
+          <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="pause">Pause</button>
+          <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" id="quit">Quit</button>
         </div>
       </div>
     `;
