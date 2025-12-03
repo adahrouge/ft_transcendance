@@ -2,15 +2,18 @@ services:
   frontend:
     build: ./client
     ports:
-      - "8443:443"
-      - "8080:80"
+      - "0.0.0.0:8443:443"
+      - "0.0.0.0:8080:80"
     depends_on:
       - backend
+    # Allow frontend to reach backend by service name
+    environment:
+      - VITE_API_URL=http://backend:3001
 
   backend:
     build: ./server
     ports:
-      - "3001:3001"
+      - "0.0.0.0:3001:3001"
     environment:
       - NODE_ENV=development
       - DATABASE_PATH=/app/database/data/database.db
