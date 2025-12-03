@@ -6,7 +6,6 @@ services:
       - "0.0.0.0:8080:80"
     depends_on:
       - backend
-    # Allow frontend to reach backend by service name
     environment:
       - VITE_API_URL=http://backend:3001
 
@@ -15,8 +14,10 @@ services:
     ports:
       - "0.0.0.0:3001:3001"
     environment:
-      - NODE_ENV=development
-      - DATABASE_PATH=/app/database/data/database.db
+    - NODE_ENV=development
+    - DATABASE_PATH=/app/database/data/database.db
+    - HOST_LAN_IP=${HOST_LAN_IP}
+
     volumes:
       - ./server/database/data:/app/database/data
       - ./server/database/uploads:/app/database/uploads
