@@ -2,15 +2,10 @@
 import { navigate } from '../router.js';
 import { authAPI } from '../services/api.js';
 import { setCurrentUser } from '../utils/user.js';
+import backgroundImage from '../assets/images/background.jpg';
 
 export const AuthView = () => {
   const wrap = document.createElement('div');
-
-  // Hide navbar when auth page is shown
-  const header = document.querySelector('header');
-  if (header) {
-    (header as HTMLElement).style.display = 'none';
-  }
 
   wrap.innerHTML = `
     <div class="auth-container">
@@ -79,24 +74,15 @@ export const AuthView = () => {
       left: 0;
       right: 0;
       bottom: 0;
-      background:
-        radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.15), transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(22, 163, 74, 0.20), transparent 45%),
-        radial-gradient(circle at 50% 50%, #000000, #0a0f0a 100%);
+      background: url('${backgroundImage}') center/cover no-repeat;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
       overflow-y: auto;
-      animation: fadeIn 0.5s ease-in;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    /* Scanline effect */
+    /* Dark overlay for better readability */
     .auth-container::before {
       content: '';
       position: fixed;
@@ -104,14 +90,7 @@ export const AuthView = () => {
       left: 0;
       right: 0;
       bottom: 0;
-      background:
-        repeating-linear-gradient(
-          0deg,
-          rgba(0, 0, 0, 0.15),
-          rgba(0, 0, 0, 0.15) 1px,
-          transparent 1px,
-          transparent 2px
-        );
+      background: rgba(0, 0, 0, 0.5);
       pointer-events: none;
       z-index: 1;
     }
@@ -119,15 +98,16 @@ export const AuthView = () => {
     .auth-box {
       position: relative;
       z-index: 2;
-      background: rgba(0, 0, 0, 0.8);
-      border: 3px solid #22c55e;
-      border-radius: 0;
+      background: rgba(0, 0, 0, 0.7);
+      border: 3px solid #70c9e8;
+      border-radius: 20px;
       padding: 40px;
       max-width: 500px;
       width: 100%;
       box-shadow:
-        0 0 20px rgba(34, 197, 94, 0.3),
-        inset 0 0 30px rgba(34, 197, 94, 0.05);
+        0 0 40px rgba(112, 201, 232, 0.3),
+        0 10px 40px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
     }
 
     .auth-header {
@@ -138,11 +118,10 @@ export const AuthView = () => {
     .pixel-title {
       font-family: 'Press Start 2P', monospace;
       font-size: 24px;
-      color: #22c55e;
+      color: #70c9e8;
       text-shadow:
-        0 0 10px rgba(34, 197, 94, 0.8),
-        0 0 20px rgba(34, 197, 94, 0.4),
-        2px 2px 0px rgba(0, 0, 0, 0.8);
+        0 0 10px rgba(112, 201, 232, 0.5),
+        0 0 20px rgba(112, 201, 232, 0.3);
       margin-bottom: 15px;
       letter-spacing: 2px;
     }
@@ -150,15 +129,15 @@ export const AuthView = () => {
     .auth-subtitle {
       font-family: 'VT323', monospace;
       font-size: 20px;
-      color: #10b981;
+      color: #5db3d1;
       letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(93, 179, 209, 0.5);
     }
 
     .auth-tabs {
       display: flex;
-      gap: 0;
+      gap: 12px;
       margin-bottom: 30px;
-      border: 2px solid #22c55e;
     }
 
     .tab-btn {
@@ -166,22 +145,27 @@ export const AuthView = () => {
       font-family: 'Press Start 2P', monospace;
       font-size: 12px;
       padding: 15px;
-      background: rgba(0, 0, 0, 0.5);
-      border: none;
-      color: #10b981;
+      background: rgba(112, 201, 232, 0.1);
+      border: 2px solid #2c6b87;
+      border-radius: 12px;
+      color: #70c9e8;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       letter-spacing: 1px;
     }
 
     .tab-btn:hover {
-      background: rgba(34, 197, 94, 0.1);
+      background: rgba(112, 201, 232, 0.2);
+      border-color: #70c9e8;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(112, 201, 232, 0.3);
     }
 
     .tab-btn.active {
-      background: #22c55e;
-      color: #000000;
-      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+      background: #70c9e8;
+      color: #000;
+      border-color: #a8d8ea;
+      box-shadow: 0 0 20px rgba(112, 201, 232, 0.5);
     }
 
     .auth-forms {
@@ -190,22 +174,10 @@ export const AuthView = () => {
 
     .auth-form {
       display: none;
-      animation: slideIn 0.3s ease-out;
     }
 
     .auth-form.active {
       display: block;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateX(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
     }
 
     .form-group {
@@ -216,32 +188,37 @@ export const AuthView = () => {
       display: block;
       font-family: 'Press Start 2P', monospace;
       font-size: 10px;
-      color: #22c55e;
+      color: #70c9e8;
       margin-bottom: 10px;
       letter-spacing: 1px;
+      text-shadow: 0 0 5px rgba(112, 201, 232, 0.3);
     }
 
     .form-group input {
       width: 100%;
-      padding: 12px;
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid #16a34a;
-      color: #22c55e;
+      padding: 14px;
+      background: rgba(0, 0, 0, 0.5);
+      border: 2px solid #2c6b87;
+      border-radius: 10px;
+      color: #fff;
       font-family: 'VT323', monospace;
       font-size: 18px;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .form-group input:focus {
       outline: none;
-      border-color: #22c55e;
-      box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-      background: rgba(0, 0, 0, 0.8);
+      border-color: #70c9e8;
+      box-shadow:
+        0 0 20px rgba(112, 201, 232, 0.4),
+        inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      background: rgba(0, 0, 0, 0.7);
     }
 
     .form-group input::placeholder {
-      color: #16a34a;
-      opacity: 0.6;
+      color: #5db3d1;
+      opacity: 0.5;
     }
 
     .error-message {
@@ -255,47 +232,32 @@ export const AuthView = () => {
 
     .submit-btn {
       width: 100%;
-      padding: 15px;
-      background: #22c55e;
-      border: 3px solid #16a34a;
-      color: #000000;
+      padding: 18px;
+      background: #70c9e8;
+      border: 3px solid #a8d8ea;
+      border-radius: 12px;
+      color: #000;
       font-family: 'Press Start 2P', monospace;
       font-size: 14px;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       letter-spacing: 2px;
-      position: relative;
-      overflow: hidden;
+      box-shadow:
+        0 0 20px rgba(112, 201, 232, 0.5),
+        0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     .submit-btn:hover {
-      background: #16a34a;
+      background: #a8d8ea;
+      border-color: #70c9e8;
       box-shadow:
-        0 0 20px rgba(34, 197, 94, 0.6),
-        inset 0 0 20px rgba(0, 0, 0, 0.2);
-      transform: translateY(-2px);
+        0 0 30px rgba(112, 201, 232, 0.8),
+        0 8px 20px rgba(0, 0, 0, 0.4);
+      transform: translateY(-3px);
     }
 
     .submit-btn:active {
-      transform: translateY(0);
-    }
-
-    .submit-btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .submit-btn:hover::before {
-      width: 300px;
-      height: 300px;
+      transform: translateY(-1px);
     }
 
     .btn-text {
@@ -402,8 +364,9 @@ function setupLoginForm(wrap: HTMLElement) {
     try {
       const data = await authAPI.login(username, password);
       setCurrentUser(data.user);
+
       // Navigate to home after successful login
-      navigate('/');
+      navigate('/home');
     } catch (err: any) {
       errorEl.textContent = err.message || 'Login failed';
       submitBtn.classList.remove('loading');
@@ -431,8 +394,9 @@ function setupSignupForm(wrap: HTMLElement) {
     try {
       const data = await authAPI.register(username, email, password, displayName || undefined);
       setCurrentUser(data.user);
+
       // Navigate to home after successful registration
-      navigate('/');
+      navigate('/home');
     } catch (err: any) {
       errorEl.textContent = err.message || 'Registration failed';
       submitBtn.classList.remove('loading');

@@ -30,7 +30,7 @@ export const AIGameView = () => {
         <p class="text-gray-400 text-sm">You must be logged in to play against the AI.</p>
         <div class="flex items-start gap-5 mt-4 flex-wrap">
           <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70">Login / Register</a>
-          <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
+          <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/home">Back</a>
         </div>
       </div>
     `;
@@ -48,7 +48,7 @@ export const AIGameView = () => {
       </div>
       <div class="flex items-start gap-5 mt-4 flex-wrap mt-2">
         <button class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70" id="start">Start Match</button>
-        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
+        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/home">Back</a>
       </div>
     </div>
     <div id="host" class="relative"></div>
@@ -180,7 +180,7 @@ export const AIGameView = () => {
 
     (wrap.querySelector('#pause') as HTMLButtonElement).onclick = () => { paused = !paused; };
     (wrap.querySelector('#quit') as HTMLButtonElement).onclick = () => {
-      if (confirm('Quit this match?')) { teardown(); navigate('/'); }
+      if (confirm('Quit this match?')) { teardown(); navigate('/home'); }
     };
 
     // Fixed timestep loop
@@ -301,7 +301,7 @@ export const AIGameView = () => {
     function endMatch() {
       alert(`Match ended.\nYou: ${scoreL} — AI: ${scoreR}`);
       teardown();
-      navigate('/');
+      navigate('/home');
     }
 
     function teardown() {

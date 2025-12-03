@@ -3,105 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ft_transcendence • Pong Arena</title>
-
-  <!-- Fonts -->
+  <title>Pong</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Press+Start+2P&family=VT323&display=swap"
     rel="stylesheet"
   >
-
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    }
-
-    body {
-      min-height: 100vh;
-      color: #e5e7eb;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.06), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.20), transparent 55%),
-        radial-gradient(circle at 0% 100%, rgba(244, 114, 182, 0.10), transparent 60%),
-        linear-gradient(145deg, #020617 0%, #020617 50%, #020617 100%);
-      background-attachment: fixed;
-      line-height: 1.6;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* Canvas (Game / Local / AI) */
-    canvas {
-      display: block;
-      width: 100%;
-      max-width: 960px;
-      margin: 14px auto 12px;
-      aspect-ratio: 16 / 9;
-      background:
-        radial-gradient(circle at 0% 0%, rgba(30, 64, 175, 0.35), transparent 55%),
-        radial-gradient(circle at 100% 100%, rgba(8, 47, 73, 0.9), transparent 60%),
-        radial-gradient(circle at 50% 50%, #020617, #020617 70%);
-      border-radius: 20px;
-      border: 1px solid rgba(148, 163, 184, 0.35);
-      box-shadow: 0 30px 80px rgba(15, 23, 42, 0.95);
-    }
-
-    /* Small screens canvas adjustments */
-    @media (max-width: 768px) {
-      canvas {
-        margin-top: 10px;
-        border-radius: 16px;
-      }
-    }
-  </style>
 </head>
 
 <body>
-  <header class="sticky top-0 z-50 h-[68px] backdrop-blur-lg bg-gradient-to-b from-slate-950/95 to-slate-950/80 border-b border-slate-400/25">
-    <div class="max-w-[1120px] mx-auto px-5 flex items-center justify-between gap-4 h-full">
-      <div class="flex items-center gap-3">
-        <div class="text-lg font-semibold tracking-[0.13em] uppercase flex items-baseline gap-1.5">
-          <span class="w-2.5 h-2.5 rounded-full bg-gradient-conic from-cyan-400 via-indigo-500 via-purple-600 to-cyan-400 shadow-lg shadow-indigo-400/90 inline-block"></span>
-          <span>ft_transcendence</span>
-          <span class="text-xs font-normal text-gray-400 normal-case tracking-normal">Pong Arena</span>
-        </div>
-      </div>
-
-      <!-- Filled / updated dynamically by navbar.ts -->
-      <div class="header-actions flex items-center gap-2 flex-wrap justify-end">
-        <a href="/" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap bg-transparent text-gray-400 hover:bg-slate-900/80 hover:text-gray-100">Home</a>
-        <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap border-slate-400/50 text-gray-100 bg-gradient-to-br from-slate-400/10 to-transparent hover:bg-slate-900 hover:border-indigo-400/90 hover:shadow-lg hover:-translate-y-px">My Profile</a>
-        <!-- When logged in, JS will replace this with avatar + menu -->
-      </div>
-    </div>
-  </header>
-
-  <main id="app" class="max-w-[1120px] mx-auto px-5 py-6 pb-10 flex flex-col gap-6 min-h-[calc(100vh-68px-80px)]">
-    <!-- Your SPA views (Home / Tournament / Game / AI / Profile…) are rendered here by main.ts/router.ts -->
-    <noscript>
-      <div class="bg-slate-900/90 rounded-2xl border border-slate-400/25 shadow-2xl p-6 relative overflow-hidden backdrop-blur-lg">
-        <h2 class="text-xl font-semibold tracking-wide mb-1">JavaScript required</h2>
-        <p class="text-gray-400 text-sm">
-          This application is a single-page app. Please enable JavaScript to play Pong and access tournaments.
-        </p>
-      </div>
-    </noscript>
+  <main id="app">
   </main>
-
-  <footer class="text-center text-xs text-gray-400 px-4 py-2 pb-5">
-    <p>
-      &copy; 2025 ft_transcendence · Built with love, TypeScript and Pong.
-    </p>
-  </footer>
-
   <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

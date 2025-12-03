@@ -56,7 +56,6 @@ export function removePlayer(id: string) {
   }
 }
 
-// ---- Matches ----
 function shuffleInPlace<T>(arr: T[]) {
   for (let i = arr.length - 1; i > 0; i--) {
     const j = (Math.random() * (i + 1)) | 0;
@@ -113,7 +112,6 @@ export function pendingQueue(): Match[] {
   return state.matches.filter((m) => m.status === 'pending');
 }
 
-// ---- Persistence ----
 export function saveState() {
   try {
     sessionStorage.setItem(STORAGE_KEYS.TOURNAMENT_STATE, JSON.stringify(state));

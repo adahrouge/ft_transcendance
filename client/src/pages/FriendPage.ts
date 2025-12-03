@@ -17,7 +17,7 @@ export const FriendGameView = async () => {
         <p class="text-gray-400 text-sm">You must be logged in to play with friends.</p>
         <div class="flex items-start gap-5 mt-4 flex-wrap">
           <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out bg-gradient-to-br from-indigo-500 to-purple-600 text-gray-50 shadow-lg shadow-indigo-500/50 hover:-translate-y-px hover:shadow-xl hover:shadow-indigo-500/70">Login / Register</a>
-          <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
+          <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/home">Back</a>
         </div>
       </div>
     `;
@@ -66,7 +66,7 @@ export const FriendGameView = async () => {
       </div>
 
       <div class="mt-5">
-        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/">Back</a>
+        <a class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap" data-link href="/home">Back</a>
       </div>
     </div>
   `;

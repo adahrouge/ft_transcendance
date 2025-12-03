@@ -17,8 +17,8 @@ export const ProfileView = async () => {
   const isAuthenticated = authAPI.isAuthenticated();
 
   if (!isAuthenticated) {
-    // Redirect to home page if not authenticated
-    navigate('/');
+    // Redirect to auth page if not authenticated
+    navigate('/auth');
     return wrap;
   }
 

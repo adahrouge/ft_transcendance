@@ -1,53 +1,25 @@
-// src/main.ts
+// src/main.ts - Application entry point
 
-import { initRouter, navigate } from './router.js';
+import { initRouter } from './router.js';
 import { loadState, saveState } from './utils/tournament.js';
 import { initUserState, subscribeToUser } from './utils/user.js';
 import { updateNavbarUser } from './components/Navbar.js';
+import { initErrorHandling } from './utils/errorHandler.js';
+import { handleAuthRedirect } from './utils/authRouting.js';
 import './styles/style.css';
 
-// Global error guards – ensure no unhandled errors during browsing
-window.addEventListener('error', (e) => {
-  console.error('Unhandled error:', (e as ErrorEvent).error || (e as ErrorEvent).message);
-});
-window.addEventListener('unhandledrejection', (e) => {
-  console.error('Unhandled promise rejection:', (e as PromiseRejectionEvent).reason);
-});
+initErrorHandling();
+window.addEventListener('beforeunload', saveState);
 
-// Persist state on unload
-window.addEventListener('beforeunload', () => {
-  saveState();
-});
-
-// Init app
+// Load tournament state
 loadState();
-initUserState().then(() => {
-  // Subscribe to user changes to update navbar
-  subscribeToUser((user) => {
-    updateNavbarUser(user);
-  });
-});
 
-initRouter();
-
-// Mark active nav link on route change
-function markActive() {
-  const path = location.pathname;
-  document.querySelectorAll('nav a[data-link]')?.forEach((a) => {
-    const el = a as HTMLAnchorElement;
-    el.classList.toggle('active', el.getAttribute('href') === path);
-  });
+// Initialize application
+async function initApp() {
+  await initUserState();
+  subscribeToUser(updateNavbarUser);
+  handleAuthRedirect();
+  initRouter();
 }
-window.addEventListener('popstate', markActive);
 
-window.addEventListener('click', (e) => {
-  const target = (e.target as HTMLElement)?.closest?.('a[data-link]') as HTMLAnchorElement | null;
-  if (target) {
-    e.preventDefault();
-    const href = target.getAttribute('href')!;
-    navigate(href);
-    markActive();
-  }
-});
-
-markActive();
+initApp();

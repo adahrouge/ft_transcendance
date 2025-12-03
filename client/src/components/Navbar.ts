@@ -26,13 +26,13 @@ export function updateNavbarUser(user: User | null) {
                title="View Profile" />
         </a>
       </div>
-      <a href="/" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap bg-transparent text-gray-400 hover:bg-slate-900/80 hover:text-gray-100">Home</a>
+      <a href="/home" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap bg-transparent text-gray-400 hover:bg-slate-900/80 hover:text-gray-100">Home</a>
       <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap border-slate-400/50 text-gray-100 bg-gradient-to-br from-slate-400/10 to-transparent hover:bg-slate-900 hover:border-indigo-400/90 hover:shadow-lg hover:-translate-y-px">My Profile</a>
     `;
   } else {
     // User is not logged in
     headerActions.innerHTML = `
-      <a href="/" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap bg-transparent text-gray-400 hover:bg-slate-900/80 hover:text-gray-100">Home</a>
+      <a href="/home" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-transparent text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap bg-transparent text-gray-400 hover:bg-slate-900/80 hover:text-gray-100">Home</a>
       <a href="/profile" data-link class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border text-sm font-medium tracking-wide cursor-pointer transition-all duration-150 ease-out whitespace-nowrap border-slate-400/50 text-gray-100 bg-gradient-to-br from-slate-400/10 to-transparent hover:bg-slate-900 hover:border-indigo-400/90 hover:shadow-lg hover:-translate-y-px">My Profile</a>
     `;
   }
