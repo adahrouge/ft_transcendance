@@ -1,7 +1,6 @@
 APP=ft_pong
 PORT=8443
 
-# Auto-detect Compose command: prefer 'docker compose', fallback to 'docker-compose'
 DOCKER_COMPOSE := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
                       elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
                       else echo "MISSING"; fi)
@@ -11,12 +10,30 @@ $(error Docker Compose not found. Install Docker Desktop (with WSL integration) 
        'sudo apt-get install docker-compose-plugin' on Ubuntu to get 'docker compose')
 endif
 
+
+HOST_LAN_IP := $(shell hostname -I 2>/dev/null | awk '{print $$1}')
+
+
+ifeq ($(HOST_LAN_IP),)
+HOST_LAN_IP := $(shell ip -4 addr show 2>/dev/null | grep -oE "inet [0-9.]+" | awk '{print $$2}' | grep -v "^127" | head -n 1)
+endif
+
+ifeq ($(HOST_LAN_IP),)
+HOST_LAN_IP := localhost
+endif
+
+
+export HOST_LAN_IP
+
+
 .PHONY: build run clean logs stop restart detach backend frontend status
 
 run:
+	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
 	$(DOCKER_COMPOSE) up --build
 
 build:
+	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
 	$(DOCKER_COMPOSE) build
 
 stop:
@@ -33,12 +50,15 @@ restart:
 	$(DOCKER_COMPOSE) restart
 
 detach:
+	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
 	$(DOCKER_COMPOSE) up --build -d
 
 backend:
+	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
 	$(DOCKER_COMPOSE) up backend
 
 frontend:
+	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
 	$(DOCKER_COMPOSE) up frontend
 
 status:
