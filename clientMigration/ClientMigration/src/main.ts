@@ -1,7 +1,4 @@
-import './style.css'
+import "./style.css";
+import { setupRouter } from "./router";
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-  <div class="text-3xl font-bold underline">
-    Hello world!
-  </div>
-`
+setupRouter();

@@ -1,0 +1,90 @@
+@theme {
+  --animate-fade-in: fade-in 0.8s ease-out;
+  --animate-letter-pop: letter-pop 0.4s ease-out forwards;
+  --animate-fade-in-out: fade-in-out 2s ease-in-out infinite;
+  --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes letter-pop {
+    0% {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-in-out {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes pulse-scale {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+}
+
+@font-face {
+  font-family: "Pixel Game";
+  src: url("../assets/fonts/pixel-game.regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Pixel Game Extrude";
+  src: url("../assets/fonts/pixel-game.extrude.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@layer components {
+  .animate-fade-in {
+    @apply animate-fade-in;
+  }
+
+  .pixel-title {
+    @apply font-['Press_Start_2P',monospace];
+  }
+
+  .main-title span {
+    @apply inline-block text-[120px] leading-none relative z-10 text-[#70c9e8] font-['Pixel_Game'] [text-shadow:0_0_5px_rgba(112,201,232,0.5),0_0_10px_rgba(112,201,232,0.3)] animate-letter-pop;
+  }
+
+  .main-title span::after {
+    @apply content-[attr(data-text)] absolute left-[3px] top-[3px] -z-10 text-[#2c6b87] font-['Pixel_Game_Extrude'] [text-shadow:0_0_8px_rgba(44,107,135,0.3)];
+  }
+
+  .press-start {
+    @apply [text-shadow:0_0_5px_rgba(93,179,209,0.3)] animate-fade-in-out;
+  }
+
+  .press-start:hover {
+    @apply text-[#7ec9e0] [text-shadow:0_0_8px_rgba(126,201,224,0.5)];
+  }
+}
