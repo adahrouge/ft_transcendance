@@ -84,7 +84,7 @@
   }
 
   .press-start {
-    @apply fixed bottom-[37%] left-1/2 -translate-x-1/2 font-['Pixel_Game'] text-2xl text-[#70c9e8] [text-shadow:0_0_10px_rgba(112,201,232,0.5),0_0_20px_rgba(112,201,232,0.3)] cursor-pointer z-20 transition-all duration-300;
+    @apply fixed bottom-[40%] left-1/2 -translate-x-1/2 font-['Pixel_Game'] text-2xl text-[#70c9e8] [text-shadow:0_0_10px_rgba(112,201,232,0.5),0_0_20px_rgba(112,201,232,0.3)] cursor-pointer z-20 transition-all duration-300;
     animation: fade-in-out 2s ease-in-out infinite;
   }
 

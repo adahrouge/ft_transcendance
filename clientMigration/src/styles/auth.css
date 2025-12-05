@@ -10,7 +10,7 @@
   }
 
   .auth-box {
-    @apply relative z-10 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 w-[520px] max-w-[90%] backdrop-blur-sm;
+    @apply relative h-[80%] z-10 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 w-[520px] max-w-[90%] backdrop-blur-sm;
     image-rendering: pixelated;
 
     /* Pixelated border using box-shadow */
@@ -33,7 +33,7 @@
 
   /* Static form container with pixelated border */
   .auth-form-container {
-    @apply min-h-[420px] p-6 bg-[#0d1a28]/40 backdrop-blur-sm;
+    @apply h-[70%] p-6 bg-[#0d1a28]/40 backdrop-blur-sm;
 
     /* Pixelated inner border */
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
@@ -63,7 +63,7 @@
   }
 
   .form-group {
-    @apply flex flex-col gap-2;
+    @apply flex flex-col gap-1;
   }
 
   .form-group label {
@@ -71,7 +71,7 @@
   }
 
   .pixel-btn {
-    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl py-4 mt-4 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl py-4 mt-2 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
     border: none;
 
     /* Pixelated border with 3D effect */
@@ -95,7 +95,7 @@
 
   /* Google Auth Button */
   .google-btn {
-    @apply w-full bg-white text-[#1a1a1a] font-['Pixel_Game'] text-base py-3 mt-4 cursor-pointer transition-all duration-100 hover:bg-[#f0f0f0] flex items-center justify-center gap-3;
+    @apply w-full bg-white text-[#1a1a1a] font-['Pixel_Game'] text-xl py-4 mt-2 cursor-pointer transition-all duration-100 hover:bg-[#f0f0f0] flex items-center justify-center gap-3;
     border: none;
 
     /* Pixelated border */
@@ -115,7 +115,7 @@
   }
 
   .divider {
-    @apply flex items-center gap-3 my-4 text-[#5db3d1] font-['Pixel_Game'] text-sm;
+    @apply flex items-center gap-3 my-2 text-[#5db3d1] font-['Pixel_Game'] text-sm;
   }
 
   .divider::before,

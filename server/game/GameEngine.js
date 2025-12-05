@@ -1,4 +1,4 @@
-class GameEngine {
+  class GameEngine {
   constructor() {
     this.games = new Map();
     this.connectedPlayers = new Map();
