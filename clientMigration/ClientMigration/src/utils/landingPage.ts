@@ -24,8 +24,6 @@ export function startTypingAnimation() {
       setTimeout(() => {
         pressStartEl.style.opacity = "1";
         pressStartEl.style.pointerEvents = "auto";
-        pressStartEl.style.animation =
-          "fade-in 1s ease-in, pulse-scale 2s ease-in-out infinite";
       }, 300);
     }
   };

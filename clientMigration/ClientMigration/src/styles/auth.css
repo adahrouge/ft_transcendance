@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@layer components {
+  .auth-container {
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .auth-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .auth-box {
+    @apply relative z-10 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 w-[520px] max-w-[90%] backdrop-blur-sm;
+    image-rendering: pixelated;
+
+    /* Pixelated border using box-shadow */
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .auth-header {
+    @apply mb-6 text-center;
+  }
+
+  .auth-header h1 {
+    @apply font-['Pixel_Game'] text-6xl text-[#e0f7ff];
+  }
+
+  .auth-tabs {
+    @apply flex justify-center gap-8 mb-8 pb-3 border-b-2 border-[#2c6b87]/50;
+  }
+
+  /* Static form container with pixelated border */
+  .auth-form-container {
+    @apply min-h-[420px] p-6 bg-[#0d1a28]/40 backdrop-blur-sm;
+
+    /* Pixelated inner border */
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .pixel-input {
+    @apply w-full bg-[#0a1420]/80 text-[#e0f7ff] px-4 py-3 font-['Pixel_Game'] text-lg outline-none transition-all duration-200;
+    border: none;
+
+    /* Pixelated border */
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  .pixel-input:focus {
+    @apply bg-[#0d1a28];
+    box-shadow: 0 -2px 0 0 #70c9e8, 2px -2px 0 0 #70c9e8, 2px 0 0 0 #70c9e8,
+      2px 2px 0 0 #70c9e8, 0 2px 0 0 #70c9e8, -2px 2px 0 0 #70c9e8,
+      -2px 0 0 0 #70c9e8, -2px -2px 0 0 #70c9e8;
+  }
+
+  .pixel-input::placeholder {
+    @apply text-[#3d6680] font-['Pixel_Game'] text-sm;
+  }
+
+  .form-group {
+    @apply flex flex-col gap-2;
+  }
+
+  .form-group label {
+    @apply text-lg text-[#e0f7ff] font-['Pixel_Game'] tracking-wider;
+  }
+
+  .pixel-btn {
+    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl py-4 mt-4 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    border: none;
+
+    /* Pixelated border with 3D effect */
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .pixel-btn:hover {
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .pixel-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  /* Google Auth Button */
+  .google-btn {
+    @apply w-full bg-white text-[#1a1a1a] font-['Pixel_Game'] text-base py-3 mt-4 cursor-pointer transition-all duration-100 hover:bg-[#f0f0f0] flex items-center justify-center gap-3;
+    border: none;
+
+    /* Pixelated border */
+    box-shadow: 0 -2px 0 0 #d0d0d0, 2px -2px 0 0 #d0d0d0, 2px 0 0 0 #d0d0d0,
+      2px 2px 0 0 #999, 0 2px 0 0 #999, -2px 2px 0 0 #999, -2px 0 0 0 #d0d0d0,
+      -2px -2px 0 0 #d0d0d0;
+  }
+
+  .google-btn:hover {
+    box-shadow: 0 -2px 0 0 #d0d0d0, 2px -2px 0 0 #d0d0d0, 2px 0 0 0 #d0d0d0,
+      2px 2px 0 0 #999, 0 2px 0 0 #999, -2px 2px 0 0 #999, -2px 0 0 0 #d0d0d0,
+      -2px -2px 0 0 #d0d0d0;
+  }
+
+  .google-btn:active {
+    @apply translate-y-1;
+  }
+
+  .divider {
+    @apply flex items-center gap-3 my-4 text-[#5db3d1] font-['Pixel_Game'] text-sm;
+  }
+
+  .divider::before,
+  .divider::after {
+    @apply flex-1 h-[2px] bg-[#2c6b87];
+    content: "";
+  }
+
+  .google-btn-hidden {
+    @apply hidden;
+  }
+
+  .tab-btn {
+    @apply text-[#b0e0f0] font-['Pixel_Game'] text-xl px-8 py-2 border-2 border-transparent hover:text-[#e0f7ff] hover:border-[#3d8aa8]/50 transition-all duration-200;
+  }
+
+  .tab-btn.active {
+    @apply text-[#e0f7ff] border-[#e0f7ff] bg-[#3d8aa8]/20;
+  }
+
+  .error-message {
+    @apply text-[#ff6b6b] font-['Pixel_Game'] text-sm min-h-5;
+  }
+}

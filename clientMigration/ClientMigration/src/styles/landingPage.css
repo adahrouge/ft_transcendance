@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 @theme {
   --animate-fade-in: fade-in 0.8s ease-out;
   --animate-letter-pop: letter-pop 0.4s ease-out forwards;
@@ -7,22 +9,23 @@
   @keyframes fade-in {
     from {
       opacity: 0;
-      transform: translateY(20px);
     }
     to {
       opacity: 1;
-      transform: translateY(0);
     }
   }
 
   @keyframes letter-pop {
     0% {
-      transform: translateY(20px);
       opacity: 0;
+      transform: scale(0.5);
+    }
+    50% {
+      transform: scale(1.1);
     }
     100% {
-      transform: translateY(0);
       opacity: 1;
+      transform: scale(1);
     }
   }
 
@@ -32,7 +35,7 @@
       opacity: 1;
     }
     50% {
-      opacity: 0.3;
+      opacity: 0.4;
     }
   }
 
@@ -81,10 +84,11 @@
   }
 
   .press-start {
-    @apply [text-shadow:0_0_5px_rgba(93,179,209,0.3)] animate-fade-in-out;
+    @apply fixed bottom-[37%] left-1/2 -translate-x-1/2 font-['Pixel_Game'] text-2xl text-[#70c9e8] [text-shadow:0_0_10px_rgba(112,201,232,0.5),0_0_20px_rgba(112,201,232,0.3)] cursor-pointer z-20 transition-all duration-300;
+    animation: fade-in-out 2s ease-in-out infinite;
   }
 
   .press-start:hover {
-    @apply text-[#7ec9e0] [text-shadow:0_0_8px_rgba(126,201,224,0.5)];
+    @apply text-[#8fd9f0] [text-shadow:0_0_15px_rgba(143,217,240,0.7),0_0_30px_rgba(143,217,240,0.4)] scale-110;
   }
 }
