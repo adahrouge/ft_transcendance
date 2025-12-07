@@ -1,7 +1,18 @@
 @import "tailwindcss";
 
 @layer components {
-  /* Use existing home container/overlay/content classes for consistency */
+  /* Page layout */
+  .tournament-container {
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .tournament-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .tournament-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
 
   /* Main tournament box */
   .tournament-box {

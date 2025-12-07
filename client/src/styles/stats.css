@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@layer components {
+  /* Page layout */
+  .stats-container {
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .stats-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .stats-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
+
+  /* Main stats box */
+  .stats-box {
+    @apply relative w-full bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm text-center;
+    padding: 2.5rem;
+    max-width: 800px;
+    image-rendering: pixelated;
+    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
+      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
+      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+  }
+
+  .stats-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6;
+  }
+
+  /* Player info */
+  .stats-player-info {
+    @apply flex items-center justify-center gap-4 mb-6;
+  }
+
+  .stats-avatar {
+    @apply w-16 h-16 object-cover;
+    image-rendering: pixelated;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #5db3d1, 0 2px 0 0 #5db3d1, -2px 2px 0 0 #5db3d1,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+  }
+
+  .stats-player-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-2xl;
+  }
+
+  /* Stats grid */
+  .stats-grid {
+    @apply grid grid-cols-2 md:grid-cols-4 gap-4 mb-6;
+  }
+
+  .stats-card {
+    padding: 1.25rem;
+    background: rgba(13, 26, 40, 0.8);
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .stats-card-win {
+    box-shadow: 0 -3px 0 0 #22c55e, 3px -3px 0 0 #22c55e, 3px 0 0 0 #22c55e,
+      3px 3px 0 0 #22c55e, 0 3px 0 0 #22c55e, -3px 3px 0 0 #22c55e,
+      -3px 0 0 0 #22c55e, -3px -3px 0 0 #22c55e;
+  }
+
+  .stats-card-loss {
+    box-shadow: 0 -3px 0 0 #ef4444, 3px -3px 0 0 #ef4444, 3px 0 0 0 #ef4444,
+      3px 3px 0 0 #ef4444, 0 3px 0 0 #ef4444, -3px 3px 0 0 #ef4444,
+      -3px 0 0 0 #ef4444, -3px -3px 0 0 #ef4444;
+  }
+
+  .stats-card-value {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl;
+  }
+
+  .stats-card-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
+  }
+
+  /* History section */
+  .stats-history-section {
+    @apply text-left;
+  }
+
+  .stats-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-2;
+    border-bottom: 2px solid #2c6b87;
+  }
+
+  .stats-history-list {
+    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
+  }
+
+  .stats-match-item {
+    @apply flex justify-between items-center;
+    padding: 0.875rem;
+    background: rgba(13, 26, 40, 0.8);
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .stats-match-opponent {
+    @apply flex items-center gap-2;
+  }
+
+  .stats-match-vs {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
+  }
+
+  .stats-match-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'];
+  }
+
+  .stats-match-result {
+    @apply font-['Pixel_Game'] text-lg;
+  }
+
+  .stats-win {
+    @apply text-green-400;
+  }
+
+  .stats-loss {
+    @apply text-red-400;
+  }
+
+  .stats-empty {
+    @apply text-gray-500 font-['Pixel_Game'] text-sm text-center py-4;
+  }
+
+  /* Footer */
+  .stats-footer {
+    @apply mt-6;
+  }
+
+  .stats-back-btn {
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    padding: 1rem 1.5rem;
+    border: none;
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .stats-back-btn:active {
+    @apply translate-y-1;
+  }
+
+  /* Custom scrollbar */
+  .stats-history-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .stats-history-list::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .stats-history-list::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .stats-history-list::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+}

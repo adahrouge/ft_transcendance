@@ -14,10 +14,10 @@ export function renderOnlineGamePage(params?: Record<string, string>): string {
   }, 0);
 
   return `
-  
-    <div class="offlineGame-container" style="background-image: url('${backgroundImage}')">
-      <div class="offlineGame-overlay"></div>
-      <div class="offlineGame-content">
+
+    <div class="onlineGame-container" style="background-image: url('${backgroundImage}')">
+      <div class="onlineGame-overlay"></div>
+      <div class="onlineGame-content">
         <div id="game-root"></div>
       </div>
     </div>
@@ -45,23 +45,23 @@ async function setupOnlineGame(params?: Record<string, string>) {
 
   // Show Lobby
   root.innerHTML = `
-    <div class="offlineGame-start-box" style="min-width: 600px;">
-      <h1 class="offlineGame-title">ONLINE LOBBY</h1>
-      <p class="offlineGame-subtitle">Join a game or create one</p>
+    <div class="onlineGame-lobby-box" style="min-width: 600px;">
+      <h1 class="onlineGame-title">ONLINE LOBBY</h1>
+      <p class="onlineGame-subtitle">Join a game or create one</p>
 
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-create">CREATE GAME</button>
-      </div>
-      
-      <div class="offlineGame-divider"></div>
-      
-      <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2">ACTIVE GAMES</h3>
-      <div id="active-games-list" class="flex flex-col gap-2 max-h-[200px] overflow-y-auto mb-4">
-        <p class="text-gray-400 text-sm">Loading...</p>
+      <div class="onlineGame-controls">
+        <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-create">CREATE GAME</button>
       </div>
 
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      <div class="onlineGame-divider"></div>
+
+      <h3 class="onlineGame-section-title">ACTIVE GAMES</h3>
+      <div id="active-games-list" class="onlineGame-games-list">
+        <p class="onlineGame-empty-text">Loading...</p>
+      </div>
+
+      <div class="onlineGame-controls">
+        <button class="onlineGame-btn onlineGame-btn-secondary onlineGame-btn-fullwidth" id="btn-back">BACK</button>
       </div>
     </div>
   `;
@@ -81,14 +81,14 @@ async function loadActiveGames(root: HTMLElement) {
     const games: ActiveGame[] = response.games || [];
 
     if (games.length === 0) {
-      list.innerHTML = '<p class="text-gray-400 text-sm">No active games found.</p>';
+      list.innerHTML = '<p class="onlineGame-empty-text">No active games found.</p>';
       return;
     }
 
     list.innerHTML = games.map((g: any) => `
-      <div class="bg-[#0d1a28] p-3 border-2 border-[#2c6b87] rounded flex justify-between items-center hover:border-[#4a9dc0] transition-all">
-        <span class="text-[#e0f7ff] font-['Pixel_Game']">${g.p1} vs ${g.p2}</span>
-        <button class="bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white px-4 py-2 font-['Pixel_Game'] text-sm rounded shadow hover:from-[#4a9dc0] hover:to-[#3d8aa8] transition-all transform hover:scale-105" data-join-id="${g.id}">JOIN</button>
+      <div class="onlineGame-game-item">
+        <span class="onlineGame-game-name">${g.p1} vs ${g.p2}</span>
+        <button class="onlineGame-join-btn" data-join-id="${g.id}">JOIN</button>
       </div>
     `).join('');
 
@@ -100,7 +100,7 @@ async function loadActiveGames(root: HTMLElement) {
     });
 
   } catch (err) {
-    list.innerHTML = '<p class="text-red-400 text-sm">Failed to load games.</p>';
+    list.innerHTML = '<p class="onlineGame-error-text">Failed to load games.</p>';
   }
 }
 
@@ -138,25 +138,25 @@ function joinGame(root: HTMLElement, gameId: string) {
 
 function renderGameView(root: HTMLElement) {
   root.innerHTML = `
-    <div class="offlineGame-box">
-      <div class="offlineGame-scoreboard">
+    <div class="onlineGame-box">
+      <div class="onlineGame-scoreboard">
         <div>
-          <div class="offlineGame-score-label">P1</div>
-          <div class="offlineGame-score-value" id="score-p1">0</div>
+          <div class="onlineGame-score-label">P1</div>
+          <div class="onlineGame-score-value" id="score-p1">0</div>
         </div>
-        <div class="offlineGame-score-divider">:</div>
+        <div class="onlineGame-score-divider">:</div>
         <div>
-          <div class="offlineGame-score-label">P2</div>
-          <div class="offlineGame-score-value" id="score-p2">0</div>
+          <div class="onlineGame-score-label">P2</div>
+          <div class="onlineGame-score-value" id="score-p2">0</div>
         </div>
       </div>
-      <div class="offlineGame-canvas-wrapper">
-        <canvas id="online-game-canvas" width="${WIDTH}" height="${HEIGHT}" class="offlineGame-canvas"></canvas>
+      <div class="onlineGame-canvas-wrapper">
+        <canvas id="online-game-canvas" width="${WIDTH}" height="${HEIGHT}" class="onlineGame-canvas"></canvas>
       </div>
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-quit">QUIT</button>
+      <div class="onlineGame-controls">
+        <button class="onlineGame-btn onlineGame-btn-secondary" id="btn-quit">QUIT</button>
       </div>
-      <div id="status-msg" class="text-center text-[#5db3d1] mt-2 font-['Pixel_Game']">Connecting...</div>
+      <div id="status-msg" class="onlineGame-status">Connecting...</div>
     </div>
   `;
 

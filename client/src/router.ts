@@ -7,6 +7,7 @@ import { renderOnlineGamePage } from "./pages/onlineGame";
 import { renderProfilePage } from "./pages/profile";
 import { renderFriendPage } from "./pages/friend";
 import { renderTournamentPage } from "./pages/tournament";
+import { renderStatsPage } from "./pages/stats";
 import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
 
@@ -59,6 +60,11 @@ export function setupRouter() {
       console.log("Route: Friend Page");
       const app = getAppContainer();
       app.innerHTML = renderFriendPage();
+    })
+    .on("/stats", () => {
+      console.log("Route: Stats Page");
+      const app = getAppContainer();
+      app.innerHTML = renderStatsPage();
     })
     .on("/tournament", () => {
       console.log("Route: Tournament Page");

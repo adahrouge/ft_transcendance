@@ -74,9 +74,9 @@ export function renderTournamentPage(params?: Record<string, string>): string {
   }, 0);
 
   return `
-    <div class="home-container" style="background-image: url('${backgroundImage}')">
-      <div class="home-overlay"></div>
-      <div class="home-content" style="max-width: 1200px; width: 100%;">
+    <div class="tournament-container" style="background-image: url('${backgroundImage}')">
+      <div class="tournament-overlay"></div>
+      <div class="tournament-content" style="max-width: 1200px; width: 100%;">
         <div id="tournament-root" class="w-full">
           <div class="text-center text-white font-['Pixel_Game']">Loading...</div>
         </div>

@@ -1,6 +1,11 @@
 import type { UserProfile } from "../types/home";
 
-export function getAvatarUrl(user: UserProfile): string {
+interface AvatarUser {
+  username: string;
+  avatar_url?: string;
+}
+
+export function getAvatarUrl(user: UserProfile | AvatarUser): string {
   if (user.avatar_url) {
     return user.avatar_url;
   }

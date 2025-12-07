@@ -13,62 +13,121 @@
     @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
   }
 
-  /* Profile Section - matching auth-box style */
-  .profile-section {
-    @apply flex items-center gap-6 cursor-pointer p-6 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-md;
+  /* Main box - matches offlineGame-start-box */
+  .home-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center;
+    min-width: 500px;
     image-rendering: pixelated;
-
-    /* Pixelated border using box-shadow - same as auth-box */
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
+      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
+      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
   }
 
-  .profile-avatar {
-    @apply w-20 h-20 object-cover;
+  .home-box.hidden {
+    @apply hidden;
+  }
+
+  /* Title - matches offlineGame-title */
+  .home-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl text-center mb-4;
+  }
+
+  /* Subtitle - matches offlineGame-subtitle */
+  .home-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm text-center mb-6;
+  }
+
+  /* Profile Bar */
+  .home-profile-bar {
+    @apply flex items-center justify-between w-full mb-2;
+    padding: 1rem;
+    background: rgba(13, 26, 40, 0.6);
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .home-profile-info {
+    @apply flex items-center gap-3;
+  }
+
+  .home-avatar {
+    width: 3rem;
+    height: 3rem;
+    @apply object-cover;
     image-rendering: pixelated;
-
-    /* Pixelated border */
-    box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
-      3px 3px 0 0 #3d8aa8, 0 3px 0 0 #3d8aa8, -3px 3px 0 0 #3d8aa8,
-      -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
+    box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
+      3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
+      -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
   }
 
-  .profile-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl;
+  .home-username {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg;
   }
 
-  .profile-edit-hint {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
+  .home-quick-actions {
+    @apply flex gap-2;
   }
 
-  /* Game Buttons Container */
-  .game-buttons {
-    @apply flex flex-col gap-6 mt-12 w-full max-w-md;
-  }
-
-  /* Base game button - same as pixel-btn from auth */
-  .game-btn {
-    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl py-5 cursor-pointer transition-all duration-100 text-center hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+  .home-action-btn {
+    padding: 0.65rem;
+    @apply text-[#5db3d1] cursor-pointer transition-all duration-150 hover:text-[#e0f7ff];
+    background: rgba(13, 26, 40, 0.8);
     border: none;
-
-    /* Pixelated border with 3D effect - same as auth */
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
   }
 
-  .game-btn:hover {
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
-  }
-
-  .game-btn:active {
-    @apply translate-y-1;
+  .home-action-btn:hover {
+    background: rgba(44, 107, 135, 0.5);
     box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
       3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
       -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .home-action-btn:active {
+    @apply translate-y-0.5;
+  }
+
+  /* Divider - matches offlineGame-divider */
+  .home-divider {
+    @apply w-full h-[2px] bg-[#2c6b87] my-6;
+  }
+
+  /* Controls container - matches offlineGame-controls */
+  .home-controls {
+    @apply flex gap-4 justify-center;
+  }
+
+  /* Button - matches offlineGame-btn */
+  .home-btn {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    padding: 1rem 1.5rem;
+    border: none;
+    box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
+      4px 4px 0 0 #1a4558, 0 4px 0 0 #1a4558, -4px 4px 0 0 #1a4558,
+      -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
+  }
+
+  .home-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
+      4px 4px 0 0 #4a9dc0, 0 4px 0 0 #4a9dc0, -4px 4px 0 0 #4a9dc0,
+      -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
+  }
+
+  /* Secondary button - matches offlineGame-btn-secondary */
+  .home-btn-secondary {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  /* Full width button - matches offlineGame-btn-fullwidth */
+  .home-btn-fullwidth {
+    @apply w-full;
   }
 
   /* Profile Modal */

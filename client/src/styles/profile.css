@@ -2,7 +2,7 @@
 
 @layer components {
   .profile-container {
-    @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
   }
 
   .profile-overlay {
@@ -15,12 +15,13 @@
 
   /* Main profile box */
   .profile-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm w-full max-w-[800px];
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[500px];
+    padding: 2.5rem;
     image-rendering: pixelated;
 
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
+      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
+      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
   }
 
   .profile-title {
@@ -48,12 +49,14 @@
   }
 
   .profile-avatar {
-    @apply w-24 h-24 mx-auto mb-2 object-cover;
+    width: 6rem;
+    height: 6rem;
+    @apply mx-auto mb-2 object-cover;
     image-rendering: pixelated;
+    border-radius: 50%;
     box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
       3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
       -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
-    border-radius: 50%;
   }
 
   .profile-display-name {
@@ -120,18 +123,32 @@
 
   /* Buttons */
   .profile-btn {
-    @apply w-full bg-gradient-to-b from-[#2c6b87] to-[#1a4558] text-white font-['Pixel_Game'] py-2 cursor-pointer transition-all duration-100 hover:from-[#3d8aa8] hover:to-[#2c6b87];
+    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    padding: 1rem 1.5rem;
     border: none;
-    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
-      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
-      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+    box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
+      4px 4px 0 0 #1a4558, 0 4px 0 0 #1a4558, -4px 4px 0 0 #1a4558,
+      -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
   }
 
   .profile-btn:active {
     @apply translate-y-1;
-    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
-      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
-      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+    box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
+      4px 4px 0 0 #4a9dc0, 0 4px 0 0 #4a9dc0, -4px 4px 0 0 #4a9dc0,
+      -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
+  }
+  
+  .profile-back-btn {
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    padding: 1rem 1.5rem;
+    border: none;
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .profile-back-btn:active {
+    @apply translate-y-1;
   }
 
   /* Section titles */
@@ -198,17 +215,11 @@
 
   /* Footer actions */
   .profile-footer {
-    @apply mt-6 flex justify-between;
-  }
-
-  .profile-back-btn {
-    @apply text-[#5db3d1] hover:text-white font-['Pixel_Game'] cursor-pointer transition-colors;
-    background: none;
-    border: none;
+    @apply mt-6;
   }
 
   .profile-logout-btn {
-    @apply text-red-400 hover:text-red-300 font-['Pixel_Game'] cursor-pointer transition-colors;
+    @apply text-red-400 hover:text-red-300 font-['Pixel_Game'] cursor-pointer transition-colors text-lg;
     background: none;
     border: none;
   }

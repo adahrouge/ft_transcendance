@@ -2,7 +2,6 @@ import { friendService } from "../services/friend";
 import { onlineGameService } from "../services/onlineGame";
 import { authService } from "../services/auth";
 import { navigateTo } from "../router";
-import "../styles/home.css";
 import "../styles/friend.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -12,9 +11,9 @@ export function renderFriendPage(): string {
   }, 0);
 
   return `
-    <div class="home-container" style="background-image: url('${backgroundImage}')">
-      <div class="home-overlay"></div>
-      <div class="home-content">
+    <div class="friend-container" style="background-image: url('${backgroundImage}')">
+      <div class="friend-overlay"></div>
+      <div class="friend-content">
         <div id="friend-root" class="w-full max-w-[900px]">
           <div class="text-center text-white font-['Pixel_Game']">Loading friends...</div>
         </div>
@@ -35,38 +34,36 @@ async function loadFriends() {
       <div class="friend-box">
         <h2 class="friend-title">FRIENDS</h2>
         
-        <div class="flex flex-col md:flex-row gap-6 text-left">
-          <!-- Friends List -->
-          <div class="flex-1">
-            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2 border-b border-[#2c6b87] pb-1">YOUR FRIENDS</h3>
-            <div class="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar" id="friends-list">
-              ${friends.length === 0 ? '<p class="text-gray-500 text-sm">No friends yet.</p>' : friends.map((f: any) => `
-                <div class="bg-[#0d1a28] p-3 border border-[#2c6b87] flex justify-between items-center">
-                  <div>
-                    <div class="text-[#e0f7ff] font-['Pixel_Game']">${f.display_name || f.username}</div>
-                    <div class="text-[#5db3d1] text-xs">@${f.username}</div>
-                  </div>
-                  <button class="bg-[#2c6b87] text-white px-3 py-1 text-xs font-['Pixel_Game'] hover:bg-[#3d8aa8]" 
-                          data-play-id="${f.id}" data-play-name="${f.username}">PLAY</button>
+        <!-- Friends List Section -->
+        <div class="friend-list-section">
+          <h3 class="friend-section-title">YOUR FRIENDS</h3>
+          <div class="friend-list" id="friends-list">
+            ${friends.length === 0 ? '<p class="friend-list-empty">No friends yet.</p>' : friends.map((f: any) => `
+              <div class="friend-list-item">
+                <div>
+                  <div class="friend-display-name">${f.display_name || f.username}</div>
+                  <div class="friend-username">@${f.username}</div>
                 </div>
-              `).join('')}
-            </div>
-          </div>
-
-          <!-- Search -->
-          <div class="flex-1">
-            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2 border-b border-[#2c6b87] pb-1">ADD FRIEND</h3>
-            <div class="flex gap-2 mb-4">
-              <input type="text" id="search-input" placeholder="Search username..." 
-                     class="flex-1 bg-[#0d1a28] border border-[#2c6b87] text-[#e0f7ff] px-3 py-2 font-['Pixel_Game'] focus:outline-none focus:border-[#4a9dc0]">
-              <button id="search-btn" class="bg-[#2c6b87] text-white px-4 font-['Pixel_Game'] hover:bg-[#3d8aa8]">SEARCH</button>
-            </div>
-            <div id="search-results" class="max-h-[200px] overflow-y-auto space-y-2 pr-2 custom-scrollbar"></div>
+                <button class="friend-play-btn" 
+                        data-play-id="${f.id}" data-play-name="${f.username}">PLAY</button>
+              </div>
+            `).join('')}
           </div>
         </div>
 
-        <div class="mt-6">
-          <button id="btn-back" class="text-[#5db3d1] hover:text-white font-['Pixel_Game']">← BACK</button>
+        <!-- Add Friend Section -->
+        <div class="friend-add-section">
+          <h3 class="friend-section-title">ADD FRIEND</h3>
+          <div class="friend-search-bar">
+            <input type="text" id="search-input" placeholder="Search username..." 
+                   class="friend-search-input">
+            <button id="search-btn" class="friend-search-btn">SEARCH</button>
+          </div>
+          <div id="search-results" class="friend-search-results"></div>
+        </div>
+
+        <div class="friend-footer">
+          <button id="btn-back" class="friend-back-btn">BACK</button>
         </div>
       </div>
     `;
@@ -109,9 +106,9 @@ async function loadFriends() {
         }
 
         resultsDiv.innerHTML = users.map((u: any) => `
-          <div class="bg-[#0d1a28] p-2 border border-[#2c6b87] flex justify-between items-center">
-            <span class="text-[#e0f7ff] text-sm">${u.username}</span>
-            <button class="text-[#5db3d1] text-xs hover:text-white font-['Pixel_Game']" data-add-id="${u.id}">ADD</button>
+          <div class="friend-search-result-item">
+            <span class="friend-search-result-name">${u.username}</span>
+            <button class="friend-add-btn" data-add-id="${u.id}">ADD</button>
           </div>
         `).join('');
 

@@ -1,35 +1,187 @@
 @import "tailwindcss";
 
 @layer components {
-  /* Use existing home container/overlay/content classes for consistency */
+  /* Page layout */
+  .friend-container {
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .friend-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .friend-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
 
   /* Main friend box */
   .friend-box {
-    @apply relative p-6 w-full text-center;
-    background: rgba(10, 25, 41, 0.95);
-    max-width: 900px;
-    border: 4px solid #3d8aa8;
+    @apply relative w-full bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm;
+    padding: 2.5rem;
+    max-width: 800px;
     image-rendering: pixelated;
+    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
+      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
+      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
   }
 
   .friend-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6 text-center;
   }
-
-  /* Custom scrollbar */
-  .custom-scrollbar::-webkit-scrollbar {
+  
+  .friend-list-section {
+    @apply mb-6;
+  }
+  
+  .friend-add-section {
+    @apply mb-6 pb-6;
+    border-top: 2px solid #2c6b87;
+    padding-top: 1.5rem;
+  }
+  
+  .friend-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-2;
+    border-bottom: 2px solid #2c6b87;
+  }
+  
+  .friend-list {
+    @apply max-h-[300px] overflow-y-auto space-y-2 pr-2;
+  }
+  
+  .friend-list::-webkit-scrollbar {
     width: 8px;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-track {
+  .friend-list::-webkit-scrollbar-track {
     background: #0d1a28;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb {
+  .friend-list::-webkit-scrollbar-thumb {
     background: #2c6b87;
   }
 
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  .friend-list::-webkit-scrollbar-thumb:hover {
     background: #3d8aa8;
   }
+  
+  .friend-list-item {
+    @apply p-3 flex justify-between items-center;
+    background: rgba(13, 26, 40, 0.8);
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+  
+  .friend-list-empty {
+    @apply text-gray-500 text-sm font-['Pixel_Game'] text-center py-4;
+  }
+  
+  .friend-display-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'];
+  }
+  
+  .friend-username {
+    @apply text-[#5db3d1] text-xs;
+  }
+  
+  .friend-play-btn {
+    @apply bg-gradient-to-b from-[#2c6b87] to-[#1a4558] text-white font-['Pixel_Game'] text-xs cursor-pointer transition-all duration-100 hover:from-[#3d8aa8] hover:to-[#2c6b87];
+    padding: 0.5rem 1rem;
+    border: none;
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+  
+  .friend-play-btn:active {
+    @apply translate-y-1;
+  }
+  
+  .friend-search-bar {
+    @apply flex gap-2 mb-4;
+  }
+  
+  .friend-search-input {
+    @apply flex-1 bg-[#0d1a28] text-[#e0f7ff] font-['Pixel_Game'] outline-none transition-all duration-200;
+    padding: 0.75rem;
+    border: none;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+  
+  .friend-search-input:focus {
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #4a9dc0, 0 2px 0 0 #4a9dc0, -2px 2px 0 0 #4a9dc0,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+  
+  .friend-search-btn {
+    @apply bg-gradient-to-b from-[#2c6b87] to-[#1a4558] text-white font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#3d8aa8] hover:to-[#2c6b87];
+    padding: 0.75rem 1.5rem;
+    border: none;
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+  
+  .friend-search-btn:active {
+    @apply translate-y-1;
+  }
+  
+  .friend-search-results {
+    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
+  }
+  
+  .friend-search-results::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .friend-search-results::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .friend-search-results::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .friend-search-results::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+  
+  .friend-search-result-item {
+    @apply p-2 flex justify-between items-center;
+    background: rgba(13, 26, 40, 0.8);
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+  
+  .friend-search-result-name {
+    @apply text-[#e0f7ff] text-sm font-['Pixel_Game'];
+  }
+  
+  .friend-add-btn {
+    @apply text-[#5db3d1] text-xs hover:text-white font-['Pixel_Game'] cursor-pointer transition-colors;
+    background: none;
+    border: none;
+  }
+  
+  .friend-footer {
+    @apply mt-6;
+  }
+  
+  .friend-back-btn {
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    padding: 1rem 1.5rem;
+    border: none;
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .friend-back-btn:active {
+    @apply translate-y-1;
+  }
+
 }
