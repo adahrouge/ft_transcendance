@@ -1,0 +1,246 @@
+@import "tailwindcss";
+
+@layer components {
+  .offlineGame-container {
+    @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .offlineGame-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .offlineGame-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
+
+  /* Game wrapper box - matching auth-box style */
+  .offlineGame-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm;
+    image-rendering: pixelated;
+
+    /* Pixelated border */
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .offlineGame-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl text-center mb-4;
+  }
+
+  .offlineGame-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm text-center mb-6;
+  }
+
+  /* Scoreboard */
+  .offlineGame-scoreboard {
+    @apply flex justify-between items-center mb-4 px-4;
+  }
+
+  .offlineGame-score-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg;
+  }
+
+  .offlineGame-score-value {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-2xl min-w-[40px] text-center;
+  }
+
+  .offlineGame-score-divider {
+    @apply text-[#3d8aa8] font-['Pixel_Game'] text-2xl mx-4;
+  }
+
+  /* Canvas wrapper with pixel border */
+  .offlineGame-canvas-wrapper {
+    @apply relative;
+    image-rendering: pixelated;
+
+    /* Inner pixelated border */
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .offlineGame-canvas {
+    @apply block;
+    image-rendering: pixelated;
+    background: #0a0a12;
+  }
+
+  /* Game controls */
+  .offlineGame-controls {
+    @apply flex gap-4 mt-6 justify-center;
+  }
+
+  .offlineGame-btn {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-lg px-6 py-3 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    border: none;
+
+    /* Pixelated border with 3D effect */
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .offlineGame-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .offlineGame-btn-secondary {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  /* Countdown overlay */
+  .offlineGame-countdown {
+    @apply absolute inset-0 flex items-center justify-center;
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .offlineGame-countdown-text {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-8xl;
+    text-shadow: 0 0 20px #3d8aa8;
+  }
+
+  /* Game over modal */
+  .offlineGame-over-overlay {
+    @apply fixed inset-0 bg-black/80 flex items-center justify-center z-[10000];
+  }
+
+  .offlineGame-over-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-8 backdrop-blur-sm text-center;
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .offlineGame-over-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-4xl mb-4;
+  }
+
+  .offlineGame-over-score {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-2xl mb-6;
+  }
+
+  .offlineGame-over-actions {
+    @apply flex gap-4 justify-center;
+  }
+
+  /* Pre-game start screen */
+  .offlineGame-start-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center min-w-[500px];
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  /* Full width button variant */
+  .offlineGame-btn-fullwidth {
+    @apply w-full;
+  }
+
+  .offlineGame-info {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-4;
+  }
+
+  /* Settings section */
+  .offlineGame-settings {
+    @apply my-8 space-y-6;
+  }
+
+  .offlineGame-setting-row {
+    @apply flex flex-col items-center gap-3;
+  }
+
+  .offlineGame-setting-label {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg;
+  }
+
+  .offlineGame-setting-options {
+    @apply flex gap-3 justify-center flex-wrap;
+  }
+
+  .offlineGame-setting-btn {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-base px-5 py-2 cursor-pointer transition-all duration-100;
+    border: none;
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .offlineGame-setting-btn:hover {
+    @apply text-[#e0f7ff];
+  }
+
+  .offlineGame-setting-btn.active {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white;
+
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+
+  .offlineGame-divider {
+    @apply w-full h-[2px] bg-[#2c6b87] my-6;
+  }
+
+  /* Slider styles */
+  .offlineGame-slider-container {
+    @apply flex items-center gap-4 w-full justify-center;
+  }
+
+  .offlineGame-slider-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs min-w-[40px];
+  }
+
+  .offlineGame-slider {
+    @apply w-full max-w-[280px] h-3 rounded-none cursor-pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #0d1a28, #0a1420);
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .offlineGame-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
+    cursor: pointer;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+  }
+
+  .offlineGame-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+  }
+
+  .offlineGame-slider:hover::-webkit-slider-thumb {
+    background: linear-gradient(to bottom, #5db3d1, #4a9dc0);
+  }
+
+  .offlineGame-slider:hover::-moz-range-thumb {
+    background: linear-gradient(to bottom, #5db3d1, #4a9dc0);
+  }
+}

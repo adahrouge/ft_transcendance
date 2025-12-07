@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+@layer components {
+  .profile-container {
+    @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .profile-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .profile-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
+
+  /* Main profile box */
+  .profile-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm w-full max-w-[800px];
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .profile-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6 text-center;
+  }
+
+  /* Layout */
+  .profile-layout {
+    @apply flex flex-col gap-6 text-left;
+  }
+
+  @media (min-width: 768px) {
+    .profile-layout {
+      @apply flex-row;
+    }
+  }
+
+  .profile-col {
+    @apply flex-1;
+  }
+
+  /* Avatar section */
+  .profile-avatar-section {
+    @apply mb-6 text-center;
+  }
+
+  .profile-avatar {
+    @apply w-24 h-24 mx-auto mb-2 object-cover;
+    image-rendering: pixelated;
+    box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
+      3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
+      -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
+    border-radius: 50%;
+  }
+
+  .profile-display-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl;
+  }
+
+  .profile-username {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
+  }
+
+  /* Form */
+  .profile-form {
+    @apply space-y-4;
+  }
+
+  .profile-form-group {
+    @apply flex flex-col gap-1;
+  }
+
+  .profile-label {
+    @apply block text-[#5db3d1] font-['Pixel_Game'] text-sm mb-1;
+  }
+
+  .profile-input {
+    @apply w-full bg-[#0d1a28] text-[#e0f7ff] px-3 py-2 font-['Pixel_Game'] outline-none transition-all duration-200;
+    border: none;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .profile-input:focus {
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #4a9dc0, 0 2px 0 0 #4a9dc0, -2px 2px 0 0 #4a9dc0,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+
+  .profile-input::placeholder {
+    @apply text-[#3d6680] font-['Pixel_Game'] text-sm;
+  }
+
+  /* Password section */
+  .profile-password-section {
+    @apply pt-4 mt-4;
+    border-top: 2px solid #2c6b87;
+  }
+
+  .profile-password-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] mb-2;
+  }
+
+  /* Message */
+  .profile-message {
+    @apply text-center font-['Pixel_Game'] text-sm h-5;
+  }
+
+  .profile-message-success {
+    @apply text-green-400;
+  }
+
+  .profile-message-error {
+    @apply text-red-400;
+  }
+
+  /* Buttons */
+  .profile-btn {
+    @apply w-full bg-gradient-to-b from-[#2c6b87] to-[#1a4558] text-white font-['Pixel_Game'] py-2 cursor-pointer transition-all duration-100 hover:from-[#3d8aa8] hover:to-[#2c6b87];
+    border: none;
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  .profile-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  /* Section titles */
+  .profile-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2 pb-1;
+    border-bottom: 2px solid #2c6b87;
+  }
+
+  /* Lists */
+  .profile-list {
+    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
+  }
+
+  .profile-list-item {
+    @apply bg-[#0d1a28] p-2 flex justify-between items-center;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .profile-list-empty {
+    @apply text-gray-500 text-sm font-['Pixel_Game'];
+  }
+
+  .profile-opponent-name {
+    @apply text-[#e0f7ff] text-sm;
+  }
+
+  .profile-score-win {
+    @apply text-green-400 font-['Pixel_Game'];
+  }
+
+  .profile-score-loss {
+    @apply text-red-400 font-['Pixel_Game'];
+  }
+
+  /* Friend item */
+  .profile-friend-item {
+    @apply bg-[#0d1a28] p-2 flex items-center gap-2;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .profile-status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .profile-status-online {
+    @apply bg-green-500;
+  }
+
+  .profile-status-offline {
+    @apply bg-gray-500;
+  }
+
+  .profile-status-ingame {
+    @apply bg-yellow-500;
+  }
+
+  .profile-friend-name {
+    @apply text-[#e0f7ff] text-sm;
+  }
+
+  /* Footer actions */
+  .profile-footer {
+    @apply mt-6 flex justify-between;
+  }
+
+  .profile-back-btn {
+    @apply text-[#5db3d1] hover:text-white font-['Pixel_Game'] cursor-pointer transition-colors;
+    background: none;
+    border: none;
+  }
+
+  .profile-logout-btn {
+    @apply text-red-400 hover:text-red-300 font-['Pixel_Game'] cursor-pointer transition-colors;
+    background: none;
+    border: none;
+  }
+
+  /* Custom scrollbar */
+  .profile-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .profile-list::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .profile-list::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .profile-list::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+}

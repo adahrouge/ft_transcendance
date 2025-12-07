@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer components {
+  /* Use existing home container/overlay/content classes for consistency */
+
+  /* Main friend box */
+  .friend-box {
+    @apply relative p-6 w-full text-center;
+    background: rgba(10, 25, 41, 0.95);
+    max-width: 900px;
+    border: 4px solid #3d8aa8;
+    image-rendering: pixelated;
+  }
+
+  .friend-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6;
+  }
+
+  /* Custom scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+}

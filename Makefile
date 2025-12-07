@@ -26,7 +26,7 @@ endif
 export HOST_LAN_IP
 
 
-.PHONY: build run clean logs stop restart detach backend frontend status
+.PHONY: build run clean logs stop restart detach backend frontend status re
 
 run:
 	@echo "🚀 Using HOST_LAN_IP=$(HOST_LAN_IP)"
@@ -63,3 +63,5 @@ frontend:
 
 status:
 	docker ps
+
+re: stop run

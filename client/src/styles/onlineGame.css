@@ -1,0 +1,167 @@
+@import "tailwindcss";
+
+@layer components {
+  .onlineGame-container {
+    @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .onlineGame-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .onlineGame-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
+
+  /* Lobby box */
+  .onlineGame-lobby-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center min-w-[600px];
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .onlineGame-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl text-center mb-4;
+  }
+
+  .onlineGame-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm text-center mb-6;
+  }
+
+  /* Active games list */
+  .onlineGame-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2;
+  }
+
+  .onlineGame-games-list {
+    @apply flex flex-col gap-2 max-h-[200px] overflow-y-auto mb-4 pr-2;
+  }
+
+  .onlineGame-game-item {
+    @apply bg-[#0d1a28] p-2 flex justify-between items-center;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .onlineGame-game-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-sm;
+  }
+
+  .onlineGame-join-btn {
+    @apply bg-[#2c6b87] text-white px-2 py-1 text-xs font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:bg-[#3d8aa8];
+    border: none;
+  }
+
+  .onlineGame-empty-text {
+    @apply text-gray-400 text-sm font-['Pixel_Game'];
+  }
+
+  .onlineGame-error-text {
+    @apply text-red-400 text-sm font-['Pixel_Game'];
+  }
+
+  /* Game wrapper box */
+  .onlineGame-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm;
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  /* Scoreboard */
+  .onlineGame-scoreboard {
+    @apply flex justify-between items-center mb-4 px-4;
+  }
+
+  .onlineGame-score-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg;
+  }
+
+  .onlineGame-score-value {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-2xl min-w-[40px] text-center;
+  }
+
+  .onlineGame-score-divider {
+    @apply text-[#3d8aa8] font-['Pixel_Game'] text-2xl mx-4;
+  }
+
+  /* Canvas wrapper */
+  .onlineGame-canvas-wrapper {
+    @apply relative;
+    image-rendering: pixelated;
+
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .onlineGame-canvas {
+    @apply block;
+    image-rendering: pixelated;
+    background: #0a0a12;
+  }
+
+  /* Controls */
+  .onlineGame-controls {
+    @apply flex gap-4 mt-6 justify-center;
+  }
+
+  .onlineGame-btn {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-lg px-6 py-3 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    border: none;
+
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .onlineGame-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .onlineGame-btn-secondary {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .onlineGame-btn-fullwidth {
+    @apply w-full;
+  }
+
+  .onlineGame-divider {
+    @apply w-full h-[2px] bg-[#2c6b87] my-6;
+  }
+
+  .onlineGame-status {
+    @apply text-center text-[#5db3d1] mt-2 font-['Pixel_Game'];
+  }
+
+  /* Custom scrollbar for games list */
+  .onlineGame-games-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .onlineGame-games-list::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .onlineGame-games-list::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .onlineGame-games-list::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+}
