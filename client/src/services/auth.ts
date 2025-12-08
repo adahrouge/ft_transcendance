@@ -35,6 +35,19 @@ export const authService = {
     return data;
   },
 
+  async googleAuth(idToken: string, email: string, name: string, googleId: string): Promise<AuthResponse> {
+    const data = await apiRequest<AuthResponse>("/api/users/google-auth", {
+      method: "POST",
+      body: JSON.stringify({ idToken, email, name, googleId }),
+    });
+
+    if (data.token) {
+      setToken(data.token);
+    }
+
+    return data;
+  },
+
   logout(): void {
     setToken(null);
     // Optional: Redirect to login page or clear other state
@@ -46,3 +59,4 @@ export const authService = {
     return data.user;
   },
 };
+

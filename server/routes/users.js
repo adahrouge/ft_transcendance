@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
 import {
   createUser,
   getUserById,
@@ -105,6 +106,107 @@ export async function userRoutes(fastify) {
       user: userData,
       token
     };
+  });
+
+  // Helper function to verify Google ID token
+  async function verifyGoogleToken(idToken) {
+    return new Promise((resolve, reject) => {
+      const options = {
+        hostname: 'www.googleapis.com',
+        path: `/oauth2/v3/tokeninfo?id_token=${idToken}`,
+        method: 'GET'
+      };
+
+      const req = https.request(options, (res) => {
+        let data = '';
+        res.on('data', (chunk) => {
+          data += chunk;
+        });
+        res.on('end', () => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.error) {
+              reject(new Error(parsed.error_description || 'Token verification failed'));
+            } else {
+              resolve(parsed);
+            }
+          } catch (err) {
+            reject(err);
+          }
+        });
+      });
+
+      req.on('error', reject);
+      req.end();
+    });
+  }
+
+  // Google OAuth endpoint
+  fastify.post('/api/users/google-auth', async (request, reply) => {
+    const { idToken, email, name, googleId } = request.body;
+
+    if (!idToken) {
+      return reply.code(400).send({ error: 'ID token is required' });
+    }
+
+    try {
+      // Verify the Google token
+      const tokenInfo = await verifyGoogleToken(idToken);
+      
+      // Check if email is verified by Google
+      if (!tokenInfo.email_verified) {
+        return reply.code(401).send({ error: 'Google email not verified' });
+      }
+
+      const googleEmail = tokenInfo.email;
+      
+      // Check if user exists by email
+      let user = await getUserByEmail(googleEmail);
+
+      if (user) {
+        // User exists, generate token and return
+        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
+          expiresIn: '7d'
+        });
+        const { password_hash, ...userData } = user;
+        return {
+          user: userData,
+          token
+        };
+      } else {
+        // Create new user from Google data
+        // Generate a unique username from email or name
+        let baseUsername = name ? name.toLowerCase().replace(/\s+/g, '_') : googleEmail.split('@')[0];
+        let username = baseUsername;
+        let counter = 1;
+
+        // Ensure username is unique
+        while (await getUserByUsername(username)) {
+          username = `${baseUsername}_${counter}`;
+          counter++;
+        }
+
+        // Create user with hashed password (Google users won't use password login)
+        const randomPassword = Math.random().toString(36).slice(-32);
+        const passwordHash = await bcrypt.hash(randomPassword, 10);
+
+        const newUser = await createUser(username, googleEmail, passwordHash, name || username);
+
+        // Generate JWT token
+        const token = jwt.sign({ userId: newUser.id, username: newUser.username }, JWT_SECRET, {
+          expiresIn: '7d'
+        });
+
+        const { password_hash, ...userData } = newUser;
+        return {
+          user: userData,
+          token
+        };
+      }
+    } catch (error) {
+      console.error('Google OAuth error:', error);
+      return reply.code(401).send({ error: error.message || 'Google authentication failed' });
+    }
   });
 
   // Get current user profile

@@ -2,19 +2,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Copy pre-built dist directory (must be built locally with: npm run build)
+COPY dist ./dist
 COPY package.json package-lock.json* ./
-RUN npm install
 
-# Copy source files
-COPY . .
+# Install only production dependencies
+RUN npm install --production
 
-# Build the application
-RUN npm run build
-
-# Expose ports
+# Expose port
 EXPOSE 80
 
-# Use Vite preview server for production
-# Runs on port 80 inside container, mapped to 8080 on host via docker-compose
+# Use Vite preview server to serve the dist directory
 CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "80"]

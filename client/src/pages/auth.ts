@@ -1,9 +1,16 @@
 import { authService } from "../services/auth";
 import { navigateTo } from "../router";
+import { initializeGoogleOAuth, triggerGoogleSignIn, decodeGoogleToken, isGoogleOAuthConfigured } from "../utils/google-oauth";
 import "../styles/auth.css";
 import backgroundImage from "../assets/images/background.jpg";
 
 export function renderAuthPage(): string {
+  // Initialize Google OAuth with client ID from environment
+  const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || '';
+  if (googleClientId) {
+    initializeGoogleOAuth(googleClientId);
+  }
+
   setTimeout(() => {
     setupAuthInteractions();
   }, 0);
@@ -146,10 +153,46 @@ function setupAuthInteractions() {
     }
   });
 
-  // Google auth button (placeholder - no implementation)
-  const googleBtn = document.getElementById("google-login");
-  googleBtn?.addEventListener("click", () => {
-    console.log("Google auth not implemented yet");
-    // TODO: Implement Google OAuth flow
-  });
+  // Google Sign-In button handler
+  const googleBtn = document.getElementById("google-login") as HTMLButtonElement;
+  if (googleBtn) {
+    googleBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      if (!isGoogleOAuthConfigured()) {
+        alert("⚠️ Google OAuth not configured.\n\nTo enable Google Sign-In:\n\n1. Get a Google Client ID from https://console.cloud.google.com/\n2. Create client/.env.local with:\n   VITE_GOOGLE_CLIENT_ID=your_client_id_here\n3. Restart the app");
+        return;
+      }
+
+      try {
+        // Trigger Google Sign-In
+        const response = await triggerGoogleSignIn();
+        
+        if (response && response.credential) {
+          // Decode the JWT to get user information
+          const userData = decodeGoogleToken(response.credential);
+          const { email, name, sub: googleId } = userData;
+
+          // Call the backend Google auth endpoint
+          const result = await authService.googleAuth(
+            response.credential,
+            email,
+            name,
+            googleId
+          );
+
+          if (result.token) {
+            navigateTo("/home");
+          }
+        } else {
+          console.error("No credential in response");
+          alert("Failed to authenticate with Google. Please try again.");
+        }
+      } catch (error) {
+        console.error("Google Sign-In error:", error);
+        alert(`Google authentication failed: ${(error as Error).message}`);
+      }
+    });
+  }
 }
+
