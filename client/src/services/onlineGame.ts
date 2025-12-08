@@ -9,14 +9,21 @@ import type {
 
 type GameStateCallback = (gameState: OnlineGameState) => void;
 type ChatMessageCallback = (message: ChatMessage) => void;
+type GameEndCallback = (reason: string, message?: string) => void;
+type GoalScoredCallback = (scorer: string, conceder: string) => void;
+type GameInviteCallback = (inviterName: string, gameId: string) => void;
 
 class OnlineGameService {
   private ws: WebSocket | null = null;
   private gameState: OnlineGameState | null = null;
   private onGameStateCallbacks: GameStateCallback[] = [];
   private onChatMessageCallbacks: ChatMessageCallback[] = [];
+  private onGameEndCallbacks: GameEndCallback[] = [];
+  private onGoalScoredCallbacks: GoalScoredCallback[] = [];
+  private onGameInviteCallbacks: GameInviteCallback[] = [];
   private currentGameId: string | null = null;
   private userRole: UserRole = "spectator";
+  private messageQueue: string[] = [];
 
   async getActiveGames(): Promise<{ games: ActiveGame[] }> {
     return apiRequest<{ games: ActiveGame[] }>("/api/games");
@@ -43,6 +50,12 @@ class OnlineGameService {
       console.log("Connected to Pong backend");
       if (token) {
         this.send({ type: "AUTHENTICATE", token });
+      }
+      
+      // Flush message queue
+      while (this.messageQueue.length > 0) {
+        const msg = this.messageQueue.shift();
+        if (msg && this.ws) this.ws.send(msg);
       }
     };
 
@@ -92,15 +105,34 @@ class OnlineGameService {
           data.messages.forEach((msg) => this.notifyChatCallbacks(msg));
         }
         break;
+      case "GOAL_SCORED":
+        if (data.scorer && data.conceder) {
+          this.notifyGoalScoredCallbacks(data.scorer, data.conceder);
+        }
+        break;
+      case "PLAYER_LEFT":
+        this.notifyGameEndCallbacks("player_left", data.message);
+        break;
+      case "GAME_ENDED":
+        if (data.gameState) {
+          this.gameState = data.gameState;
+        }
+        this.notifyGameEndCallbacks("game_ended");
+        break;
       case "ERROR":
         console.error("Error from server:", data.message || data.error);
+        break;
+      case "GAME_INVITE":
+        if (data.inviterName && data.gameId) {
+          this.notifyGameInviteCallbacks(data.inviterName, data.gameId);
+        }
         break;
     }
   }
 
   createGame(
-    player1Name: string,
-    player2Name: string,
+    player1Name?: string,
+    player2Name?: string,
     player2Id?: string,
     player1Id?: string
   ): void {
@@ -122,8 +154,11 @@ class OnlineGameService {
   }
 
   private send(message: Record<string, unknown>): void {
+    const msgStr = JSON.stringify(message);
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify(message));
+      this.ws.send(msgStr);
+    } else {
+      this.messageQueue.push(msgStr);
     }
   }
 
@@ -135,6 +170,18 @@ class OnlineGameService {
     this.onChatMessageCallbacks.push(callback);
   }
 
+  onGameEnd(callback: GameEndCallback): void {
+    this.onGameEndCallbacks.push(callback);
+  }
+
+  onGoalScored(callback: GoalScoredCallback): void {
+    this.onGoalScoredCallbacks.push(callback);
+  }
+
+  onGameInvite(callback: GameInviteCallback): void {
+    this.onGameInviteCallbacks.push(callback);
+  }
+
   private notifyGameStateCallbacks(): void {
     if (this.gameState) {
       this.onGameStateCallbacks.forEach((callback) => callback(this.gameState!));
@@ -143,6 +190,18 @@ class OnlineGameService {
 
   private notifyChatCallbacks(message: ChatMessage): void {
     this.onChatMessageCallbacks.forEach((callback) => callback(message));
+  }
+
+  private notifyGameEndCallbacks(reason: string, message?: string): void {
+    this.onGameEndCallbacks.forEach((callback) => callback(reason, message));
+  }
+
+  private notifyGoalScoredCallbacks(scorer: string, conceder: string): void {
+    this.onGoalScoredCallbacks.forEach((callback) => callback(scorer, conceder));
+  }
+
+  private notifyGameInviteCallbacks(inviterName: string, gameId: string): void {
+    this.onGameInviteCallbacks.forEach((callback) => callback(inviterName, gameId));
   }
 
   getCurrentGameId(): string | null {
@@ -165,6 +224,8 @@ class OnlineGameService {
       this.gameState = null;
       this.onGameStateCallbacks = [];
       this.onChatMessageCallbacks = [];
+      this.onGameEndCallbacks = [];
+      this.onGoalScoredCallbacks = [];
       this.userRole = "spectator";
     }
   }

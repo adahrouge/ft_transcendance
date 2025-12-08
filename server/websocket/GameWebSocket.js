@@ -88,6 +88,9 @@ export function GameWebSocket(connection, req) {
                 type: 'AUTHENTICATED',
                 user: { id: user.id, username: user.username, displayName: user.display_name }
               });
+              
+              // Register player for global notifications (invites)
+              gameEngine.registerPlayer(userId.toString(), connection.socket);
             }
           }
           break;
@@ -108,28 +111,46 @@ export function GameWebSocket(connection, req) {
           
           // For bots, use the bot ID directly; for humans, use userId
           const p1Id = isP1Bot ? data.player1Id : (data.player1Id || userId.toString());
-          const p2Id = isP2Bot ? data.player2Id : (data.player2Id || userId.toString());
           
           // Determine which player the user is
           let userRole = 'spectator';
           if (!isP1Bot && p1Id === userId.toString()) {
             userRole = 'player1';
-          } else if (!isP2Bot && p2Id === userId.toString()) {
-            userRole = 'player2';
           }
           
-          const game = gameEngine.createGame(
-            { id: p1Id, name: data.player1Name || username },
-            { id: p2Id, name: data.player2Name || 'Player 2' },
-            isP1Bot,
-            isP2Bot
-          );
+          let game;
+          if (data.player2Id || data.player2Name) {
+             const p2Id = isP2Bot ? data.player2Id : (data.player2Id || userId.toString());
+             if (!isP2Bot && p2Id === userId.toString()) {
+                userRole = 'player2';
+             }
+             game = gameEngine.createGame(
+              { id: p1Id, name: data.player1Name || username },
+              { id: p2Id, name: data.player2Name || 'Player 2' },
+              isP1Bot,
+              isP2Bot
+            );
+          } else {
+            // Create waiting game
+            game = gameEngine.createGame(
+              { id: p1Id, name: data.player1Name || username },
+              null,
+              isP1Bot,
+              false
+            );
+          }
+
           currentGameId = game.id;
           playerId = userId.toString();
           role = userRole;
           
           // Add connection to game
           gameEngine.addConnection(currentGameId, connection.socket);
+          
+          // If creating a game with a specific player, try to send them an invite
+          if (data.player2Id) {
+            gameEngine.sendInvite(data.player2Id, username, game.id);
+          }
           
           // Send chat history
           const chatHistory = gameEngine.getChatHistory(currentGameId);
@@ -149,11 +170,86 @@ export function GameWebSocket(connection, req) {
           break;
 
         case 'JOIN_GAME':
-          // Join as spectator
           if (data.gameId) {
             const game = gameEngine.getGame(data.gameId);
-            if (game && game.status === 'playing') {
+            if (game) {
               currentGameId = data.gameId;
+              
+              // Check if user is already a player in this game (reconnect or reserved join)
+              const isPlayer1 = game.players[0].id.toString() === (userId ? userId.toString() : '');
+              const isPlayer2 = game.players[1] && game.players[1].id.toString() === (userId ? userId.toString() : '');
+
+              if (isPlayer1 || isPlayer2) {
+                  role = isPlayer1 ? 'player1' : 'player2';
+                  playerId = userId.toString();
+                  
+                  // Add connection to game
+                  gameEngine.addConnection(currentGameId, connection.socket);
+                  
+                  // Send current game state
+                  sendGameState(currentGameId);
+                  
+                  // Send chat history
+                  const chatHistory = gameEngine.getChatHistory(currentGameId);
+                  send({
+                    type: 'CHAT_HISTORY',
+                    messages: chatHistory
+                  });
+                  
+                  send({
+                    type: 'JOINED_GAME',
+                    gameId: currentGameId,
+                    gameState: gameEngine.getGameState(currentGameId),
+                    yourRole: role,
+                    spectatorCount: gameEngine.getSpectatorCount(currentGameId)
+                  });
+                  break;
+              }
+
+              // Check if we can join as player 2
+              if (game.status === 'waiting' && userId) {
+                 const updatedGame = gameEngine.joinGameAsPlayer(currentGameId, {
+                   id: userId,
+                   name: username
+                 });
+                 
+                 if (updatedGame) {
+                   role = 'player2';
+                   playerId = userId.toString();
+                   
+                   // Add connection to game
+                   gameEngine.addConnection(currentGameId, connection.socket);
+                   
+                   // Send current game state
+                   sendGameState(currentGameId);
+                   
+                   // Send chat history
+                   const chatHistory = gameEngine.getChatHistory(currentGameId);
+                   send({
+                     type: 'CHAT_HISTORY',
+                     messages: chatHistory
+                   });
+                   
+                   send({
+                     type: 'JOINED_GAME',
+                     gameId: currentGameId,
+                     gameState: updatedGame,
+                     yourRole: role,
+                     spectatorCount: gameEngine.getSpectatorCount(currentGameId)
+                   });
+                   
+                   // Notify others that player 2 joined
+                   gameEngine.broadcastToGame(currentGameId, {
+                     type: 'PLAYER_JOINED',
+                     player: { id: userId, name: username },
+                     gameState: updatedGame
+                   }, connection.socket);
+                   
+                   break;
+                 }
+              }
+
+              // Join as spectator
               role = 'spectator';
               
               // Add connection to game
@@ -287,20 +383,43 @@ export function GameWebSocket(connection, req) {
     console.log('🔌 WebSocket connection closed');
     if (currentGameId) {
       gameEngine.removeConnection(currentGameId, connection.socket);
-      
-      // Notify others that someone left
-      gameEngine.broadcastToGame(currentGameId, {
-        type: 'SPECTATOR_LEFT',
-        spectatorCount: gameEngine.getSpectatorCount(currentGameId)
-      });
-      
-      // Only end game if no connections remain
-      const connections = gameEngine.gameConnections.get(currentGameId);
-      if (!connections || connections.size === 0) {
-        gameEngine.endGame(currentGameId);
+
+      // If a player (not spectator) disconnects, end the game
+      if (role === 'player1' || role === 'player2') {
+        const game = gameEngine.getGame(currentGameId);
+        if (game && game.status === 'playing') {
+          // Notify the other player that opponent left
+          gameEngine.broadcastToGame(currentGameId, {
+            type: 'PLAYER_LEFT',
+            playerRole: role,
+            message: `${username} has left the game`
+          });
+
+          // End the game
+          gameEngine.endGame(currentGameId);
+        } else if (game && game.status === 'waiting') {
+          // If waiting, just end it
+          gameEngine.endGame(currentGameId);
+        }
+      } else {
+        // Spectator left
+        gameEngine.broadcastToGame(currentGameId, {
+          type: 'SPECTATOR_LEFT',
+          spectatorCount: gameEngine.getSpectatorCount(currentGameId)
+        });
+
+        // Only end game if no connections remain
+        const connections = gameEngine.gameConnections.get(currentGameId);
+        if (!connections || connections.size === 0) {
+          gameEngine.endGame(currentGameId);
+        }
       }
     }
-    
+
+    if (userId) {
+      gameEngine.unregisterPlayer(userId.toString(), connection.socket);
+    }
+
     if (currentTournamentId) {
       gameEngine.removeTournamentConnection(currentTournamentId, connection.socket);
     }

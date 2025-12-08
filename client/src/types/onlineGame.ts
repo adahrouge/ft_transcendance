@@ -1,9 +1,10 @@
 export interface GamePlayer {
   id?: number;
-  username: string;
+  name?: string;
+  username?: string;
   display_name?: string;
   score: number;
-  paddleY: number;
+  paddleX: number;  // Horizontal position for vertical game
 }
 
 export interface Ball {
@@ -36,6 +37,9 @@ export interface GameMessage {
   error?: string;
   chatMessage?: ChatMessage;
   messages?: ChatMessage[];
+  scorer?: string;
+  conceder?: string;
+  inviterName?: string;
 }
 
 export interface ChatMessage {
@@ -55,10 +59,11 @@ export interface OnlineGameConfig {
   ballR: number;
 }
 
+// Vertical orientation like offline game - paddles at top/bottom
 export const DEFAULT_ONLINE_GAME_CONFIG: OnlineGameConfig = {
-  width: 960,
-  height: 540,
-  paddleW: 14,
-  paddleH: 90,
-  ballR: 8,
+  width: 600,
+  height: 600,
+  paddleW: 80,   // Horizontal paddle width
+  paddleH: 12,   // Horizontal paddle height
+  ballR: 6,
 };

@@ -148,7 +148,7 @@ export async function getUserByUsername(username) {
 }
 
 export async function getUserById(id) {
-  return await dbGet('SELECT id, username, email, display_name, avatar_url, created_at, updated_at FROM users WHERE id = ?', [id]);
+  return await dbGet('SELECT * FROM users WHERE id = ?', [id]);
 }
 
 export async function getUserByEmail(email) {

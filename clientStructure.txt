@@ -1,0 +1,35 @@
+CLIENT FOLDER STRUCTURE
+=======================
+
+src/
+├── main.ts          # Entry point
+├── router.ts        # Navigo SPA routing with auth guards
+├── api.ts           # Centralized fetch wrapper with JWT auth
+├── style.css        # Global styles
+│
+├── pages/           # Page render functions (HTML templates + event listeners)
+├── services/        # API call logic
+├── types/           # TypeScript interfaces
+├── utils/           # Helper functions
+├── styles/          # CSS files
+├── assets/          # Images
+└── components/      # Shared components (currently empty)
+
+PATTERN: Each page has a dedicated file in every folder
+-------------------------------------------------------
+Example for "home" page:
+  - pages/home.ts      -> renders HTML, sets up event listeners
+  - services/home.ts   -> API calls (getCurrentUser, updateProfile, etc.)
+  - types/home.ts      -> TypeScript interfaces (UserProfile, etc.)
+  - utils/home.ts      -> helper functions (getAvatarUrl, getDisplayName)
+  - styles/home.css    -> page-specific styles
+
+Same pattern applies to: auth, landingPage, offlineGame, onlineGame,
+profile, friend, tournament, stats, notFound
+
+STYLING
+-------
+- TailwindCSS v4 for utility classes
+- Each page imports its own CSS file from styles/
+- CSS uses custom properties and follows a component-based naming convention
+- Example classes: .home-container, .home-btn, .auth-form, etc.

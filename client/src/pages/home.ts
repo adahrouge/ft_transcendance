@@ -1,5 +1,5 @@
 import { homeService } from "../services/home";
-import { getAvatarUrl, getDisplayName } from "../utils/home";
+import { getAvatarUrl, getDisplayName, DEFAULT_AVATAR } from "../utils/home";
 import { navigateTo } from "../router";
 import type { UserProfile } from "../types/home";
 import "../styles/home.css";
@@ -22,7 +22,7 @@ export function renderHomePage(): string {
             <!-- Profile Bar -->
             <div class="home-profile-bar">
               <div class="home-profile-info">
-                <img id="profile-avatar" class="home-avatar" src="" alt="Avatar">
+                <img id="profile-avatar" class="home-avatar" src="${DEFAULT_AVATAR}" alt="Avatar">
                 <div id="profile-name" class="home-username">Loading...</div>
               </div>
               <div class="home-quick-actions">
@@ -54,26 +54,7 @@ export function renderHomePage(): string {
             </div>
             <div class="home-controls">
               <button id="btn-online" class="home-btn home-btn-fullwidth">PLAY ONLINE</button>
-            </div>  
-        </div>
-
-        <!-- Online Mode Selection (hidden by default) -->
-        <div id="home-online" class="home-box hidden">
-          <h1 class="home-title">PLAY ONLINE</h1>
-          <p class="home-subtitle">Choose your game mode</p>
-
-          <div class="home-controls">
-            <button id="btn-vs-friend" class="home-btn home-btn-fullwidth">VS FRIEND</button>
-          </div>
-          <div class="home-controls">
-            <button id="btn-random" class="home-btn home-btn-fullwidth">RANDOM MATCH</button>
-          </div>
-          <div class="home-controls">
-            <button id="btn-tournament" class="home-btn home-btn-fullwidth">TOURNAMENT</button>
-          </div>
-          <div class="home-controls">
-            <button id="btn-back" class="home-btn home-btn-secondary home-btn-fullwidth">BACK</button>
-          </div>
+            </div>
         </div>
       </div>
     </div>
@@ -98,28 +79,14 @@ function updateProfileDisplay() {
   const nameEl = document.getElementById("profile-name");
 
   if (avatarEl) {
-    avatarEl.src = getAvatarUrl(currentUser);
+    const avatarSrc = getAvatarUrl(currentUser);
+    avatarEl.src = avatarSrc;
+    avatarEl.onerror = () => {
+      avatarEl.src = DEFAULT_AVATAR;
+    };
   }
   if (nameEl) {
     nameEl.textContent = getDisplayName(currentUser);
-  }
-}
-
-function showOnlineView() {
-  const mainView = document.getElementById("home-main");
-  const onlineView = document.getElementById("home-online");
-  if (mainView && onlineView) {
-    mainView.classList.add("hidden");
-    onlineView.classList.remove("hidden");
-  }
-}
-
-function showMainView() {
-  const mainView = document.getElementById("home-main");
-  const onlineView = document.getElementById("home-online");
-  if (mainView && onlineView) {
-    onlineView.classList.add("hidden");
-    mainView.classList.remove("hidden");
   }
 }
 
@@ -131,14 +98,6 @@ function setupEventListeners() {
 
   // Game buttons
   document.getElementById("btn-offline")?.addEventListener("click", () => navigateTo("/game"));
-  document.getElementById("btn-online")?.addEventListener("click", () => showOnlineView());
-
-  // Online view options
-  document.getElementById("btn-vs-friend")?.addEventListener("click", () => navigateTo("/friend"));
-  document.getElementById("btn-random")?.addEventListener("click", () => navigateTo("/online-game"));
-  document.getElementById("btn-tournament")?.addEventListener("click", () => navigateTo("/tournament"));
-
-  // Back button
-  document.getElementById("btn-back")?.addEventListener("click", () => showMainView());
+  document.getElementById("btn-online")?.addEventListener("click", () => navigateTo("/online-game"));
 }
 

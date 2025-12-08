@@ -13,12 +13,30 @@ export default defineConfig({
         target: 'http://backend:3001',
         changeOrigin: true,
       },
+      '/uploads': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'ws://backend:3001',
+        ws: true,
+        changeOrigin: true,
+      },
     },
   },
   preview: {
     proxy: {
       '/api': {
         target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://backend:3001',
+        changeOrigin: true,
+      },
+      '/ws': {
+        target: 'ws://backend:3001',
+        ws: true,
         changeOrigin: true,
       },
     },
