@@ -46,6 +46,11 @@ desktop.ini
 # Docker
 .dockerignore
 
+# SSL certificates
+client/certs/
+
 # Project subject
 en.subject.pdf
 
+.gitignore
+.clientStructure.txt

@@ -2,12 +2,9 @@ services:
   frontend:
     build: ./client
     ports:
-      - "0.0.0.0:8443:443"
-      - "0.0.0.0:8080:80"
+      - "0.0.0.0:8443:8443"
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://backend:3001
 
   backend:
     build: ./server

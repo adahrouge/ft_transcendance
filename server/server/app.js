@@ -107,18 +107,11 @@ const start = async () => {
     await fastify.listen({ port: 3001, host: '0.0.0.0' });
     const lanIP = getHostLANIP();
 
-    console.log('🎮 Pong server running on port 3001');
-    console.log('📡 Backend API accessible at:');
-    console.log(`   - Local: http://localhost:3001`);
-    console.log(`   - Network: http://${lanIP}:3001`);
-    console.log(`   - WebSocket: ws://${lanIP}:3001/ws`);
+    console.log('Pong server running on port 3001');
     console.log('');
-    console.log('🌐 Frontend accessible at:');
-    console.log(`   - Local: http://localhost:8080 or https://localhost:8443`);
-    console.log(`   - Network: http://${lanIP}:8080 or https://${lanIP}:8443`);
-    console.log('');
-    console.log('💡 Other devices on the same network can access the game at:');
-    console.log(`   http://${lanIP}:8080`);
+    console.log('Access the game at:');
+    console.log(`   - Local: https://localhost:8443`);
+    console.log(`   - Network: https://${lanIP}:8443`);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

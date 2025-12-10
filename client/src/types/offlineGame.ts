@@ -57,3 +57,27 @@ export type GameConfig = {
   ballSpeed: number;
   scoreToWin: number;
 };
+
+// Shared pong game state for both AI and 2-player modes
+export type PongGameState = {
+  p1X: number;        // Player 1 paddle X (bottom)
+  p2X: number;        // Player 2/AI paddle X (top)
+  ballX: number;
+  ballY: number;
+  ballVX: number;
+  ballVY: number;
+  scoreP1: number;
+  scoreP2: number;
+  paused: boolean;
+  gameStarted: boolean;
+};
+
+export type PlayerKeys = {
+  left: boolean;
+  right: boolean;
+};
+
+export type CollisionResult = {
+  scored: "p1" | "p2" | null;
+  paddleHit: "p1" | "p2" | null;
+};

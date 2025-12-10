@@ -243,4 +243,38 @@
   .offlineGame-slider:hover::-moz-range-thumb {
     background: linear-gradient(to bottom, #5db3d1, #4a9dc0);
   }
+
+  /* Mode selection buttons */
+  .offlineGame-mode-buttons {
+    @apply flex flex-col gap-4 my-8;
+  }
+
+  .offlineGame-mode-btn {
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-left p-5 cursor-pointer transition-all duration-100;
+    border: none;
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .offlineGame-mode-btn:hover {
+    @apply bg-gradient-to-b from-[#1a2d40] to-[#0d1a28];
+
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  .offlineGame-mode-btn:active {
+    @apply translate-y-[2px];
+  }
+
+  .offlineGame-mode-title {
+    @apply block text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-1;
+  }
+
+  .offlineGame-mode-desc {
+    @apply block text-[#5db3d1] font-['Pixel_Game'] text-sm;
+  }
 }

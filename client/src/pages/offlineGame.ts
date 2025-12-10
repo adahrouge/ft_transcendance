@@ -107,12 +107,102 @@ function getDifficultyLabel(difficulty: number): string {
   return AI_DIFFICULTY_LABELS[2];
 }
 
+// Game modes
+type GameMode = "ai" | "friend";
+
 // Current settings
 let selectedBallSpeed: BallSpeedLevel = "normal";
 let selectedAIDifficulty: number = 50; // 0-100 slider
+let selectedGameMode: GameMode = "ai";
 let globalRaf: number | null = null;
 
 const CONFIG = DEFAULT_GAME_CONFIG;
+
+// ============ Shared Drawing Functions ============
+
+function drawTable(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = "#0a0a12";
+  ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+
+  ctx.save();
+  ctx.setLineDash([8, 8]);
+  ctx.strokeStyle = "#2c6b87";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(10, CONFIG.height / 2);
+  ctx.lineTo(CONFIG.width - 10, CONFIG.height / 2);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.strokeStyle = "#3d8aa8";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(2, 2, CONFIG.width - 4, CONFIG.height - 4);
+}
+
+function drawPaddle(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "#e0f7ff";
+  ctx.fillRect(x, y, CONFIG.paddleW, CONFIG.paddleH);
+}
+
+function drawBall(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "#e0f7ff";
+  ctx.fillRect(
+    x - CONFIG.ballSize / 2,
+    y - CONFIG.ballSize / 2,
+    CONFIG.ballSize,
+    CONFIG.ballSize
+  );
+}
+
+function renderGame(
+  ctx: CanvasRenderingContext2D,
+  p1X: number,
+  p2X: number,
+  ballX: number,
+  ballY: number
+) {
+  drawTable(ctx);
+  drawPaddle(ctx, p2X, 10);
+  drawPaddle(ctx, p1X, CONFIG.height - CONFIG.paddleH - 10);
+  drawBall(ctx, ballX, ballY);
+}
+
+// ============ Shared Countdown Function ============
+
+function startCountdown(
+  countdownEl: HTMLDivElement,
+  countdownText: HTMLSpanElement,
+  seconds: number,
+  isPaused: () => boolean,
+  onDone: () => void
+) {
+  let remainingMs = seconds * 1000;
+  let lastTs = 0;
+
+  function tick(ts: number) {
+    if (!lastTs) lastTs = ts;
+
+    const delta = isPaused() ? 0 : ts - lastTs;
+    lastTs = ts;
+    remainingMs = Math.max(0, remainingMs - delta);
+
+    const secsInt = Math.ceil(remainingMs / 1000);
+    if (secsInt > 0) {
+      countdownText.textContent = String(secsInt);
+      requestAnimationFrame(tick);
+    } else {
+      countdownText.textContent = "GO!";
+      setTimeout(() => {
+        countdownEl.style.display = "none";
+        onDone();
+      }, 300);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+// ============ Page Entry ============
 
 export function renderGamePage(): string {
   setTimeout(() => {
@@ -152,8 +242,44 @@ function setupGame() {
     return;
   }
 
-  // Show match setup screen directly (no mode selection)
-  showMatchSetup(root);
+  // Show mode selection screen
+  showModeSelection(root);
+}
+
+function showModeSelection(root: HTMLElement) {
+  root.innerHTML = `
+    <div class="offlineGame-start-box">
+      <h1 class="offlineGame-title">PLAY OFFLINE</h1>
+      <p class="offlineGame-subtitle">Choose your game mode</p>
+
+      <div class="offlineGame-mode-buttons">
+        <button class="offlineGame-mode-btn" id="btn-vs-ai">
+          <span class="offlineGame-mode-title">VS AI</span>
+          <span class="offlineGame-mode-desc">Challenge the computer</span>
+        </button>
+        <button class="offlineGame-mode-btn" id="btn-vs-friend">
+          <span class="offlineGame-mode-title">VS FRIEND</span>
+          <span class="offlineGame-mode-desc">Local 2-player (same keyboard)</span>
+        </button>
+      </div>
+
+      <div class="offlineGame-controls">
+        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btn-vs-ai")?.addEventListener("click", () => {
+    selectedGameMode = "ai";
+    showMatchSetup(root);
+  });
+
+  document.getElementById("btn-vs-friend")?.addEventListener("click", () => {
+    selectedGameMode = "friend";
+    showFriendMatchSetup(root);
+  });
+
+  document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
 }
 
 function showMatchSetup(root: HTMLElement) {
@@ -214,7 +340,306 @@ function showMatchSetup(root: HTMLElement) {
   });
 
   document.getElementById("btn-start")?.addEventListener("click", () => startMatch(root));
-  document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
+  document.getElementById("btn-back")?.addEventListener("click", () => showModeSelection(root));
+}
+
+function showFriendMatchSetup(root: HTMLElement) {
+  root.innerHTML = `
+    <div class="offlineGame-start-box">
+      <h1 class="offlineGame-title">VS FRIEND</h1>
+      <p class="offlineGame-subtitle">P1 (Bottom): A/D | P2 (Top): Arrow Keys | First to ${CONFIG.scoreToWin} wins!</p>
+
+      <div class="offlineGame-settings">
+        <div class="offlineGame-setting-row">
+          <span class="offlineGame-setting-label">BALL SPEED</span>
+          <div class="offlineGame-setting-options">
+            <button class="offlineGame-setting-btn ${selectedBallSpeed === "slow" ? "active" : ""}" data-speed="slow">SLOW</button>
+            <button class="offlineGame-setting-btn ${selectedBallSpeed === "normal" ? "active" : ""}" data-speed="normal">NORMAL</button>
+            <button class="offlineGame-setting-btn ${selectedBallSpeed === "fast" ? "active" : ""}" data-speed="fast">FAST</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="offlineGame-divider"></div>
+
+      <div class="offlineGame-controls">
+        <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-start">START MATCH</button>
+      </div>
+      <div class="offlineGame-controls">
+        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      </div>
+      <p class="offlineGame-info">Press SPACE to pause</p>
+    </div>
+  `;
+
+  // Ball speed selection
+  document.querySelectorAll("[data-speed]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedBallSpeed = (btn as HTMLElement).dataset.speed as BallSpeedLevel;
+      document.querySelectorAll("[data-speed]").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+    });
+  });
+
+  document.getElementById("btn-start")?.addEventListener("click", () => startFriendMatch(root));
+  document.getElementById("btn-back")?.addEventListener("click", () => showModeSelection(root));
+}
+
+function startFriendMatch(root: HTMLElement) {
+  root.innerHTML = `
+    <div class="offlineGame-box">
+      <div class="offlineGame-scoreboard">
+        <div>
+          <div class="offlineGame-score-label">P1</div>
+          <div class="offlineGame-score-value" id="score-p1">0</div>
+        </div>
+        <div class="offlineGame-score-divider">:</div>
+        <div>
+          <div class="offlineGame-score-label">P2</div>
+          <div class="offlineGame-score-value" id="score-p2">0</div>
+        </div>
+      </div>
+      <div class="offlineGame-canvas-wrapper">
+        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="offlineGame-canvas"></canvas>
+        <div class="offlineGame-countdown" id="countdown">
+          <span class="offlineGame-countdown-text" id="countdown-text">3</span>
+        </div>
+      </div>
+      <div class="offlineGame-controls">
+        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-pause">PAUSE</button>
+        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-quit">QUIT</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d")!;
+  const countdownEl = document.getElementById("countdown") as HTMLDivElement;
+  const countdownText = document.getElementById("countdown-text") as HTMLSpanElement;
+
+  const ballSpeed = BALL_SPEEDS[selectedBallSpeed];
+
+  // Game state
+  let p1X = CONFIG.width / 2 - CONFIG.paddleW / 2;
+  let p2X = CONFIG.width / 2 - CONFIG.paddleW / 2;
+  let ballX = CONFIG.width / 2;
+  let ballY = CONFIG.height / 2;
+  let ballVX = (Math.random() < 0.5 ? 1 : -1) * ballSpeed * 0.5;
+  let ballVY = (Math.random() < 0.5 ? 1 : -1) * ballSpeed;
+  let scoreP1 = 0;
+  let scoreP2 = 0;
+  let paused = false;
+  let gameStarted = false;
+
+  // Keys for both players
+  const p1Keys = { left: false, right: false };
+  const p2Keys = { left: false, right: false };
+
+  function updateScoreboard() {
+    const p1El = document.getElementById("score-p1");
+    const p2El = document.getElementById("score-p2");
+    if (p1El) p1El.textContent = String(scoreP1);
+    if (p2El) p2El.textContent = String(scoreP2);
+  }
+
+  // Input handlers
+  function keyDown(e: KeyboardEvent) {
+    if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D", " "].includes(e.key)) {
+      e.preventDefault();
+    }
+    // Player 1: A/D
+    if (e.key === "a" || e.key === "A") p1Keys.left = true;
+    if (e.key === "d" || e.key === "D") p1Keys.right = true;
+    // Player 2: Arrow keys
+    if (e.key === "ArrowLeft") p2Keys.left = true;
+    if (e.key === "ArrowRight") p2Keys.right = true;
+    // Pause
+    if (e.key === " ") paused = !paused;
+  }
+
+  function keyUp(e: KeyboardEvent) {
+    if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D"].includes(e.key)) {
+      e.preventDefault();
+    }
+    // Player 1: A/D
+    if (e.key === "a" || e.key === "A") p1Keys.left = false;
+    if (e.key === "d" || e.key === "D") p1Keys.right = false;
+    // Player 2: Arrow keys
+    if (e.key === "ArrowLeft") p2Keys.left = false;
+    if (e.key === "ArrowRight") p2Keys.right = false;
+  }
+
+  window.addEventListener("keydown", keyDown, { capture: true });
+  window.addEventListener("keyup", keyUp, { capture: true });
+
+  document.getElementById("btn-pause")?.addEventListener("click", () => {
+    paused = !paused;
+  });
+
+  document.getElementById("btn-quit")?.addEventListener("click", () => {
+    teardown();
+    showFriendMatchSetup(root);
+  });
+
+  // Game loop
+  let last = 0;
+  let acc = 0;
+  const dt = 1000 / 60;
+
+  if (globalRaf !== null) {
+    cancelAnimationFrame(globalRaf);
+    globalRaf = null;
+  }
+
+  function frame(now: number) {
+    if (!document.body.contains(canvas)) {
+      teardown();
+      return;
+    }
+
+    const elapsed = now - last;
+    last = now;
+    acc += elapsed;
+
+    while (acc >= dt) {
+      step(dt / 1000);
+      acc -= dt;
+    }
+
+    render();
+
+    if (isOver()) {
+      endMatch();
+      return;
+    }
+
+    globalRaf = requestAnimationFrame(frame);
+  }
+
+  function step(dtSec: number) {
+    if (paused || !gameStarted) return;
+
+    // Player 1 paddle (bottom)
+    if (p1Keys.left) p1X -= CONFIG.paddleSpeed * dtSec;
+    if (p1Keys.right) p1X += CONFIG.paddleSpeed * dtSec;
+    p1X = clamp(p1X, 0, CONFIG.width - CONFIG.paddleW);
+
+    // Player 2 paddle (top)
+    if (p2Keys.left) p2X -= CONFIG.paddleSpeed * dtSec;
+    if (p2Keys.right) p2X += CONFIG.paddleSpeed * dtSec;
+    p2X = clamp(p2X, 0, CONFIG.width - CONFIG.paddleW);
+
+    // Ball movement
+    ballX += ballVX * dtSec;
+    ballY += ballVY * dtSec;
+
+    const halfBall = CONFIG.ballSize / 2;
+
+    // Wall collisions (left/right)
+    if (ballX - halfBall <= 4 && ballVX < 0) {
+      ballVX *= -1;
+      ballX = 4 + halfBall;
+    }
+    if (ballX + halfBall >= CONFIG.width - 4 && ballVX > 0) {
+      ballVX *= -1;
+      ballX = CONFIG.width - 4 - halfBall;
+    }
+
+    // P2 paddle collision (top)
+    const p2PaddleY = 10;
+    if (ballY - halfBall <= p2PaddleY + CONFIG.paddleH && ballVY < 0) {
+      if (ballX >= p2X && ballX <= p2X + CONFIG.paddleW) {
+        ballVY *= -1;
+        const rel = (ballX - (p2X + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
+        ballVX = rel * ballSpeed;
+        ballY = p2PaddleY + CONFIG.paddleH + halfBall;
+      }
+    }
+
+    // Ball passed P2 (P1 scores)
+    if (ballY + halfBall < 0) {
+      scoreP1++;
+      serve(1);
+    }
+
+    // P1 paddle collision (bottom)
+    const p1PaddleY = CONFIG.height - CONFIG.paddleH - 10;
+    if (ballY + halfBall >= p1PaddleY && ballVY > 0) {
+      if (ballX >= p1X && ballX <= p1X + CONFIG.paddleW) {
+        ballVY *= -1;
+        const rel = (ballX - (p1X + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
+        ballVX = rel * ballSpeed;
+        ballY = p1PaddleY - halfBall;
+      }
+    }
+
+    // Ball passed P1 (P2 scores)
+    if (ballY - halfBall > CONFIG.height) {
+      scoreP2++;
+      serve(-1);
+    }
+
+    updateScoreboard();
+  }
+
+  function render() {
+    renderGame(ctx, p1X, p2X, ballX, ballY);
+  }
+
+  function serve(dir: number) {
+    ballX = CONFIG.width / 2;
+    ballY = CONFIG.height / 2;
+    ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
+    ballVY = dir * ballSpeed;
+  }
+
+  function isOver() {
+    return scoreP1 >= CONFIG.scoreToWin || scoreP2 >= CONFIG.scoreToWin;
+  }
+
+  function endMatch() {
+    teardown();
+    const winner = scoreP1 >= CONFIG.scoreToWin ? "PLAYER 1" : "PLAYER 2";
+
+    root.innerHTML = `
+      <div class="offlineGame-over-overlay">
+        <div class="offlineGame-over-box">
+          <h1 class="offlineGame-over-title">${winner} WINS!</h1>
+          <p class="offlineGame-over-score">${scoreP1} - ${scoreP2}</p>
+          <div class="offlineGame-over-actions">
+            <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>
+            <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-back">BACK</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById("btn-rematch")?.addEventListener("click", () => {
+      startFriendMatch(root);
+    });
+    document.getElementById("btn-back")?.addEventListener("click", () => {
+      showModeSelection(root);
+    });
+  }
+
+  function teardown() {
+    if (globalRaf !== null) {
+      cancelAnimationFrame(globalRaf);
+      globalRaf = null;
+    }
+    window.removeEventListener("keydown", keyDown, { capture: true } as EventListenerOptions);
+    window.removeEventListener("keyup", keyUp, { capture: true } as EventListenerOptions);
+  }
+
+  // Initial render and countdown
+  updateScoreboard();
+  render();
+
+  startCountdown(countdownEl, countdownText, 3, () => paused, () => {
+    gameStarted = true;
+    last = performance.now();
+    globalRaf = requestAnimationFrame(frame);
+  });
 }
 
 function startMatch(root: HTMLElement) {
@@ -297,44 +722,6 @@ function startMatch(root: HTMLElement) {
     defocusFrac: aiConfig.defocusFrac,
     defocusMultiplier: aiConfig.defocusMultiplier,
   });
-
-  // Drawing functions - retro pixel style
-  function drawTable() {
-    ctx.fillStyle = "#0a0a12";
-    ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
-
-    // Dashed center line
-    ctx.save();
-    ctx.setLineDash([8, 8]);
-    ctx.strokeStyle = "#2c6b87";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(10, CONFIG.height / 2);
-    ctx.lineTo(CONFIG.width - 10, CONFIG.height / 2);
-    ctx.stroke();
-    ctx.restore();
-
-    // Border
-    ctx.strokeStyle = "#3d8aa8";
-    ctx.lineWidth = 4;
-    ctx.strokeRect(2, 2, CONFIG.width - 4, CONFIG.height - 4);
-  }
-
-  function drawPaddle(x: number, y: number) {
-    ctx.fillStyle = "#e0f7ff";
-    ctx.fillRect(x, y, CONFIG.paddleW, CONFIG.paddleH);
-  }
-
-  function drawBall(x: number, y: number) {
-    // Square ball for retro look
-    ctx.fillStyle = "#e0f7ff";
-    ctx.fillRect(
-      x - CONFIG.ballSize / 2,
-      y - CONFIG.ballSize / 2,
-      CONFIG.ballSize,
-      CONFIG.ballSize
-    );
-  }
 
   function updateScoreboard() {
     const playerEl = document.getElementById("score-player");
@@ -507,10 +894,7 @@ function startMatch(root: HTMLElement) {
   }
 
   function render() {
-    drawTable();
-    drawPaddle(aiX, 10); // AI at top
-    drawPaddle(playerX, CONFIG.height - CONFIG.paddleH - 10); // Player at bottom
-    drawBall(ballX, ballY);
+    renderGame(ctx, playerX, aiX, ballX, ballY);
   }
 
   function serve(dir: number) {
@@ -558,39 +942,11 @@ function startMatch(root: HTMLElement) {
     window.removeEventListener("keyup", keyUp, { capture: true } as EventListenerOptions);
   }
 
-  // Countdown
-  function startCountdown(seconds: number, onDone: () => void) {
-    let remainingMs = seconds * 1000;
-    let lastTs = 0;
-
-    function tick(ts: number) {
-      if (!lastTs) lastTs = ts;
-
-      const delta = paused ? 0 : ts - lastTs;
-      lastTs = ts;
-      remainingMs = Math.max(0, remainingMs - delta);
-
-      const secsInt = Math.ceil(remainingMs / 1000);
-      if (secsInt > 0) {
-        countdownText.textContent = String(secsInt);
-        requestAnimationFrame(tick);
-      } else {
-        countdownText.textContent = "GO!";
-        setTimeout(() => {
-          countdownEl.style.display = "none";
-          onDone();
-        }, 300);
-      }
-    }
-
-    requestAnimationFrame(tick);
-  }
-
   // Initial render and countdown
   updateScoreboard();
   render();
 
-  startCountdown(3, () => {
+  startCountdown(countdownEl, countdownText, 3, () => paused, () => {
     gameStarted = true;
     last = performance.now();
     globalRaf = requestAnimationFrame(frame);
