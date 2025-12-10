@@ -48,92 +48,108 @@ export async function triggerGoogleSignIn(): Promise<any> {
 
   pendingRequest = true;
 
-  // Wait for the script to load
-  await new Promise<void>((resolve, reject) => {
-    const timeout = setTimeout(() => reject(new Error('Google Sign-In script load timeout')), 5000);
-    if ((window as any).google) {
-      clearTimeout(timeout);
-      resolve();
-      return;
-    }
-    const check = () => {
+  try {
+    // Wait for the script to load
+    await new Promise<void>((resolve, reject) => {
+      const timeout = setTimeout(() => reject(new Error('Google Sign-In script load timeout')), 5000);
       if ((window as any).google) {
         clearTimeout(timeout);
         resolve();
-      } else {
-        setTimeout(check, 100);
+        return;
       }
-    };
-    check();
-  }).catch((err) => {
-    pendingRequest = false;
-    throw err;
-  });
+      const check = () => {
+        if ((window as any).google) {
+          clearTimeout(timeout);
+          resolve();
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
+    });
 
-  const google = (window as any).google;
-  if (!google) {
-    pendingRequest = false;
-    throw new Error('Google Sign-In library not loaded');
-  }
+    const google = (window as any).google;
+    if (!google) {
+      throw new Error('Google Sign-In library not loaded');
+    }
 
-  return await new Promise((resolve, reject) => {
-    const tempCallbackName = `__google_sign_in_callback_${Date.now()}`;
-    (window as any)[tempCallbackName] = (response: any) => {
-      delete (window as any)[tempCallbackName];
-      pendingRequest = false;
-      resolve(response);
-    };
+    // Create the promise for getting the credential
+    const credentialPromise = new Promise<any>((resolve, reject) => {
+      const callbackName = `__google_sign_in_callback_${Date.now()}`;
+      
+      (window as any)[callbackName] = (response: any) => {
+        delete (window as any)[callbackName];
+        if (response && response.credential) {
+          resolve(response);
+        } else {
+          reject(new Error('No credential received from Google'));
+        }
+      };
 
-    try {
+      // Initialize Google accounts if not already done
       if (!initialized) {
         google.accounts.id.initialize({
           client_id: googleConfig!.clientId,
-          callback: (window as any)[tempCallbackName],
+          callback: (window as any)[callbackName],
+          auto_select: false,
         });
         initialized = true;
       }
 
-      // Render a temporary button and click it to open the popup (avoids FedCM path)
-      const tempDiv = document.createElement('div');
-      tempDiv.style.position = 'fixed';
-      tempDiv.style.left = '-9999px';
-      document.body.appendChild(tempDiv);
+      // Render the standard Google Sign-In button and trigger it
+      const containerDiv = document.createElement('div');
+      containerDiv.style.display = 'none';
+      document.body.appendChild(containerDiv);
 
-      google.accounts.id.renderButton(tempDiv, {
+      google.accounts.id.renderButton(containerDiv, {
         type: 'standard',
         size: 'large',
         theme: 'outline',
+        text: 'signin',
       });
 
-      // Try to click the button element; if GSI uses iframe, clicking might not be needed.
+      // Find the button rendered by Google and click it
       setTimeout(() => {
         try {
-          const button = tempDiv.querySelector('button');
-          if (button) (button as HTMLElement).click();
+          const button = containerDiv.querySelector('button') || 
+                        containerDiv.querySelector('div[role="button"]');
+          if (button) {
+            (button as HTMLElement).click();
+          }
         } catch (e) {
-          // ignore
+          console.warn('Could not click rendered button:', e);
         }
-      }, 50);
 
-      // Clean up after some time
-      setTimeout(() => {
-        try { document.body.removeChild(tempDiv); } catch (_) {}
-      }, 5000);
+        // Clean up the container
+        setTimeout(() => {
+          try {
+            document.body.removeChild(containerDiv);
+          } catch (_) {}
+        }, 100);
+      }, 100);
 
-      // Also set a safety timeout
-      setTimeout(() => {
-        if ((window as any)[tempCallbackName]) {
-          delete (window as any)[tempCallbackName];
-          pendingRequest = false;
-          reject(new Error('Google sign-in timed out'));
+      // Set timeout for response
+      const responseTimeout = setTimeout(() => {
+        if ((window as any)[callbackName]) {
+          delete (window as any)[callbackName];
+          reject(new Error('Google sign-in timed out - no response from Google'));
         }
-      }, 20000);
-    } catch (error) {
-      delete (window as any)[tempCallbackName];
-      pendingRequest = false;
-      reject(error);
-    }
-  });
+      }, 30000);
+
+      // Clean up timeout when callback fires
+      const originalCallback = (window as any)[callbackName];
+      (window as any)[callbackName] = (response: any) => {
+        clearTimeout(responseTimeout);
+        originalCallback(response);
+      };
+    });
+
+    // Return the credential promise
+    return await credentialPromise;
+  } finally {
+    // Always reset the pending flag
+    pendingRequest = false;
+  }
 }
 
 // Decode Google JWT token to extract user info

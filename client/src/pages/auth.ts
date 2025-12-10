@@ -158,6 +158,7 @@ function setupAuthInteractions() {
   if (googleBtn) {
     googleBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      console.log("Google button clicked");
 
       if (!isGoogleOAuthConfigured()) {
         alert("⚠️ Google OAuth not configured.\n\nTo enable Google Sign-In:\n\n1. Get a Google Client ID from https://console.cloud.google.com/\n2. Create client/.env.local with:\n   VITE_GOOGLE_CLIENT_ID=your_client_id_here\n3. Restart the app");
@@ -165,14 +166,19 @@ function setupAuthInteractions() {
       }
 
       try {
+        console.log("Triggering Google Sign-In...");
         // Trigger Google Sign-In
         const response = await triggerGoogleSignIn();
+        console.log("Google Sign-In response:", response);
         
         if (response && response.credential) {
+          console.log("Got credential, decoding...");
           // Decode the JWT to get user information
           const userData = decodeGoogleToken(response.credential);
+          console.log("User data:", userData);
           const { email, name, sub: googleId } = userData;
 
+          console.log("Sending to backend...");
           // Call the backend Google auth endpoint
           const result = await authService.googleAuth(
             response.credential,
@@ -181,11 +187,21 @@ function setupAuthInteractions() {
             googleId
           );
 
-          if (result.token) {
+          console.log("Backend response:", result);
+          console.log("Token stored:", localStorage.getItem("auth_token") ? "Yes" : "No");
+          
+          if (result && result.token) {
+            console.log("Token received, waiting before redirect...");
+            // Small delay to ensure token is set
+            await new Promise(resolve => setTimeout(resolve, 100));
+            console.log("Redirecting to home...");
             navigateTo("/home");
+          } else {
+            console.error("No token in result:", result);
+            alert("Authentication succeeded but no token received. Please try again.");
           }
         } else {
-          console.error("No credential in response");
+          console.error("No credential in response:", response);
           alert("Failed to authenticate with Google. Please try again.");
         }
       } catch (error) {

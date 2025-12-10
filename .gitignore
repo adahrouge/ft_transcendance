@@ -6,10 +6,6 @@ data/
 server/database/data/
 server/database/uploads/
 
-# Environment variables (if used in future)
-.env
-.env.*
-!.env.example
 
 # Dependencies
 node_modules/
