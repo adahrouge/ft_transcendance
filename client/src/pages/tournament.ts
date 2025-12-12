@@ -2,6 +2,7 @@ import { tournamentService } from "../services/tournament";
 import { authService } from "../services/auth";
 import { navigateTo } from "../router";
 import { getToken } from "../utils/auth";
+import { i18n } from "../services/i18n";
 import type { TournamentListItem, Tournament, TournamentPlayer } from "../types/tournament";
 import "../styles/tournament.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -78,7 +79,7 @@ export function renderTournamentPage(params?: Record<string, string>): string {
       <div class="tournament-overlay"></div>
       <div class="tournament-content" style="max-width: 1200px; width: 100%;">
         <div id="tournament-root" class="w-full">
-          <div class="text-center text-white font-['Pixel_Game']">Loading...</div>
+          <div class="text-center text-white font-['Pixel_Game']">${i18n.t('loading')}</div>
         </div>
       </div>
     </div>
@@ -95,34 +96,34 @@ async function loadTournaments() {
 
     root.innerHTML = `
       <div class="tournament-box">
-        <h2 class="text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6">TOURNAMENTS</h2>
+        <h2 class="text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6">${i18n.t('tournaments')}</h2>
         
         <div class="flex flex-col md:flex-row gap-6 text-left">
           <!-- Create -->
           <div class="w-full md:w-1/3">
-            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-4 border-b border-[#2c6b87] pb-1">CREATE NEW</h3>
+            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-4 border-b border-[#2c6b87] pb-1">${i18n.t('create_new')}</h3>
             <div class="space-y-3">
               <button id="create-4" class="w-full bg-[#2c6b87] text-white py-3 font-['Pixel_Game'] hover:bg-[#3d8aa8] border-2 border-[#4a9dc0]">
-                4 PLAYERS
+${i18n.t('4_players')}
               </button>
               <button id="create-8" class="w-full bg-[#2c6b87] text-white py-3 font-['Pixel_Game'] hover:bg-[#3d8aa8] border-2 border-[#4a9dc0]">
-                8 PLAYERS
+${i18n.t('8_players')}
               </button>
             </div>
           </div>
 
           <!-- List -->
           <div class="flex-1">
-            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-4 border-b border-[#2c6b87] pb-1">ACTIVE TOURNAMENTS</h3>
+            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-4 border-b border-[#2c6b87] pb-1">${i18n.t('active_tournaments')}</h3>
             <div class="max-h-[300px] overflow-y-auto space-y-2 pr-2 custom-scrollbar">
-              ${tournaments.length === 0 ? '<p class="text-gray-500 text-sm">No active tournaments.</p>' : tournaments.map((t: TournamentListItem) => `
+              ${tournaments.length === 0 ? `<p class="text-gray-500 text-sm">${i18n.t('no_active_tournaments')}</p>` : tournaments.map((t: TournamentListItem) => `
                 <div class="bg-[#0d1a28] p-3 border border-[#2c6b87] flex justify-between items-center">
                   <div>
                     <div class="text-[#e0f7ff] font-['Pixel_Game']">${t.creator_username}'s Tournament</div>
                     <div class="text-[#5db3d1] text-xs">${t.current_players}/${t.max_players} Players</div>
                   </div>
                   <button class="bg-[#2c6b87] text-white px-3 py-1 text-xs font-['Pixel_Game'] hover:bg-[#3d8aa8]" 
-                          data-id="${t.id}">JOIN</button>
+                          data-id="${t.id}">${i18n.t('join')}</button>
                 </div>
               `).join('')}
             </div>
@@ -130,7 +131,7 @@ async function loadTournaments() {
         </div>
 
         <div class="mt-6">
-          <button id="btn-back" class="text-[#5db3d1] hover:text-white font-['Pixel_Game']">← BACK</button>
+          <button id="btn-back" class="text-[#5db3d1] hover:text-white font-['Pixel_Game']">← ${i18n.t('back')}</button>
         </div>
       </div>
     `;
@@ -188,18 +189,18 @@ async function loadTournamentDetail(id: number) {
           <!-- Left Side: Tournament Info -->
           <div class="flex-1">
             <div class="flex justify-between items-center mb-6">
-              <h2 class="text-[#e0f7ff] font-['Pixel_Game'] text-2xl">TOURNAMENT #${t.id}</h2>
+              <h2 class="text-[#e0f7ff] font-['Pixel_Game'] text-2xl">${i18n.t('tournament_num')}${t.id}</h2>
               <div class="text-[#5db3d1] font-['Pixel_Game']">${t.status.toUpperCase()}</div>
             </div>
 
           <div class="mb-6">
-            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2">PLAYERS (${players.length}/${t.max_players})</h3>
+            <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2">${i18n.t('players')} (${players.length}/${t.max_players})</h3>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
               ${Array.from({ length: t.max_players }).map((_, i) => {
                 const p = players.find((pl: TournamentPlayer) => pl.bracket_position === i);
                 return `
                   <div class="bg-[#0d1a28] p-2 border border-[#2c6b87] text-center">
-                    <div class="text-[#e0f7ff] text-sm truncate">${p ? (p.display_name || p.username) : 'Empty'}</div>
+                    <div class="text-[#e0f7ff] text-sm truncate">${p ? (p.display_name || p.username) : i18n.t('empty')}</div>
                   </div>
                 `;
               }).join('')}
@@ -208,11 +209,11 @@ async function loadTournamentDetail(id: number) {
 
           ${matches.length > 0 ? `
             <div class="mb-6">
-              <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2">MATCHES</h3>
+              <h3 class="text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2">${i18n.t('matches')}</h3>
               <div class="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
                 ${matches.map(m => {
-                  const p1 = m.p1_display_name || m.p1_username || (m.p1_is_bot ? m.p1_bot_name : 'TBD');
-                  const p2 = m.p2_display_name || m.p2_username || (m.p2_is_bot ? m.p2_bot_name : 'TBD');
+                  const p1 = m.p1_display_name || m.p1_username || (m.p1_is_bot ? m.p1_bot_name : i18n.t('tbd'));
+                  const p2 = m.p2_display_name || m.p2_username || (m.p2_is_bot ? m.p2_bot_name : i18n.t('tbd'));
                   const status = m.status;
                   
                   let actionBtn = '';
@@ -221,9 +222,9 @@ async function loadTournamentDetail(id: number) {
                     const isP2 = currentUser && m.p2_user_id === currentUser.id && !m.p2_is_bot;
                     
                     if (status === 'pending' && (isP1 || isP2)) {
-                      actionBtn = '<button class="bg-green-600 text-white px-3 py-1 text-xs font-[\'Pixel_Game\'] hover:bg-green-500" data-play-match="' + m.id + '">PLAY</button>';
+                      actionBtn = '<button class="bg-green-600 text-white px-3 py-1 text-xs font-[\'Pixel_Game\'] hover:bg-green-500" data-play-match="' + m.id + '">' + i18n.t('play') + '</button>';
                     } else {
-                      actionBtn = '<button class="bg-[#2c6b87] text-white px-3 py-1 text-xs font-[\'Pixel_Game\'] hover:bg-[#3d8aa8]" data-spectate-match="' + m.id + '">SPECTATE</button>';
+                      actionBtn = '<button class="bg-[#2c6b87] text-white px-3 py-1 text-xs font-[\'Pixel_Game\'] hover:bg-[#3d8aa8]" data-spectate-match="' + m.id + '">' + i18n.t('spectate') + '</button>';
                     }
                   } else if (status === 'finished') {
                     actionBtn = '<span class="text-gray-500 text-xs font-[\'Pixel_Game\']">' + m.player1_score + ' - ' + m.player2_score + '</span>';
@@ -235,7 +236,7 @@ async function loadTournamentDetail(id: number) {
                   return '<div class="bg-[#0d1a28] p-2 border border-[#2c6b87] flex justify-between items-center">' +
                     '<div class="text-[#e0f7ff] text-sm">' +
                       '<span class="' + p1Class + '">' + p1 + '</span>' +
-                      '<span class="text-[#5db3d1] mx-1">vs</span>' +
+                      '<span class="text-[#5db3d1] mx-1">' + i18n.t('vs') + '</span>' +
                       '<span class="' + p2Class + '">' + p2 + '</span>' +
                     '</div>' +
                     '<div>' + actionBtn + '</div>' +
@@ -246,29 +247,29 @@ async function loadTournamentDetail(id: number) {
           ` : ''}
 
           <div class="flex gap-4 justify-center mt-8 flex-wrap">
-            ${!isFull ? `<button id="btn-join" class="bg-[#2c6b87] text-white px-6 py-2 font-['Pixel_Game'] hover:bg-[#3d8aa8]">JOIN</button>` : ''}
-            ${t.status === 'waiting' ? `<button id="btn-bots" class="bg-[#1a4558] text-[#5db3d1] px-6 py-2 font-['Pixel_Game'] hover:text-white">FILL BOTS</button>` : ''}
-            ${t.status === 'waiting' && isFull ? `<button id="btn-start" class="bg-green-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-green-500">START</button>` : ''}
-            ${currentUser && t.creator_id === currentUser.id ? `<button id="btn-delete" class="bg-red-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-red-500">DELETE</button>` : ''}
+            ${!isFull ? `<button id="btn-join" class="bg-[#2c6b87] text-white px-6 py-2 font-['Pixel_Game'] hover:bg-[#3d8aa8]">${i18n.t('join')}</button>` : ''}
+            ${t.status === 'waiting' ? `<button id="btn-bots" class="bg-[#1a4558] text-[#5db3d1] px-6 py-2 font-['Pixel_Game'] hover:text-white">${i18n.t('fill_bots')}</button>` : ''}
+            ${t.status === 'waiting' && isFull ? `<button id="btn-start" class="bg-green-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-green-500">${i18n.t('start')}</button>` : ''}
+            ${currentUser && t.creator_id === currentUser.id ? `<button id="btn-delete" class="bg-red-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-red-500">${i18n.t('delete')}</button>` : ''}
           </div>
 
           <div class="mt-6">
-            <button id="btn-back" class="text-[#5db3d1] hover:text-white font-['Pixel_Game']">← BACK</button>
+            <button id="btn-back" class="text-[#5db3d1] hover:text-white font-['Pixel_Game']">← ${i18n.t('back')}</button>
           </div>
         </div>
 
         <!-- Right Side: Chat -->
         <div class="w-full lg:w-80 flex flex-col bg-[#0d1a28] border border-[#2c6b87] h-[500px]">
           <div class="p-3 border-b border-[#2c6b87] bg-[#1a4558]">
-            <h3 class="text-[#e0f7ff] font-['Pixel_Game']">TOURNAMENT CHAT</h3>
+            <h3 class="text-[#e0f7ff] font-['Pixel_Game']">${i18n.t('tournament_chat')}</h3>
           </div>
           <div id="chat-messages" class="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
-            <div class="text-gray-500 text-xs text-center">Welcome to chat!</div>
+            <div class="text-gray-500 text-xs text-center">${i18n.t('welcome_chat')}</div>
           </div>
           <div class="p-2 border-t border-[#2c6b87] flex gap-2">
-            <input type="text" id="chat-input" placeholder="Type message..." 
+            <input type="text" id="chat-input" placeholder="${i18n.t('type_message')}" 
                    class="flex-1 bg-[#0a1929] border border-[#2c6b87] text-[#e0f7ff] px-2 py-1 text-sm focus:outline-none">
-            <button id="chat-send" class="bg-[#2c6b87] text-white px-3 py-1 font-['Pixel_Game'] text-sm hover:bg-[#3d8aa8]">SEND</button>
+            <button id="chat-send" class="bg-[#2c6b87] text-white px-3 py-1 font-['Pixel_Game'] text-sm hover:bg-[#3d8aa8]">${i18n.t('send')}</button>
           </div>
         </div>
 
@@ -355,7 +356,7 @@ async function loadTournamentDetail(id: number) {
     });
 
     document.getElementById("btn-delete")?.addEventListener("click", async () => {
-      if (confirm("Are you sure you want to delete this tournament?")) {
+      if (confirm(i18n.t('confirm_delete'))) {
         try {
           await tournamentService.deleteTournament(id);
           navigateTo("/tournament");

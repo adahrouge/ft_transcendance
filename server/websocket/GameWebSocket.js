@@ -368,6 +368,16 @@ export function GameWebSocket(connection, req) {
             sendGameState(currentGameId);
           }
           break;
+
+        case 'CHECK_ONLINE_STATUS':
+          if (data.userIds && Array.isArray(data.userIds)) {
+            const onlineStatus = gameEngine.getOnlineUsers(data.userIds);
+            send({
+              type: 'ONLINE_STATUS_UPDATE',
+              onlineStatus
+            });
+          }
+          break;
       }
     } catch (error) {
       console.error('WebSocket error:', error);
@@ -436,6 +446,7 @@ export function GameWebSocket(connection, req) {
       'JOIN_GAME', 
       'MOVE_PADDLE', 
       'REQUEST_GAME_STATE',
+      'CHECK_ONLINE_STATUS',
       'SEND_CHAT',
       'AUTHENTICATE'
     ]

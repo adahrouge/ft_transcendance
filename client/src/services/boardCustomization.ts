@@ -1,0 +1,91 @@
+import { BoardCustomization, DEFAULT_CUSTOMIZATION } from "../types/boardCustomization";
+import { getToken } from "../utils/auth";
+
+class BoardCustomizationService {
+  private currentCustomization: BoardCustomization = DEFAULT_CUSTOMIZATION;
+  private loaded: boolean = false;
+
+  async loadCustomization(): Promise<BoardCustomization> {
+    if (this.loaded) {
+      return this.currentCustomization;
+    }
+
+    const token = getToken();
+    if (!token) {
+      this.currentCustomization = DEFAULT_CUSTOMIZATION;
+      this.loaded = true;
+      return this.currentCustomization;
+    }
+
+    try {
+      const response = await fetch("/api/board-customization", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to load customization");
+      }
+
+      const data = await response.json();
+
+      if (data.customization) {
+        this.currentCustomization = data.customization;
+      } else {
+        this.currentCustomization = DEFAULT_CUSTOMIZATION;
+      }
+
+      this.loaded = true;
+      return this.currentCustomization;
+    } catch (error) {
+      console.error("Error loading board customization:", error);
+      this.currentCustomization = DEFAULT_CUSTOMIZATION;
+      this.loaded = true;
+      return this.currentCustomization;
+    }
+  }
+
+  async saveCustomization(customization: BoardCustomization): Promise<boolean> {
+    const token = getToken();
+    if (!token) {
+      return false;
+    }
+
+    try {
+      const response = await fetch("/api/board-customization", {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ customization })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save customization");
+      }
+
+      this.currentCustomization = customization;
+      return true;
+    } catch (error) {
+      console.error("Error saving board customization:", error);
+      return false;
+    }
+  }
+
+  getCurrentCustomization(): BoardCustomization {
+    return this.currentCustomization;
+  }
+
+  setCurrentCustomization(customization: BoardCustomization): void {
+    this.currentCustomization = customization;
+  }
+
+  resetToDefault(): void {
+    this.currentCustomization = DEFAULT_CUSTOMIZATION;
+  }
+}
+
+export const boardCustomizationService = new BoardCustomizationService();

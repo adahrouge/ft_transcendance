@@ -40,6 +40,7 @@ export interface GameMessage {
   scorer?: string;
   conceder?: string;
   inviterName?: string;
+  onlineStatus?: Record<string, boolean>;
 }
 
 export interface ChatMessage {

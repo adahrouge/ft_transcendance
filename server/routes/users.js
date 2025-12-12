@@ -376,6 +376,50 @@ export async function userRoutes(fastify) {
       return reply.code(500).send({ error: 'Failed to upload avatar' });
     }
   });
+
+  // Get user's board customization
+  fastify.get('/api/board-customization', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    return {
+      customization: user.board_customization || null
+    };
+  });
+
+  // Update user's board customization
+  fastify.put('/api/board-customization', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { customization } = request.body;
+
+    if (!customization) {
+      return reply.code(400).send({ error: 'Customization data is required' });
+    }
+
+    // Validate customization structure
+    if (!customization.theme || !customization.colors) {
+      return reply.code(400).send({ error: 'Invalid customization format' });
+    }
+
+    try {
+      const updatedUser = await updateUser(user.id, {
+        board_customization: customization
+      });
+
+      return {
+        customization: updatedUser.board_customization
+      };
+    } catch (err) {
+      console.error('Error saving board customization:', err);
+      return reply.code(500).send({ error: 'Failed to save customization' });
+    }
+  });
 }
 
 // Helper to serve avatar files

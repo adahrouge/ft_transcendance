@@ -1,6 +1,8 @@
 import { authService } from "../services/auth";
 import { navigateTo } from "../router";
 import { initializeGoogleOAuth, triggerGoogleSignIn, decodeGoogleToken, isGoogleOAuthConfigured } from "../utils/google-oauth";
+import { getToken } from "../utils/auth";
+import { i18n } from "../services/i18n";
 import "../styles/auth.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -24,24 +26,24 @@ export function renderAuthPage(): string {
         </div>
 
         <div class="auth-tabs">
-          <button class="tab-btn active" data-tab="login">LOGIN</button>
-          <button class="tab-btn" data-tab="register">REGISTER</button>
+          <button class="tab-btn active" data-tab="login">${i18n.t('login')}</button>
+          <button class="tab-btn" data-tab="register">${i18n.t('register')}</button>
         </div>
 
         <div class="auth-form-container">
           <form id="login-form" class="auth-form active flex flex-col gap-4">
             <div class="form-group">
-              <label for="login-username">USERNAME</label>
-              <input type="text" id="login-username" class="pixel-input" placeholder="Enter username" required>
+              <label for="login-username">${i18n.t('username')}</label>
+              <input type="text" id="login-username" class="pixel-input" placeholder="${i18n.t('enter_username')}" required>
             </div>
             <div class="form-group">
-              <label for="login-password">PASSWORD</label>
-              <input type="password" id="login-password" class="pixel-input" placeholder="Enter password" required>
+              <label for="login-password">${i18n.t('password')}</label>
+              <input type="password" id="login-password" class="pixel-input" placeholder="${i18n.t('enter_password')}" required>
             </div>
             <div id="login-error" class="error-message"></div>
-            <button type="submit" class="submit-btn pixel-btn">LOGIN</button>
+            <button type="submit" class="submit-btn pixel-btn">${i18n.t('login')}</button>
 
-            <div class="divider">OR</div>
+            <div class="divider">${i18n.t('or')}</div>
 
             <button type="button" class="google-btn" id="google-login">
               <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
@@ -50,25 +52,25 @@ export function renderAuthPage(): string {
                 <path fill="#FBBC05" d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706s.102-1.166.282-1.706V4.962H.957C.348 6.175 0 7.55 0 9s.348 2.825.957 4.038l3.007-2.332z"/>
                 <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
               </svg>
-              <span>CONTINUE WITH GOOGLE</span>
+              <span>${i18n.t('continue_with_google')}</span>
             </button>
           </form>
 
           <form id="register-form" class="auth-form hidden flex-col gap-4">
             <div class="form-group">
-              <label for="register-username">USERNAME</label>
-              <input type="text" id="register-username" class="pixel-input" placeholder="Choose username" required>
+              <label for="register-username">${i18n.t('username')}</label>
+              <input type="text" id="register-username" class="pixel-input" placeholder="${i18n.t('choose_username')}" required>
             </div>
             <div class="form-group">
-              <label for="register-email">EMAIL</label>
-              <input type="email" id="register-email" class="pixel-input" placeholder="Enter email" required>
+              <label for="register-email">${i18n.t('email')}</label>
+              <input type="email" id="register-email" class="pixel-input" placeholder="${i18n.t('enter_email')}" required>
             </div>
             <div class="form-group">
-              <label for="register-password">PASSWORD</label>
-              <input type="password" id="register-password" class="pixel-input" placeholder="Create password" required>
+              <label for="register-password">${i18n.t('password')}</label>
+              <input type="password" id="register-password" class="pixel-input" placeholder="${i18n.t('create_password')}" required>
             </div>
             <div id="register-error" class="error-message"></div>
-            <button type="submit" class="submit-btn pixel-btn">SIGN UP</button>
+            <button type="submit" class="submit-btn pixel-btn">${i18n.t('sign_up')}</button>
           </form>
         </div>
       </div>
@@ -118,7 +120,7 @@ function setupAuthInteractions() {
       navigateTo("/home");
     } catch (error) {
       if (errorDiv)
-        errorDiv.textContent = "Login failed. Please check your credentials.";
+        errorDiv.textContent = i18n.t('login_failed');
       console.error(error);
     }
   });
@@ -148,7 +150,7 @@ function setupAuthInteractions() {
       navigateTo("/home");
     } catch (error) {
       if (errorDiv)
-        errorDiv.textContent = "Registration failed. Please try again.";
+        errorDiv.textContent = i18n.t('registration_failed');
       console.error(error);
     }
   });
@@ -188,7 +190,7 @@ function setupAuthInteractions() {
           );
 
           console.log("Backend response:", result);
-          console.log("Token stored:", localStorage.getItem("auth_token") ? "Yes" : "No");
+          console.log("Token stored:", getToken() ? "Yes" : "No");
           
           if (result && result.token) {
             console.log("Token received, waiting before redirect...");

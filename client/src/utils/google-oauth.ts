@@ -7,7 +7,6 @@ export interface GoogleOAuthConfig {
 
 let googleConfig: GoogleOAuthConfig | null = null;
 let scriptLoaded = false;
-let initialized = false;
 let pendingRequest = false;
 
 export function initializeGoogleOAuth(clientId: string) {
@@ -86,15 +85,12 @@ export async function triggerGoogleSignIn(): Promise<any> {
         }
       };
 
-      // Initialize Google accounts if not already done
-      if (!initialized) {
-        google.accounts.id.initialize({
-          client_id: googleConfig!.clientId,
-          callback: (window as any)[callbackName],
-          auto_select: false,
-        });
-        initialized = true;
-      }
+      // Initialize Google accounts
+      google.accounts.id.initialize({
+        client_id: googleConfig!.clientId,
+        callback: (window as any)[callbackName],
+        auto_select: false,
+      });
 
       // Render the standard Google Sign-In button and trigger it
       const containerDiv = document.createElement('div');

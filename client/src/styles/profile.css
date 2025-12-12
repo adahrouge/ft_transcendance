@@ -15,8 +15,8 @@
 
   /* Main profile box */
   .profile-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[500px];
-    padding: 2.5rem;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[800px];
+    padding: 2rem;
     image-rendering: pixelated;
 
     box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,

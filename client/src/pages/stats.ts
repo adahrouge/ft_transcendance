@@ -1,6 +1,7 @@
 import { statsService } from "../services/stats";
 import { navigateTo } from "../router";
 import { getAvatarUrl } from "../utils/home";
+import { i18n } from "../services/i18n";
 import type { MatchHistoryItem, StatsUser, PlayerStats } from "../types/stats";
 import "../styles/stats.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -15,7 +16,7 @@ export function renderStatsPage(): string {
       <div class="stats-overlay"></div>
       <div class="stats-content">
         <div id="stats-root" class="w-full max-w-[800px]">
-          <div class="text-center text-white font-['Pixel_Game']">Loading statistics...</div>
+          <div class="text-center text-white font-['Pixel_Game']">${i18n.t('loading')}</div>
         </div>
       </div>
     </div>
@@ -51,7 +52,7 @@ async function loadStats() {
 
     root.innerHTML = `
       <div class="stats-box">
-        <h2 class="stats-title">STATISTICS</h2>
+        <h2 class="stats-title">${i18n.t('statistics')}</h2>
 
         <div class="stats-player-info">
           <img src="${getAvatarUrl(user)}"
@@ -62,29 +63,29 @@ async function loadStats() {
         <div class="stats-grid">
           <div class="stats-card">
             <div class="stats-card-value">${totalGames}</div>
-            <div class="stats-card-label">TOTAL GAMES</div>
+            <div class="stats-card-label">${i18n.t('total_games')}</div>
           </div>
           <div class="stats-card stats-card-win">
             <div class="stats-card-value">${wins}</div>
-            <div class="stats-card-label">WINS</div>
+            <div class="stats-card-label">${i18n.t('wins')}</div>
           </div>
           <div class="stats-card stats-card-loss">
             <div class="stats-card-value">${losses}</div>
-            <div class="stats-card-label">LOSSES</div>
+            <div class="stats-card-label">${i18n.t('losses')}</div>
           </div>
           <div class="stats-card">
             <div class="stats-card-value">${winRate}%</div>
-            <div class="stats-card-label">WIN RATE</div>
+            <div class="stats-card-label">${i18n.t('win_rate')}</div>
           </div>
         </div>
 
         <div class="stats-history-section">
-          <h3 class="stats-section-title">MATCH HISTORY</h3>
+          <h3 class="stats-section-title">${i18n.t('match_history')}</h3>
           <div class="stats-history-list">
-            ${matchHistory.length === 0 ? '<p class="stats-empty">No matches played yet.</p>' : matchHistory.map(m => `
+            ${matchHistory.length === 0 ? `<p class="stats-empty">${i18n.t('no_matches')}</p>` : matchHistory.map(m => `
               <div class="stats-match-item">
                 <div class="stats-match-opponent">
-                  <span class="stats-match-vs">vs</span>
+                  <span class="stats-match-vs">${i18n.t('vs')}</span>
                   <span class="stats-match-name">${m.opponent_username || 'Unknown'}</span>
                 </div>
                 <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : 'stats-loss'}">
@@ -96,7 +97,7 @@ async function loadStats() {
         </div>
 
         <div class="stats-footer">
-          <button id="btn-back" class="stats-back-btn">BACK</button>
+          <button id="btn-back" class="stats-back-btn">${i18n.t('back')}</button>
         </div>
       </div>
     `;

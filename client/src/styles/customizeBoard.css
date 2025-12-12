@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+@layer components {
+  .customize-board-container {
+    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .customize-board-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .customize-board-content {
+    @apply relative z-10 flex flex-col items-center justify-center px-4 w-full;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+
+  /* Main box */
+  .customize-board-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[900px];
+    padding: 1.5rem;
+    image-rendering: pixelated;
+
+    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
+      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
+      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+  }
+
+  @media (max-width: 768px) {
+    .customize-board-box {
+      padding: 1rem;
+    }
+  }
+
+  .customize-board-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-1 text-center;
+  }
+
+  .customize-board-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mb-4 text-center;
+  }
+
+  /* Section titles */
+  .customize-board-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-1;
+    border-bottom: 2px solid #2c6b87;
+  }
+
+  /* Theme Presets */
+  .customize-board-preset-btn {
+    @apply bg-[#0d1a28] border-2 border-[#2c6b87] rounded-lg p-2 cursor-pointer transition-all;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .customize-board-preset-btn:hover {
+    @apply -translate-y-1;
+    border-color: #4a9dc0;
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #4a9dc0, 0 2px 0 0 #4a9dc0, -2px 2px 0 0 #4a9dc0,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+
+  .customize-board-preset-btn.active {
+    border-color: #4ade80;
+    box-shadow: 0 -2px 0 0 #4ade80, 2px -2px 0 0 #4ade80, 2px 0 0 0 #4ade80,
+      2px 2px 0 0 #4ade80, 0 2px 0 0 #4ade80, -2px 2px 0 0 #4ade80,
+      -2px 0 0 0 #4ade80, -2px -2px 0 0 #4ade80;
+  }
+
+  /* Color Inputs */
+  .customize-board-label {
+    @apply block text-[#5db3d1] font-['Pixel_Game'] text-xs mb-1 uppercase;
+  }
+
+  .customize-board-color-input {
+    @apply w-full h-10 border-2 border-[#2c6b87] rounded cursor-pointer transition-all p-1 bg-[#0d1a28];
+  }
+
+  .customize-board-color-input:hover {
+    border-color: #4a9dc0;
+  }
+
+  /* Preview */
+  .customize-board-preview-container {
+    @apply flex justify-center items-center p-4 bg-[#0a1420] rounded-lg border-2 border-[#2c6b87];
+  }
+
+  /* Buttons */
+  .customize-board-btn {
+    @apply px-6 py-2 bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-lg cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    border: none;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .customize-board-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .customize-board-btn-secondary {
+    @apply px-6 py-2 bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-lg cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    border: none;
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .customize-board-btn-secondary:active {
+    @apply translate-y-1;
+  }
+
+  .customize-board-status {
+    @apply text-center font-['Pixel_Game'] text-sm mt-4 min-h-5;
+  }
+}

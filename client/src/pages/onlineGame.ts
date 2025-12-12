@@ -1,8 +1,11 @@
 import { onlineGameService } from "../services/onlineGame";
 import { getToken } from "../utils/auth";
 import { navigateTo } from "../router";
+import { i18n } from "../services/i18n";
 import { DEFAULT_ONLINE_GAME_CONFIG } from "../types/onlineGame";
 import type { OnlineGameState, ActiveGame } from "../types/onlineGame";
+import { boardCustomizationService } from "../services/boardCustomization";
+import type { BoardCustomization } from "../types/boardCustomization";
 import "../styles/onlineGame.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -48,15 +51,15 @@ async function setupOnlineGame(params?: Record<string, string>) {
 function showModeSelection(root: HTMLElement) {
   root.innerHTML = `
     <div class="onlineGame-lobby-box" style="min-width: 500px;">
-      <h1 class="onlineGame-title">PLAY ONLINE</h1>
-      <p class="onlineGame-subtitle">Choose your game mode</p>
+      <h1 class="onlineGame-title">${i18n.t('play_online')}</h1>
+      <p class="onlineGame-subtitle">${i18n.t('choose_mode')}</p>
 
       <!-- VS Friend Section -->
       <div class="onlineGame-section">
-        <h3 class="onlineGame-section-title">VS FRIEND</h3>
-        <p class="onlineGame-section-desc">Challenge a friend to a match</p>
+        <h3 class="onlineGame-section-title">${i18n.t('vs_friend')}</h3>
+        <p class="onlineGame-section-desc">${i18n.t('challenge_friend')}</p>
         <div class="onlineGame-controls">
-          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-vs-friend">VS FRIEND</button>
+          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-vs-friend">${i18n.t('vs_friend')}</button>
         </div>
       </div>
 
@@ -64,10 +67,10 @@ function showModeSelection(root: HTMLElement) {
 
       <!-- Random Match Section -->
       <div class="onlineGame-section">
-        <h3 class="onlineGame-section-title">RANDOM MATCH</h3>
-        <p class="onlineGame-section-desc">Play against a random opponent</p>
+        <h3 class="onlineGame-section-title">${i18n.t('random_match')}</h3>
+        <p class="onlineGame-section-desc">${i18n.t('play_random')}</p>
         <div class="onlineGame-controls">
-          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-random">RANDOM MATCH</button>
+          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-random">${i18n.t('random_match')}</button>
         </div>
       </div>
 
@@ -75,10 +78,10 @@ function showModeSelection(root: HTMLElement) {
 
       <!-- Tournament Section -->
       <div class="onlineGame-section">
-        <h3 class="onlineGame-section-title">TOURNAMENT</h3>
-        <p class="onlineGame-section-desc">Compete in a tournament bracket</p>
+        <h3 class="onlineGame-section-title">${i18n.t('tournament')}</h3>
+        <p class="onlineGame-section-desc">${i18n.t('compete_tournament')}</p>
         <div class="onlineGame-controls">
-          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-tournament">TOURNAMENT</button>
+          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-tournament">${i18n.t('tournament')}</button>
         </div>
       </div>
 
@@ -86,7 +89,7 @@ function showModeSelection(root: HTMLElement) {
 
       <!-- Back Section -->
       <div class="onlineGame-controls">
-        <button class="onlineGame-btn onlineGame-btn-secondary onlineGame-btn-fullwidth" id="btn-back">BACK</button>
+        <button class="onlineGame-btn onlineGame-btn-secondary onlineGame-btn-fullwidth" id="btn-back">${i18n.t('back')}</button>
       </div>
     </div>
   `;
@@ -111,15 +114,15 @@ function showLobby(root: HTMLElement) {
 
   root.innerHTML = `
     <div class="onlineGame-lobby-box" style="min-width: 600px;">
-      <h1 class="onlineGame-title">ONLINE LOBBY</h1>
-      <p class="onlineGame-subtitle">Join a game or create one</p>
+      <h1 class="onlineGame-title">${i18n.t('online_lobby')}</h1>
+      <p class="onlineGame-subtitle">${i18n.t('join_or_create')}</p>
 
       <!-- Create Game Section -->
       <div class="onlineGame-section">
-        <h3 class="onlineGame-section-title">CREATE NEW GAME</h3>
-        <p class="onlineGame-section-desc">Start a new match and wait for an opponent</p>
+        <h3 class="onlineGame-section-title">${i18n.t('create_new_game')}</h3>
+        <p class="onlineGame-section-desc">${i18n.t('start_new_match')}</p>
         <div class="onlineGame-controls">
-          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-create">CREATE GAME</button>
+          <button class="onlineGame-btn onlineGame-btn-fullwidth" id="btn-create">${i18n.t('create_game')}</button>
         </div>
       </div>
 
@@ -128,12 +131,12 @@ function showLobby(root: HTMLElement) {
       <!-- Active Games Section -->
       <div class="onlineGame-section">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 class="onlineGame-section-title">ACTIVE GAMES</h3>
-          <button class="onlineGame-btn onlineGame-btn-secondary" id="btn-refresh" style="padding: 5px 15px; font-size: 12px;">REFRESH</button>
+          <h3 class="onlineGame-section-title">${i18n.t('active_games')}</h3>
+          <button class="onlineGame-btn onlineGame-btn-secondary" id="btn-refresh" style="padding: 5px 15px; font-size: 12px;">${i18n.t('refresh')}</button>
         </div>
-        <p class="onlineGame-section-desc">Join an existing match (auto-refreshes every 3s)</p>
+        <p class="onlineGame-section-desc">${i18n.t('join_existing')}</p>
         <div id="active-games-list" class="onlineGame-games-list">
-          <p class="onlineGame-empty-text">Loading...</p>
+          <p class="onlineGame-empty-text">${i18n.t('loading')}</p>
         </div>
       </div>
 
@@ -141,7 +144,7 @@ function showLobby(root: HTMLElement) {
 
       <!-- Back Section -->
       <div class="onlineGame-controls">
-        <button class="onlineGame-btn onlineGame-btn-secondary onlineGame-btn-fullwidth" id="btn-back">BACK</button>
+        <button class="onlineGame-btn onlineGame-btn-secondary onlineGame-btn-fullwidth" id="btn-back">${i18n.t('back')}</button>
       </div>
     </div>
   `;
@@ -173,15 +176,15 @@ async function loadActiveGames(root: HTMLElement) {
     const games: ActiveGame[] = response.games || [];
 
     if (games.length === 0) {
-      list.innerHTML = '<p class="onlineGame-empty-text">No active games found.</p>';
+      list.innerHTML = `<p class="onlineGame-empty-text">${i18n.t('no_active_games')}</p>`;
       return;
     }
 
     list.innerHTML = games.map((g: any) => {
-      const p1Name = g.players && g.players[0] ? g.players[0].name : "Unknown";
-      const p2Name = g.players && g.players[1] ? g.players[1].name : "Waiting...";
+      const p1Name = g.players && g.players[0] ? g.players[0].name : i18n.t('unknown');
+      const p2Name = g.players && g.players[1] ? g.players[1].name : i18n.t('waiting');
       const isWaiting = g.status === 'waiting';
-      const joinText = isWaiting ? "PLAY" : "WATCH";
+      const joinText = isWaiting ? i18n.t('play') : i18n.t('watch');
       
       return `
       <div class="onlineGame-game-item">
@@ -221,20 +224,23 @@ function joinGame(root: HTMLElement, gameId: string) {
   renderGameView(root);
 }
 
-function renderGameView(root: HTMLElement) {
+async function renderGameView(root: HTMLElement) {
+  // Load customization
+  const customization = await boardCustomizationService.loadCustomization();
+
   root.innerHTML = `
     <div class="onlineGame-box">
       <div class="onlineGame-match-info" id="match-info" style="text-align: center; margin-bottom: 10px;">
-        <span style="color: #7dd3fc; font-size: 14px;">Connecting...</span>
+        <span style="color: #7dd3fc; font-size: 14px;">${i18n.t('connecting')}</span>
       </div>
       <div class="onlineGame-scoreboard">
         <div>
-          <div class="onlineGame-score-label" id="p1-name">P1</div>
+          <div class="onlineGame-score-label" id="p1-name">${i18n.t('p1')}</div>
           <div class="onlineGame-score-value" id="score-p1">0</div>
         </div>
         <div class="onlineGame-score-divider">:</div>
         <div>
-          <div class="onlineGame-score-label" id="p2-name">P2</div>
+          <div class="onlineGame-score-label" id="p2-name">${i18n.t('p2')}</div>
           <div class="onlineGame-score-value" id="score-p2">0</div>
         </div>
       </div>
@@ -242,7 +248,7 @@ function renderGameView(root: HTMLElement) {
         <canvas id="online-game-canvas" width="${WIDTH}" height="${HEIGHT}" class="onlineGame-canvas"></canvas>
       </div>
       <div class="onlineGame-controls">
-        <button class="onlineGame-btn onlineGame-btn-secondary" id="btn-quit">QUIT</button>
+        <button class="onlineGame-btn onlineGame-btn-secondary" id="btn-quit">${i18n.t('quit')}</button>
       </div>
       <div id="status-msg" class="onlineGame-status"></div>
       <div id="goal-flash-top" style="display: none; position: absolute; top: 0; left: 0; right: 0; height: 50%; background: radial-gradient(ellipse at center top, rgba(239, 68, 68, 0.6) 0%, transparent 70%); pointer-events: none; z-index: 50;"></div>
@@ -253,7 +259,7 @@ function renderGameView(root: HTMLElement) {
           <h2 id="game-over-title" style="color: #7dd3fc; font-size: 32px; margin-bottom: 10px; font-family: 'Pixel Game', monospace;"></h2>
           <p id="game-over-score" style="color: white; font-size: 48px; margin-bottom: 20px; font-family: 'Pixel Game', monospace;"></p>
           <p id="game-over-message" style="color: #94a3b8; font-size: 14px; margin-bottom: 30px; font-family: 'Pixel Game', monospace;"></p>
-          <button id="btn-back-to-lobby" class="onlineGame-btn">BACK TO LOBBY</button>
+          <button id="btn-back-to-lobby" class="onlineGame-btn">${i18n.t('back_to_lobby')}</button>
         </div>
       </div>
     </div>
@@ -265,7 +271,7 @@ function renderGameView(root: HTMLElement) {
   // Track player names for game end display
   let player1Name = "Player 1";
   let player2Name = "Player 2";
-  let currentBorderColor = '#3d8aa8';
+  let currentBorderColor = customization.colors.border;
 
   onlineGameService.onGameStateUpdate((state: OnlineGameState) => {
     if (!state) return;
@@ -295,12 +301,12 @@ function renderGameView(root: HTMLElement) {
       const opponentName = role === 'player1' ? player2Name : (role === 'player2' ? player1Name : null);
 
       if (yourName && opponentName) {
-        matchInfo.innerHTML = `<span style="color: #7dd3fc; font-size: 14px;">You (<strong>${yourName}</strong>) vs <strong>${opponentName}</strong></span>`;
+        matchInfo.innerHTML = `<span style="color: #7dd3fc; font-size: 14px;">${i18n.t('you')} (<strong>${yourName}</strong>) ${i18n.t('vs')} <strong>${opponentName}</strong></span>`;
       } else {
-        matchInfo.innerHTML = `<span style="color: #7dd3fc; font-size: 14px;">Spectating: ${player1Name} vs ${player2Name}</span>`;
+        matchInfo.innerHTML = `<span style="color: #7dd3fc; font-size: 14px;">${i18n.t('spectating')}: ${player1Name} ${i18n.t('vs')} ${player2Name}</span>`;
       }
     } else if (matchInfo && state.status === 'waiting') {
-      matchInfo.innerHTML = `<span style="color: #fbbf24; font-size: 14px;">Waiting for opponent to join...</span>`;
+      matchInfo.innerHTML = `<span style="color: #fbbf24; font-size: 14px;">${i18n.t('waiting_opponent_join')}</span>`;
     }
 
     // Update scores
@@ -313,21 +319,21 @@ function renderGameView(root: HTMLElement) {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
     // Draw Table
-    ctx.fillStyle = "#0a0a12";
+    ctx.fillStyle = customization.colors.background;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     if (state.status === 'waiting') {
       ctx.fillStyle = "white";
       ctx.font = "24px monospace";
       ctx.textAlign = "center";
-      ctx.fillText("Waiting for opponent...", WIDTH / 2, HEIGHT / 2);
+      ctx.fillText(i18n.t('waiting_opponent'), WIDTH / 2, HEIGHT / 2);
       return;
     }
 
     // Draw center line (horizontal for vertical game)
     ctx.save();
     ctx.setLineDash([8, 8]);
-    ctx.strokeStyle = '#2c6b87';
+    ctx.strokeStyle = customization.colors.centerLine;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(10, HEIGHT / 2);
@@ -343,14 +349,14 @@ function renderGameView(root: HTMLElement) {
     // Draw Paddles - VERTICAL ORIENTATION
     // Player 1 at TOP, Player 2 at BOTTOM
     const paddleOffset = 10;
-    ctx.fillStyle = '#e0f7ff';
+    ctx.fillStyle = customization.colors.paddle;
     // Player 1 paddle (TOP)
     ctx.fillRect(state.players[0].paddleX, paddleOffset, PADDLE_W, PADDLE_H);
     // Player 2 paddle (BOTTOM)
     ctx.fillRect(state.players[1].paddleX, HEIGHT - paddleOffset - PADDLE_H, PADDLE_W, PADDLE_H);
 
     // Draw Ball (square for retro look)
-    ctx.fillStyle = '#e0f7ff';
+    ctx.fillStyle = customization.colors.ball;
     ctx.fillRect(state.ball.x - BALL_R, state.ball.y - BALL_R, BALL_R * 2, BALL_R * 2);
   });
 
@@ -373,7 +379,7 @@ function renderGameView(root: HTMLElement) {
 
     // Reset border color after delay (2.5s)
     setTimeout(() => {
-      currentBorderColor = '#3d8aa8';
+      currentBorderColor = customization.colors.border;
     }, 2500);
   });
 
@@ -500,9 +506,9 @@ function renderGameView(root: HTMLElement) {
     if (reason === "player_left") {
       // Opponent disconnected
       showGameOverOverlay(
-        "CONNECTION LOST",
+        i18n.t('connection_lost'),
         state ? `${state.players[0].score} - ${state.players[1].score}` : "",
-        "The connection to the opponent was lost.",
+        i18n.t('connection_lost_msg'),
         "#94a3b8"  // Gray/Neutral color
       );
     } else if (reason === "game_ended" && state) {
@@ -517,35 +523,35 @@ function renderGameView(root: HTMLElement) {
 
       if (role === "player1") {
         if (p1Won) {
-          title = "YOU WIN!";
+          title = i18n.t('you_win');
           titleColor = "#4ade80";  // Green
-          resultMessage = `Congratulations! You defeated ${player2Name}.`;
+          resultMessage = `${i18n.t('congrats_defeat')} ${player2Name}.`;
         } else {
-          title = "YOU LOSE";
+          title = i18n.t('you_lose');
           titleColor = "#f87171";  // Red
-          resultMessage = `${player2Name} has won the match.`;
+          resultMessage = `${player2Name} ${i18n.t('has_won')}`;
         }
       } else if (role === "player2") {
         if (!p1Won) {
-          title = "YOU WIN!";
+          title = i18n.t('you_win');
           titleColor = "#4ade80";  // Green
-          resultMessage = `Congratulations! You defeated ${player1Name}.`;
+          resultMessage = `${i18n.t('congrats_defeat')} ${player1Name}.`;
         } else {
-          title = "YOU LOSE";
+          title = i18n.t('you_lose');
           titleColor = "#f87171";  // Red
-          resultMessage = `${player1Name} has won the match.`;
+          resultMessage = `${player1Name} ${i18n.t('has_won')}`;
         }
       } else {
         // Spectator
         const winnerName = p1Won ? player1Name : player2Name;
-        title = "GAME OVER";
-        resultMessage = `${winnerName} wins the match!`;
+        title = i18n.t('game_over');
+        resultMessage = `${winnerName} ${i18n.t('wins_match')}`;
       }
 
       showGameOverOverlay(title, `${p1Score} - ${p2Score}`, resultMessage, titleColor);
     } else {
       // Generic game end
-      showGameOverOverlay("GAME ENDED", "", "The game has ended.", "#7dd3fc");
+      showGameOverOverlay(i18n.t('game_ended'), "", i18n.t('game_ended_msg'), "#7dd3fc");
     }
 
     // Add click listener for back to lobby button

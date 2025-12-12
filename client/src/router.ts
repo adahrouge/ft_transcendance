@@ -8,6 +8,7 @@ import { renderProfilePage } from "./pages/profile";
 import { renderFriendPage } from "./pages/friend";
 import { renderTournamentPage } from "./pages/tournament";
 import { renderStatsPage } from "./pages/stats";
+import { renderCustomizeBoardPage } from "./pages/customizeBoard";
 import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
 
@@ -75,6 +76,11 @@ export function setupRouter() {
       console.log("Route: Tournament Detail Page");
       const app = getAppContainer();
       app.innerHTML = renderTournamentPage(match?.data ?? undefined);
+    })
+    .on("/customize-board", () => {
+      console.log("Route: Customize Board Page");
+      const app = getAppContainer();
+      app.innerHTML = renderCustomizeBoardPage();
     })
     .notFound(() => {
       console.log("Route: 404 Not Found");

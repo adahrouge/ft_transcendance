@@ -1,5 +1,6 @@
 import { apiRequest } from "../api";
 import { setToken } from "../utils/auth";
+import { onlineGameService } from "./onlineGame";
 import type {
   LoginCredentials,
   RegisterCredentials,
@@ -17,6 +18,7 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
+      onlineGameService.connect(data.token);
     }
 
     return data;
@@ -30,6 +32,7 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
+      onlineGameService.connect(data.token);
     }
 
     return data;
@@ -43,6 +46,7 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
+      onlineGameService.connect(data.token);
     }
 
     return data;
@@ -50,6 +54,7 @@ export const authService = {
 
   logout(): void {
     setToken(null);
+    onlineGameService.disconnect();
     // Optional: Redirect to login page or clear other state
     navigateTo('/auth');
   },

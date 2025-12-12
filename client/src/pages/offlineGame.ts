@@ -1,6 +1,9 @@
 import { PongAI, DEFAULT_GAME_CONFIG, clamp } from "../utils/offlineGame";
 import { navigateTo } from "../router";
 import { isAuthenticated } from "../utils/auth";
+import { i18n } from "../services/i18n";
+import { boardCustomizationService } from "../services/boardCustomization";
+import type { BoardCustomization } from "../types/boardCustomization";
 import "../styles/offlineGame.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -102,9 +105,9 @@ function getAIConfigFromDifficulty(difficulty: number) {
 }
 
 function getDifficultyLabel(difficulty: number): string {
-  if (difficulty <= 33) return AI_DIFFICULTY_LABELS[0];
-  if (difficulty <= 66) return AI_DIFFICULTY_LABELS[1];
-  return AI_DIFFICULTY_LABELS[2];
+  if (difficulty <= 33) return i18n.t('easy');
+  if (difficulty <= 66) return i18n.t('medium');
+  return i18n.t('hard');
 }
 
 // Game modes
@@ -120,13 +123,13 @@ const CONFIG = DEFAULT_GAME_CONFIG;
 
 // ============ Shared Drawing Functions ============
 
-function drawTable(ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "#0a0a12";
+function drawTable(ctx: CanvasRenderingContext2D, customization: BoardCustomization) {
+  ctx.fillStyle = customization.colors.background;
   ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
 
   ctx.save();
   ctx.setLineDash([8, 8]);
-  ctx.strokeStyle = "#2c6b87";
+  ctx.strokeStyle = customization.colors.centerLine;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(10, CONFIG.height / 2);
@@ -134,18 +137,18 @@ function drawTable(ctx: CanvasRenderingContext2D) {
   ctx.stroke();
   ctx.restore();
 
-  ctx.strokeStyle = "#3d8aa8";
+  ctx.strokeStyle = customization.colors.border;
   ctx.lineWidth = 4;
   ctx.strokeRect(2, 2, CONFIG.width - 4, CONFIG.height - 4);
 }
 
-function drawPaddle(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = "#e0f7ff";
+function drawPaddle(ctx: CanvasRenderingContext2D, x: number, y: number, customization: BoardCustomization) {
+  ctx.fillStyle = customization.colors.paddle;
   ctx.fillRect(x, y, CONFIG.paddleW, CONFIG.paddleH);
 }
 
-function drawBall(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = "#e0f7ff";
+function drawBall(ctx: CanvasRenderingContext2D, x: number, y: number, customization: BoardCustomization) {
+  ctx.fillStyle = customization.colors.ball;
   ctx.fillRect(
     x - CONFIG.ballSize / 2,
     y - CONFIG.ballSize / 2,
@@ -159,12 +162,13 @@ function renderGame(
   p1X: number,
   p2X: number,
   ballX: number,
-  ballY: number
+  ballY: number,
+  customization: BoardCustomization
 ) {
-  drawTable(ctx);
-  drawPaddle(ctx, p2X, 10);
-  drawPaddle(ctx, p1X, CONFIG.height - CONFIG.paddleH - 10);
-  drawBall(ctx, ballX, ballY);
+  drawTable(ctx, customization);
+  drawPaddle(ctx, p2X, 10, customization);
+  drawPaddle(ctx, p1X, CONFIG.height - CONFIG.paddleH - 10, customization);
+  drawBall(ctx, ballX, ballY, customization);
 }
 
 // ============ Shared Countdown Function ============
@@ -228,9 +232,9 @@ function setupGame() {
     root.innerHTML = `
       <div class="offlineGame-start-box">
         <h1 class="offlineGame-title">PLAY OFFLINE</h1>
-        <p class="offlineGame-subtitle">You must be logged in to play.</p>
+        <p class="offlineGame-subtitle">${i18n.t('must_login')}</p>
         <div class="offlineGame-controls">
-          <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-login">LOGIN</button>
+          <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-login">${i18n.t('login')}</button>
         </div>
         <div class="offlineGame-controls">
           <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
@@ -250,16 +254,16 @@ function showModeSelection(root: HTMLElement) {
   root.innerHTML = `
     <div class="offlineGame-start-box">
       <h1 class="offlineGame-title">PLAY OFFLINE</h1>
-      <p class="offlineGame-subtitle">Choose your game mode</p>
+      <p class="offlineGame-subtitle">${i18n.t('choose_mode')}</p>
 
       <div class="offlineGame-mode-buttons">
         <button class="offlineGame-mode-btn" id="btn-vs-ai">
-          <span class="offlineGame-mode-title">VS AI</span>
-          <span class="offlineGame-mode-desc">Challenge the computer</span>
+          <span class="offlineGame-mode-title">${i18n.t('vs_ai')}</span>
+          <span class="offlineGame-mode-desc">${i18n.t('challenge_computer')}</span>
         </button>
         <button class="offlineGame-mode-btn" id="btn-vs-friend">
-          <span class="offlineGame-mode-title">VS FRIEND</span>
-          <span class="offlineGame-mode-desc">Local 2-player (same keyboard)</span>
+          <span class="offlineGame-mode-title">${i18n.t('vs_friend')}</span>
+          <span class="offlineGame-mode-desc">${i18n.t('local_2_player')}</span>
         </button>
       </div>
 
@@ -285,8 +289,8 @@ function showModeSelection(root: HTMLElement) {
 function showMatchSetup(root: HTMLElement) {
   root.innerHTML = `
     <div class="offlineGame-start-box">
-      <h1 class="offlineGame-title">PLAY VS AI</h1>
-      <p class="offlineGame-subtitle">You: A/D or Arrow Keys | First to ${CONFIG.scoreToWin} wins!</p>
+      <h1 class="offlineGame-title">${i18n.t('play_vs_ai')}</h1>
+      <p class="offlineGame-subtitle">${i18n.t('controls_ai').replace('5', String(CONFIG.scoreToWin))}</p>
 
       <div class="offlineGame-settings">
         <div class="offlineGame-setting-row">
@@ -299,11 +303,11 @@ function showMatchSetup(root: HTMLElement) {
         </div>
 
         <div class="offlineGame-setting-row">
-          <span class="offlineGame-setting-label">AI DIFFICULTY: <span id="difficulty-label">${getDifficultyLabel(selectedAIDifficulty)}</span></span>
+          <span class="offlineGame-setting-label">${i18n.t('ai_difficulty')}: <span id="difficulty-label">${getDifficultyLabel(selectedAIDifficulty)}</span></span>
           <div class="offlineGame-slider-container">
-            <span class="offlineGame-slider-label">EASY</span>
+            <span class="offlineGame-slider-label">${i18n.t('easy')}</span>
             <input type="range" id="difficulty-slider" class="offlineGame-slider" min="0" max="100" value="${selectedAIDifficulty}">
-            <span class="offlineGame-slider-label">HARD</span>
+            <span class="offlineGame-slider-label">${i18n.t('hard')}</span>
           </div>
         </div>
       </div>
@@ -346,8 +350,8 @@ function showMatchSetup(root: HTMLElement) {
 function showFriendMatchSetup(root: HTMLElement) {
   root.innerHTML = `
     <div class="offlineGame-start-box">
-      <h1 class="offlineGame-title">VS FRIEND</h1>
-      <p class="offlineGame-subtitle">P1 (Bottom): A/D | P2 (Top): Arrow Keys | First to ${CONFIG.scoreToWin} wins!</p>
+      <h1 class="offlineGame-title">${i18n.t('vs_friend')}</h1>
+      <p class="offlineGame-subtitle">${i18n.t('controls_friend').replace('5', String(CONFIG.scoreToWin))}</p>
 
       <div class="offlineGame-settings">
         <div class="offlineGame-setting-row">
@@ -385,17 +389,19 @@ function showFriendMatchSetup(root: HTMLElement) {
   document.getElementById("btn-back")?.addEventListener("click", () => showModeSelection(root));
 }
 
-function startFriendMatch(root: HTMLElement) {
+async function startFriendMatch(root: HTMLElement) {
+  // Load customization
+  const customization = await boardCustomizationService.loadCustomization();
   root.innerHTML = `
     <div class="offlineGame-box">
       <div class="offlineGame-scoreboard">
         <div>
-          <div class="offlineGame-score-label">P1</div>
+          <div class="offlineGame-score-label">${i18n.t('p1')}</div>
           <div class="offlineGame-score-value" id="score-p1">0</div>
         </div>
         <div class="offlineGame-score-divider">:</div>
         <div>
-          <div class="offlineGame-score-label">P2</div>
+          <div class="offlineGame-score-label">${i18n.t('p2')}</div>
           <div class="offlineGame-score-value" id="score-p2">0</div>
         </div>
       </div>
@@ -583,7 +589,7 @@ function startFriendMatch(root: HTMLElement) {
   }
 
   function render() {
-    renderGame(ctx, p1X, p2X, ballX, ballY);
+    renderGame(ctx, p1X, p2X, ballX, ballY, customization);
   }
 
   function serve(dir: number) {
@@ -599,12 +605,12 @@ function startFriendMatch(root: HTMLElement) {
 
   function endMatch() {
     teardown();
-    const winner = scoreP1 >= CONFIG.scoreToWin ? "PLAYER 1" : "PLAYER 2";
+    const winner = scoreP1 >= CONFIG.scoreToWin ? i18n.t('player_1_wins') : i18n.t('player_2_wins');
 
     root.innerHTML = `
       <div class="offlineGame-over-overlay">
         <div class="offlineGame-over-box">
-          <h1 class="offlineGame-over-title">${winner} WINS!</h1>
+          <h1 class="offlineGame-over-title">${winner}</h1>
           <p class="offlineGame-over-score">${scoreP1} - ${scoreP2}</p>
           <div class="offlineGame-over-actions">
             <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>
@@ -642,17 +648,19 @@ function startFriendMatch(root: HTMLElement) {
   });
 }
 
-function startMatch(root: HTMLElement) {
+async function startMatch(root: HTMLElement) {
+  // Load customization
+  const customization = await boardCustomizationService.loadCustomization();
   root.innerHTML = `
     <div class="offlineGame-box">
       <div class="offlineGame-scoreboard">
         <div>
-          <div class="offlineGame-score-label">YOU</div>
+          <div class="offlineGame-score-label">${i18n.t('you')}</div>
           <div class="offlineGame-score-value" id="score-player">0</div>
         </div>
         <div class="offlineGame-score-divider">:</div>
         <div>
-          <div class="offlineGame-score-label">AI</div>
+          <div class="offlineGame-score-label">${i18n.t('ai')}</div>
           <div class="offlineGame-score-value" id="score-ai">0</div>
         </div>
       </div>
@@ -894,7 +902,7 @@ function startMatch(root: HTMLElement) {
   }
 
   function render() {
-    renderGame(ctx, playerX, aiX, ballX, ballY);
+    renderGame(ctx, playerX, aiX, ballX, ballY, customization);
   }
 
   function serve(dir: number) {
@@ -915,7 +923,7 @@ function startMatch(root: HTMLElement) {
     root.innerHTML = `
       <div class="offlineGame-over-overlay">
         <div class="offlineGame-over-box">
-          <h1 class="offlineGame-over-title">${won ? "YOU WIN!" : "YOU LOSE"}</h1>
+          <h1 class="offlineGame-over-title">${won ? i18n.t('you_win') : i18n.t('you_lose')}</h1>
           <p class="offlineGame-over-score">${scorePlayer} - ${scoreAI}</p>
           <div class="offlineGame-over-actions">
             <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>

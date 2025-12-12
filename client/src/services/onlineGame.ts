@@ -12,6 +12,7 @@ type ChatMessageCallback = (message: ChatMessage) => void;
 type GameEndCallback = (reason: string, message?: string) => void;
 type GoalScoredCallback = (scorer: string, conceder: string) => void;
 type GameInviteCallback = (inviterName: string, gameId: string) => void;
+type OnlineStatusCallback = (onlineStatus: Record<string, boolean>) => void;
 
 class OnlineGameService {
   private ws: WebSocket | null = null;
@@ -21,6 +22,7 @@ class OnlineGameService {
   private onGameEndCallbacks: GameEndCallback[] = [];
   private onGoalScoredCallbacks: GoalScoredCallback[] = [];
   private onGameInviteCallbacks: GameInviteCallback[] = [];
+  private onOnlineStatusCallbacks: OnlineStatusCallback[] = [];
   private currentGameId: string | null = null;
   private userRole: UserRole = "spectator";
   private messageQueue: string[] = [];
@@ -127,6 +129,11 @@ class OnlineGameService {
           this.notifyGameInviteCallbacks(data.inviterName, data.gameId);
         }
         break;
+      case "ONLINE_STATUS_UPDATE":
+        if (data.onlineStatus) {
+          this.notifyOnlineStatusCallbacks(data.onlineStatus);
+        }
+        break;
     }
   }
 
@@ -145,6 +152,10 @@ class OnlineGameService {
 
   movePaddle(position: number, forBot?: "player1" | "player2"): void {
     this.send({ type: "MOVE_PADDLE", position, ...(forBot && { forBot }) });
+  }
+
+  checkOnlineStatus(userIds: number[]): void {
+    this.send({ type: "CHECK_ONLINE_STATUS", userIds });
   }
 
   sendChatMessage(message: string): void {
@@ -182,6 +193,10 @@ class OnlineGameService {
     this.onGameInviteCallbacks.push(callback);
   }
 
+  onOnlineStatusUpdate(callback: OnlineStatusCallback): void {
+    this.onOnlineStatusCallbacks.push(callback);
+  }
+
   private notifyGameStateCallbacks(): void {
     if (this.gameState) {
       this.onGameStateCallbacks.forEach((callback) => callback(this.gameState!));
@@ -202,6 +217,10 @@ class OnlineGameService {
 
   private notifyGameInviteCallbacks(inviterName: string, gameId: string): void {
     this.onGameInviteCallbacks.forEach((callback) => callback(inviterName, gameId));
+  }
+
+  private notifyOnlineStatusCallbacks(onlineStatus: Record<string, boolean>): void {
+    this.onOnlineStatusCallbacks.forEach((callback) => callback(onlineStatus));
   }
 
   getCurrentGameId(): string | null {
@@ -226,6 +245,7 @@ class OnlineGameService {
       this.onChatMessageCallbacks = [];
       this.onGameEndCallbacks = [];
       this.onGoalScoredCallbacks = [];
+      this.onOnlineStatusCallbacks = [];
       this.userRole = "spectator";
     }
   }

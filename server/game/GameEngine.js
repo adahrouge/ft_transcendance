@@ -27,6 +27,18 @@
     }
   }
 
+  isUserOnline(userId) {
+    return this.connectedPlayers.has(userId.toString());
+  }
+
+  getOnlineUsers(userIds) {
+    const onlineStatus = {};
+    userIds.forEach(id => {
+      onlineStatus[id] = this.isUserOnline(id);
+    });
+    return onlineStatus;
+  }
+
   sendInvite(targetUserId, inviterName, gameId) {
     const connections = this.connectedPlayers.get(targetUserId.toString());
     if (connections) {

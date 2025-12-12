@@ -130,6 +130,19 @@ export async function initDatabase() {
     )
   `);
 
+  // Add board_customization column if it doesn't exist
+  try {
+    const tableInfo = await dbAll('PRAGMA table_info(users)');
+    const hasCustomizationColumn = tableInfo.some(col => col.name === 'board_customization');
+
+    if (!hasCustomizationColumn) {
+      await dbRun('ALTER TABLE users ADD COLUMN board_customization TEXT');
+      console.log('Added board_customization column to users table');
+    }
+  } catch (err) {
+    console.error('Error adding board_customization column:', err);
+  }
+
   console.log('Database initialized');
 }
 
@@ -144,15 +157,29 @@ export async function createUser(username, email, passwordHash, displayName = nu
 }
 
 export async function getUserByUsername(username) {
-  return await dbGet('SELECT * FROM users WHERE username = ?', [username]);
+  const user = await dbGet('SELECT * FROM users WHERE username = ?', [username]);
+  return parseUserCustomization(user);
+}
+
+function parseUserCustomization(user) {
+  if (user && user.board_customization) {
+    try {
+      user.board_customization = JSON.parse(user.board_customization);
+    } catch (err) {
+      user.board_customization = null;
+    }
+  }
+  return user;
 }
 
 export async function getUserById(id) {
-  return await dbGet('SELECT * FROM users WHERE id = ?', [id]);
+  const user = await dbGet('SELECT * FROM users WHERE id = ?', [id]);
+  return parseUserCustomization(user);
 }
 
 export async function getUserByEmail(email) {
-  return await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+  const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+  return parseUserCustomization(user);
 }
 
 export async function updateUser(id, updates) {
@@ -175,7 +202,11 @@ export async function updateUser(id, updates) {
     fields.push('password_hash = ?');
     values.push(updates.password_hash);
   }
-  
+  if (updates.board_customization !== undefined) {
+    fields.push('board_customization = ?');
+    values.push(JSON.stringify(updates.board_customization));
+  }
+
   fields.push('updated_at = CURRENT_TIMESTAMP');
   values.push(id);
   
