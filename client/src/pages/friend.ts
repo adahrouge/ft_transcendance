@@ -1,8 +1,9 @@
 import { friendService } from "../services/friend";
 import { onlineGameService } from "../services/onlineGame";
-import { authService } from "../services/auth";
+import { notificationManager } from "../services/notificationManager";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
+import { showNotification, showConfirm } from "../utils/notifications";
 import "../styles/friend.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -14,6 +15,10 @@ let activeGamesRefreshInterval: ReturnType<typeof setInterval> | null = null;
 let currentActiveGames: any[] = [];
 let currentOnlineStatus: Record<string, boolean> = {};
 let currentUser: any = null;
+let loadFriendsTimeout: ReturnType<typeof setTimeout> | null = null;
+let friendUpdateUnsubscribe: (() => void) | null = null;
+let gameInviteUnsubscribe: (() => void) | null = null;
+let onlineStatusUnsubscribe: (() => void) | null = null;
 
 function showGameInviteNotification(inviterName: string, gameId: string) {
   // Remove any existing notification
@@ -182,22 +187,78 @@ async function loadFriends() {
   }
 
   try {
-    // Load friends and current user in parallel
-    const [friendsResponse, user] = await Promise.all([
+    // Get current user from notification manager (already loaded)
+    currentUser = notificationManager.getCurrentUser();
+
+    // Load friends, pending requests, and sent requests in parallel
+    const [friendsResponse, pendingResponse, sentResponse] = await Promise.all([
       friendService.getFriends(),
-      authService.getCurrentUser()
+      friendService.getPendingRequests(),
+      friendService.getSentRequests()
     ]);
-    
+
     const friends = friendsResponse.friends || [];
-    currentUser = user;
+    const pendingRequests = pendingResponse.requests || [];
+    const sentRequests = sentResponse.requests || [];
 
     root.innerHTML = `
       <div class="friend-box">
         <h2 class="friend-title">${i18n.t('friends')}</h2>
-        
+
+        <!-- Pending Friend Requests Section -->
+        ${pendingRequests.length > 0 ? `
+        <div class="friend-list-section" style="border: 2px solid #fbbf24; background: rgba(251, 191, 36, 0.1);">
+          <h3 class="friend-section-title" style="color: #fbbf24;">
+            🔔 ${i18n.t('friend_requests')} (${pendingRequests.length})
+          </h3>
+          <div class="friend-list" id="pending-requests-list">
+            ${pendingRequests.map((r: any) => `
+              <div class="friend-list-item">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-yellow-400" title="Pending"></div>
+                  <div>
+                    <div class="friend-display-name">${r.display_name || r.username}</div>
+                    <div class="friend-username">@${r.username}</div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="friend-play-btn bg-green-600 hover:bg-green-700"
+                          data-accept-id="${r.id}">✓ ${i18n.t('accept')}</button>
+                  <button class="friend-play-btn bg-red-600 hover:bg-red-700"
+                          data-reject-id="${r.id}">✗ ${i18n.t('reject')}</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
+        <!-- Sent Friend Requests Section -->
+        ${sentRequests.length > 0 ? `
+        <div class="friend-list-section" style="background: rgba(100, 100, 100, 0.1);">
+          <h3 class="friend-section-title" style="color: #94a3b8;">
+            📤 ${i18n.t('sent_requests')} (${sentRequests.length})
+          </h3>
+          <div class="friend-list" id="sent-requests-list">
+            ${sentRequests.map((r: any) => `
+              <div class="friend-list-item">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-gray-400" title="Pending"></div>
+                  <div>
+                    <div class="friend-display-name">${r.display_name || r.username}</div>
+                    <div class="friend-username">@${r.username}</div>
+                  </div>
+                </div>
+                <span class="text-gray-400 text-sm italic">${i18n.t('pending')}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
+
         <!-- Friends List Section -->
         <div class="friend-list-section">
-          <h3 class="friend-section-title">${i18n.t('your_friends')}</h3>
+          <h3 class="friend-section-title">${i18n.t('your_friends')} (${friends.length})</h3>
           <div class="friend-list" id="friends-list">
             ${friends.length === 0 ? `<p class="friend-list-empty">${i18n.t('no_friends')}</p>` : friends.map((f: any) => `
               <div class="friend-list-item">
@@ -208,8 +269,12 @@ async function loadFriends() {
                     <div class="friend-username">@${f.username}</div>
                   </div>
                 </div>
-                <button class="friend-play-btn opacity-50 cursor-not-allowed" disabled
-                        data-play-id="${f.id}" data-play-name="${f.username}">${i18n.t('offline')}</button>
+                <div class="flex gap-2">
+                  <button class="friend-play-btn opacity-50 cursor-not-allowed" disabled
+                          data-play-id="${f.id}" data-play-name="${f.username}">${i18n.t('offline')}</button>
+                  <button class="friend-play-btn bg-red-600 hover:bg-red-700 text-xs px-2"
+                          data-remove-id="${f.id}">✗</button>
+                </div>
               </div>
             `).join('')}
           </div>
@@ -219,7 +284,7 @@ async function loadFriends() {
         <div class="friend-add-section">
           <h3 class="friend-section-title">${i18n.t('add_friend')}</h3>
           <div class="friend-search-bar">
-            <input type="text" id="search-input" placeholder="Search username..." 
+            <input type="text" id="search-input" placeholder="Search username..."
                    class="friend-search-input">
             <button id="search-btn" class="friend-search-btn">SEARCH</button>
           </div>
@@ -233,8 +298,65 @@ async function loadFriends() {
     `;
 
     document.getElementById("btn-back")?.addEventListener("click", () => {
-      if (activeGamesRefreshInterval) clearInterval(activeGamesRefreshInterval);
+      cleanupFriendPage();
       navigateTo("/home");
+    });
+
+    // Accept friend request buttons
+    root.querySelectorAll('[data-accept-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const friendId = parseInt((btn as HTMLElement).dataset.acceptId || "0");
+        if (friendId) {
+          try {
+            await friendService.acceptFriendRequest(friendId);
+            showNotification("Friend request accepted!", { type: 'success' });
+            loadFriends(); // Reload to show updated lists
+          } catch (e) {
+            showNotification("Failed to accept friend request", { type: 'error' });
+          }
+        }
+      });
+    });
+
+    // Reject friend request buttons
+    root.querySelectorAll('[data-reject-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const friendId = parseInt((btn as HTMLElement).dataset.rejectId || "0");
+        if (friendId) {
+          try {
+            await friendService.rejectFriendRequest(friendId);
+            showNotification("Friend request rejected", { type: 'info' });
+            loadFriends(); // Reload to show updated lists
+          } catch (e) {
+            showNotification("Failed to reject friend request", { type: 'error' });
+          }
+        }
+      });
+    });
+
+    // Remove friend buttons
+    root.querySelectorAll('[data-remove-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const friendId = parseInt((btn as HTMLElement).dataset.removeId || "0");
+        if (friendId) {
+          const confirmed = await showConfirm({
+            title: i18n.t('friends'),
+            message: i18n.t('confirm_remove_friend'),
+            confirmText: i18n.t('delete'),
+            cancelText: i18n.t('back')
+          });
+
+          if (confirmed) {
+            try {
+              await friendService.removeFriend(friendId);
+              showNotification("Friend removed", { type: 'success' });
+              loadFriends(); // Reload to show updated lists
+            } catch (e) {
+              showNotification("Failed to remove friend", { type: 'error' });
+            }
+          }
+        }
+      });
     });
 
     // Helper to check if a user is in an active game
@@ -242,8 +364,22 @@ async function loadFriends() {
       return currentActiveGames.some((g: any) => {
         const p1 = g.players?.[0];
         const p2 = g.players?.[1];
-        return (p1 && (p1.id === userId || p1.username === username)) ||
-               (p2 && (p2.id === userId || p2.username === username));
+        
+        // Check Player 1
+        const p1Match = p1 && (
+          String(p1.id) === String(userId) || 
+          p1.name === username || 
+          p1.username === username
+        );
+
+        // Check Player 2
+        const p2Match = p2 && (
+          String(p2.id) === String(userId) || 
+          p2.name === username || 
+          p2.username === username
+        );
+
+        return p1Match || p2Match;
       });
     };
 
@@ -253,8 +389,8 @@ async function loadFriends() {
         const isOnline = currentOnlineStatus[f.id];
         const inGame = isUserInGame(f.username, f.id);
         
-        const btn = root.querySelector(`[data-play-id="\${f.id}"]`) as HTMLButtonElement;
-        const statusIndicator = root.querySelector(`#status-\${f.id}`) as HTMLElement;
+        const btn = root.querySelector(`[data-play-id="${f.id}"]`) as HTMLButtonElement;
+        const statusIndicator = root.querySelector(`#status-${f.id}`) as HTMLElement;
 
         if (btn) {
           if (isOnline && !inGame) {
@@ -296,11 +432,11 @@ async function loadFriends() {
         if (name && friendId) {
           // Double check restrictions
           if (isUserInGame(name, parseInt(friendId))) {
-            alert(i18n.t('friend_in_game'));
+            showNotification(i18n.t('friend_in_game'), { type: 'warning' });
             return;
           }
           if (currentUser && isUserInGame(currentUser.username, currentUser.id)) {
-            alert(i18n.t('you_in_game'));
+            showNotification(i18n.t('you_in_game'), { type: 'warning' });
             return;
           }
 
@@ -314,7 +450,7 @@ async function loadFriends() {
              const gameId = onlineGameService.getCurrentGameId();
              if (gameId) {
                  if (activeGamesRefreshInterval) clearInterval(activeGamesRefreshInterval);
-                 navigateTo(`/online-game?id=\${gameId}`);
+                 navigateTo(`/online-game?id=${gameId}`);
              }
           };
           
@@ -359,11 +495,11 @@ async function loadFriends() {
             const id = parseInt((btn as HTMLElement).dataset.addId || "0");
             if (id) {
               try {
-                await friendService.addFriend(id);
-                alert(i18n.t('friend_added'));
+                await friendService.sendFriendRequest(id);
+                showNotification(i18n.t('friend_request_sent'), { type: 'success' });
                 loadFriends(); // Reload list
-              } catch (e) {
-                alert("Failed to add friend");
+              } catch (e: any) {
+                showNotification(e.message || "Failed to send friend request", { type: 'error' });
               }
             }
           });
@@ -379,7 +515,7 @@ async function loadFriends() {
       if (e.key === "Enter") doSearch();
     });
 
-    // Start polling active games
+    // Start polling active games and online status
     const fetchActiveGames = async () => {
       if (!document.getElementById("friend-root")) {
         if (activeGamesRefreshInterval) clearInterval(activeGamesRefreshInterval);
@@ -394,38 +530,91 @@ async function loadFriends() {
       }
     };
 
-    fetchActiveGames();
-    activeGamesRefreshInterval = setInterval(fetchActiveGames, 3000);
-
-    // Connect to receive updates
-    const token = getToken();
-    if (token) {
-      onlineGameService.connect(token);
-
-      // Check online status of friends
+    const checkOnlineStatus = () => {
       const friendIds = friends.map((f: any) => f.id);
       if (friendIds.length > 0) {
-        setTimeout(() => {
-          onlineGameService.checkOnlineStatus(friendIds);
-        }, 500);
+        onlineGameService.checkOnlineStatus(friendIds);
       }
+    };
 
-      onlineGameService.onOnlineStatusUpdate((status) => {
-        currentOnlineStatus = status;
-        updateUI();
-      });
+    // Set up online status updates
+    onlineStatusUnsubscribe = onlineGameService.onOnlineStatusUpdate((status) => {
+      currentOnlineStatus = status;
+      updateUI();
+    });
 
-      // Listen for incoming game invites
-      onlineGameService.onGameInvite((inviterName, gameId) => {
-        // Check if I am in a game
-        if (currentUser && isUserInGame(currentUser.username, currentUser.id)) {
-            return;
-        }
-        showGameInviteNotification(inviterName, gameId);
-      });
+    // Register for friend updates from notification manager
+    friendUpdateUnsubscribe = notificationManager.onFriendUpdate(() => {
+      // Debounce friend list reload to prevent rapid successive calls
+      if (loadFriendsTimeout) {
+        clearTimeout(loadFriendsTimeout);
+      }
+      loadFriendsTimeout = setTimeout(() => {
+        loadFriends();
+      }, 300);
+    });
+
+    // Register for game invites with custom notification display
+    gameInviteUnsubscribe = notificationManager.onGameInviteReceived((inviterName, gameId) => {
+      // Check if I am in a game
+      if (currentUser && isUserInGame(currentUser.username, currentUser.id)) {
+        return;
+      }
+      showGameInviteNotification(inviterName, gameId);
+    });
+
+    // Start polling for active games and online status
+    fetchActiveGames();
+    
+    // Initial online status check
+    setTimeout(() => {
+      checkOnlineStatus();
+    }, 500);
+
+    // Start interval for continuous updates (only if not already running)
+    if (!activeGamesRefreshInterval) {
+      activeGamesRefreshInterval = setInterval(() => {
+        fetchActiveGames();
+        checkOnlineStatus();
+      }, 2000); // Reduced from 3000ms to 2000ms for faster updates
     }
 
   } catch (err) {
     root.innerHTML = '<div class="text-red-500">Failed to load friends.</div>';
   }
+}
+
+function cleanupFriendPage() {
+  // Clear intervals
+  if (activeGamesRefreshInterval) {
+    clearInterval(activeGamesRefreshInterval);
+    activeGamesRefreshInterval = null;
+  }
+
+  // Clear timeouts
+  if (loadFriendsTimeout) {
+    clearTimeout(loadFriendsTimeout);
+    loadFriendsTimeout = null;
+  }
+
+  // Unsubscribe from callbacks
+  if (friendUpdateUnsubscribe) {
+    friendUpdateUnsubscribe();
+    friendUpdateUnsubscribe = null;
+  }
+
+  if (gameInviteUnsubscribe) {
+    gameInviteUnsubscribe();
+    gameInviteUnsubscribe = null;
+  }
+
+  if (onlineStatusUnsubscribe) {
+    onlineStatusUnsubscribe();
+    onlineStatusUnsubscribe = null;
+  }
+
+  // Reset state
+  currentActiveGames = [];
+  currentOnlineStatus = {};
+  activeNotificationId = null;
 }

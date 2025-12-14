@@ -3,6 +3,7 @@ import { navigateTo } from "../router";
 import { initializeGoogleOAuth, triggerGoogleSignIn, decodeGoogleToken, isGoogleOAuthConfigured } from "../utils/google-oauth";
 import { getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
+import { showNotification } from "../utils/notifications";
 import "../styles/auth.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -163,7 +164,8 @@ function setupAuthInteractions() {
       console.log("Google button clicked");
 
       if (!isGoogleOAuthConfigured()) {
-        alert("⚠️ Google OAuth not configured.\n\nTo enable Google Sign-In:\n\n1. Get a Google Client ID from https://console.cloud.google.com/\n2. Create client/.env.local with:\n   VITE_GOOGLE_CLIENT_ID=your_client_id_here\n3. Restart the app");
+        showNotification("Google OAuth not configured. Check console for setup instructions.", { type: 'warning', duration: 5000 });
+        console.warn("⚠️ Google OAuth not configured.\n\nTo enable Google Sign-In:\n\n1. Get a Google Client ID from https://console.cloud.google.com/\n2. Create client/.env.local with:\n   VITE_GOOGLE_CLIENT_ID=your_client_id_here\n3. Restart the app");
         return;
       }
 
@@ -200,15 +202,15 @@ function setupAuthInteractions() {
             navigateTo("/home");
           } else {
             console.error("No token in result:", result);
-            alert("Authentication succeeded but no token received. Please try again.");
+            showNotification("Authentication succeeded but no token received. Please try again.", { type: 'error' });
           }
         } else {
           console.error("No credential in response:", response);
-          alert("Failed to authenticate with Google. Please try again.");
+          showNotification("Failed to authenticate with Google. Please try again.", { type: 'error' });
         }
       } catch (error) {
         console.error("Google Sign-In error:", error);
-        alert(`Google authentication failed: ${(error as Error).message}`);
+        showNotification(`Google authentication failed: ${(error as Error).message}`, { type: 'error' });
       }
     });
   }

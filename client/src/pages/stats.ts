@@ -2,6 +2,8 @@ import { statsService } from "../services/stats";
 import { navigateTo } from "../router";
 import { getAvatarUrl } from "../utils/home";
 import { i18n } from "../services/i18n";
+import { onlineGameService } from "../services/onlineGame";
+import { getToken } from "../utils/auth";
 import type { MatchHistoryItem, StatsUser, PlayerStats } from "../types/stats";
 import "../styles/stats.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -86,7 +88,7 @@ async function loadStats() {
               <div class="stats-match-item">
                 <div class="stats-match-opponent">
                   <span class="stats-match-vs">${i18n.t('vs')}</span>
-                  <span class="stats-match-name">${m.opponent_username || 'Unknown'}</span>
+                  <span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>
                 </div>
                 <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : 'stats-loss'}">
                   ${m.user_score} - ${m.opponent_score}
@@ -103,6 +105,12 @@ async function loadStats() {
     `;
 
     document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
+
+    // Connect to WebSocket to register as online
+    const token = getToken();
+    if (token) {
+      onlineGameService.connect(token);
+    }
 
   } catch (err) {
     root.innerHTML = '<div class="text-red-500 font-[\'Pixel_Game\']">Failed to load statistics.</div>';

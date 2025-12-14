@@ -50,7 +50,11 @@ export function setupRouter() {
     .on("/online-game", (match) => {
       console.log("Route: Online Game Page");
       const app = getAppContainer();
-      app.innerHTML = renderOnlineGamePage(match?.data ?? undefined);
+      let params = match?.params;
+      if (!params && window.location.search) {
+        params = Object.fromEntries(new URLSearchParams(window.location.search));
+      }
+      app.innerHTML = renderOnlineGamePage(params ?? undefined);
     })
     .on("/profile", () => {
       console.log("Route: Profile Page");

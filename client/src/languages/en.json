@@ -163,5 +163,14 @@
   "retro": "Retro",
   "ocean": "Ocean",
   "fire": "Fire",
-  "sunset": "Sunset"
+  "sunset": "Sunset",
+  "friend_requests": "Friend Requests",
+  "sent_requests": "Sent Requests",
+  "pending": "Pending",
+  "reject": "REJECT",
+  "friend_request_sent": "Friend request sent!",
+  "confirm_remove_friend": "Are you sure you want to remove this friend?",
+  "sent_you_friend_request": "sent you a friend request",
+  "accepted_your_friend_request": "accepted your friend request",
+  "removed_you_as_friend": "removed you as a friend"
 }

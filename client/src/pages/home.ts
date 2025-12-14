@@ -2,6 +2,8 @@ import { homeService } from "../services/home";
 import { getAvatarUrl, getDisplayName, DEFAULT_AVATAR } from "../utils/home";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
+import { onlineGameService } from "../services/onlineGame";
+import { getToken } from "../utils/auth";
 import type { UserProfile } from "../types/home";
 import "../styles/home.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -76,6 +78,12 @@ async function loadUserAndSetup() {
     currentUser = await homeService.getCurrentUser();
     updateProfileDisplay();
     setupEventListeners();
+
+    // Connect to WebSocket to register as online
+    const token = getToken();
+    if (token) {
+      onlineGameService.connect(token);
+    }
   } catch (error) {
     console.error("Failed to load user:", error);
     navigateTo("/auth");

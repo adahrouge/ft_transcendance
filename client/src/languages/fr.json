@@ -163,5 +163,14 @@
   "retro": "Rétro",
   "ocean": "Océan",
   "fire": "Feu",
-  "sunset": "Coucher de Soleil"
+  "sunset": "Coucher de Soleil",
+  "friend_requests": "Demandes d'amis",
+  "sent_requests": "Demandes envoyées",
+  "pending": "En attente",
+  "reject": "REFUSER",
+  "friend_request_sent": "Demande d'ami envoyée !",
+  "confirm_remove_friend": "Êtes-vous sûr de vouloir retirer cet ami ?",
+  "sent_you_friend_request": "vous a envoyé une demande d'ami",
+  "accepted_your_friend_request": "a accepté votre demande d'ami",
+  "removed_you_as_friend": "vous a retiré comme ami"
 }

@@ -255,30 +255,145 @@ export async function getMatchHistory(userId) {
 }
 
 // Friends operations
-export async function addFriend(userId, friendId) {
+export async function sendFriendRequest(userId, friendId) {
+  try {
+    // Check if request already exists in either direction
+    const existing = await dbGet(
+      `SELECT * FROM friends
+       WHERE (user_id = ? AND friend_id = ?)
+          OR (user_id = ? AND friend_id = ?)`,
+      [userId, friendId, friendId, userId]
+    );
+
+    if (existing) {
+      console.log(`Friend request blocked - existing relationship found:`, existing);
+      if (existing.status === 'pending') {
+        return { success: false, error: 'Friend request already pending' };
+      }
+      return { success: false, error: 'Already friends with this user' };
+    }
+
+    await dbRun(
+      `INSERT INTO friends (user_id, friend_id, status)
+       VALUES (?, ?, 'pending')`,
+      [userId, friendId]
+    );
+    return { success: true };
+  } catch (err) {
+    throw err;
+  }
+}
+
+export async function acceptFriendRequest(userId, friendId) {
+  // Find the pending request where friendId sent request to userId
+  const request = await dbGet(
+    `SELECT * FROM friends
+     WHERE user_id = ? AND friend_id = ? AND status = 'pending'`,
+    [friendId, userId]
+  );
+
+  if (!request) {
+    throw new Error('Friend request not found');
+  }
+
+  // Update the request to accepted
+  await dbRun(
+    `UPDATE friends SET status = 'accepted' WHERE id = ?`,
+    [request.id]
+  );
+
+  // Create reciprocal friendship (both users are now friends)
   try {
     await dbRun(
       `INSERT INTO friends (user_id, friend_id, status)
        VALUES (?, ?, 'accepted')`,
       [userId, friendId]
     );
-    return true;
   } catch (err) {
-    if (err.message.includes('UNIQUE')) {
-      return false; // Already friends
+    // If it already exists, just ignore (might be edge case)
+    if (!err.message.includes('UNIQUE')) {
+      throw err;
     }
-    throw err;
   }
+
+  return true;
+}
+
+export async function rejectFriendRequest(userId, friendId) {
+  await dbRun(
+    `DELETE FROM friends
+     WHERE user_id = ? AND friend_id = ? AND status = 'pending'`,
+    [friendId, userId]
+  );
+  return true;
+}
+
+export async function removeFriend(userId, friendId) {
+  // First check what exists before deletion
+  const before = await dbAll(
+    `SELECT * FROM friends
+     WHERE (user_id = ? AND friend_id = ?)
+        OR (user_id = ? AND friend_id = ?)`,
+    [userId, friendId, friendId, userId]
+  );
+  console.log(`Before removal - found ${before.length} friendship records between ${userId} and ${friendId}:`, before);
+
+  // Remove both directions of friendship
+  await dbRun(
+    `DELETE FROM friends
+     WHERE (user_id = ? AND friend_id = ?)
+        OR (user_id = ? AND friend_id = ?)`,
+    [userId, friendId, friendId, userId]
+  );
+
+  // Verify deletion
+  const after = await dbAll(
+    `SELECT * FROM friends
+     WHERE (user_id = ? AND friend_id = ?)
+        OR (user_id = ? AND friend_id = ?)`,
+    [userId, friendId, friendId, userId]
+  );
+  console.log(`After removal - remaining records: ${after.length}`, after);
+
+  return true;
 }
 
 export async function getFriends(userId) {
   return await dbAll(
-    `SELECT u.id, u.username, u.display_name, u.avatar_url, f.status
+    `SELECT u.id, u.username, u.display_name, u.avatar_url
      FROM friends f
      JOIN users u ON f.friend_id = u.id
      WHERE f.user_id = ? AND f.status = 'accepted'`,
     [userId]
   );
+}
+
+export async function getPendingFriendRequests(userId) {
+  // Get requests sent TO this user (they can accept/reject)
+  return await dbAll(
+    `SELECT u.id, u.username, u.display_name, u.avatar_url, f.created_at
+     FROM friends f
+     JOIN users u ON f.user_id = u.id
+     WHERE f.friend_id = ? AND f.status = 'pending'`,
+    [userId]
+  );
+}
+
+export async function getSentFriendRequests(userId) {
+  // Get requests sent BY this user (pending, waiting for response)
+  return await dbAll(
+    `SELECT u.id, u.username, u.display_name, u.avatar_url, f.created_at
+     FROM friends f
+     JOIN users u ON f.friend_id = u.id
+     WHERE f.user_id = ? AND f.status = 'pending'`,
+    [userId]
+  );
+}
+
+// Legacy function for backwards compatibility - now uses sendFriendRequest
+export async function addFriend(userId, friendId) {
+  const result = await sendFriendRequest(userId, friendId);
+  return result.success;
 }
 
 // Tournament operations
@@ -461,7 +576,6 @@ export async function generateTournamentBracket(tournamentId) {
   }
   
   // Generate first round matches
-  const matches = [];
   for (let i = 0; i < shuffled.length; i += 2) {
     const matchNum = Math.floor(i / 2) + 1;
     await dbRun(

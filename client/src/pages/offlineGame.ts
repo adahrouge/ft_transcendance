@@ -4,6 +4,7 @@ import { isAuthenticated } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { boardCustomizationService } from "../services/boardCustomization";
 import type { BoardCustomization } from "../types/boardCustomization";
+import { statsService } from "../services/stats";
 import "../styles/offlineGame.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -603,14 +604,52 @@ async function startFriendMatch(root: HTMLElement) {
     return scoreP1 >= CONFIG.scoreToWin || scoreP2 >= CONFIG.scoreToWin;
   }
 
-  function endMatch() {
+  async function endMatch() {
     teardown();
-    const winner = scoreP1 >= CONFIG.scoreToWin ? i18n.t('player_1_wins') : i18n.t('player_2_wins');
+    const won = scoreP1 >= CONFIG.scoreToWin;
+
+    // Save match stats if user is authenticated
+    if (isAuthenticated()) {
+      try {
+        // For offline games against AI, we can record it as a match against a bot
+        // We'll use a special ID or flag for AI opponent
+        // Since the backend expects an opponent ID, we might need to adjust the backend
+        // or just not save offline games to the main match history if the backend doesn't support it.
+        // However, the user asked to register stats.
+        
+        // Let's assume we want to track wins/losses locally or send to a specific endpoint if available.
+        // Currently the stats service fetches from backend.
+        // If we want to save this, we need an endpoint.
+        // Since we don't have a specific "offline match" endpoint, we might skip saving to DB 
+        // OR we can implement a client-side only storage or a new endpoint.
+        
+        // Given the prompt "see if they are registreeted in the stats or ot", 
+        // and we just fixed the server for online games.
+        // Offline games are client-side. To register them in stats (which come from server),
+        // we would need to send this result to the server.
+        
+        // Let's check if we can use the existing match history endpoint.
+        // The addMatchHistory in db.js takes (userId, opponentId, ...).
+        // If opponentId is null, it might work if the DB allows it.
+        // Let's try to send it to a new endpoint we'll create, or just log it for now if we can't change server.
+        // But wait, I can change the server.
+        
+        // I will add a call to a new service method to save offline match.
+        await statsService.saveOfflineMatch({
+          playerScore: scoreP1,
+          aiScore: scoreP2,
+          result: won ? 'win' : 'loss',
+          difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM'
+        });
+      } catch (err) {
+        console.error("Failed to save offline match stats:", err);
+      }
+    }
 
     root.innerHTML = `
       <div class="offlineGame-over-overlay">
         <div class="offlineGame-over-box">
-          <h1 class="offlineGame-over-title">${winner}</h1>
+          <h1 class="offlineGame-over-title">${won ? i18n.t('player_1_wins') : i18n.t('player_2_wins')}</h1>
           <p class="offlineGame-over-score">${scoreP1} - ${scoreP2}</p>
           <div class="offlineGame-over-actions">
             <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>
@@ -916,9 +955,47 @@ async function startMatch(root: HTMLElement) {
     return scorePlayer >= CONFIG.scoreToWin || scoreAI >= CONFIG.scoreToWin;
   }
 
-  function endMatch() {
+  async function endMatch() {
     teardown();
     const won = scorePlayer >= CONFIG.scoreToWin;
+
+    // Save match stats if user is authenticated
+    if (isAuthenticated()) {
+      try {
+        // For offline games against AI, we can record it as a match against a bot
+        // We'll use a special ID or flag for AI opponent
+        // Since the backend expects an opponent ID, we might need to adjust the backend
+        // or just not save offline games to the main match history if the backend doesn't support it.
+        // However, the user asked to register stats.
+        
+        // Let's assume we want to track wins/losses locally or send to a specific endpoint if available.
+        // Currently the stats service fetches from backend.
+        // If we want to save this, we need an endpoint.
+        // Since we don't have a specific "offline match" endpoint, we might skip saving to DB 
+        // OR we can implement a client-side only storage or a new endpoint.
+        
+        // Given the prompt "see if they are registreeted in the stats or ot", 
+        // and we just fixed the server for online games.
+        // Offline games are client-side. To register them in stats (which come from server),
+        // we would need to send this result to the server.
+        
+        // Let's check if we can use the existing match history endpoint.
+        // The addMatchHistory in db.js takes (userId, opponentId, ...).
+        // If opponentId is null, it might work if the DB allows it.
+        // Let's try to send it to a new endpoint we'll create, or just log it for now if we can't change server.
+        // But wait, I can change the server.
+        
+        // I will add a call to a new service method to save offline match.
+        await statsService.saveOfflineMatch({
+          playerScore: scorePlayer,
+          aiScore: scoreAI,
+          result: won ? 'win' : 'loss',
+          difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM'
+        });
+      } catch (err) {
+        console.error("Failed to save offline match stats:", err);
+      }
+    }
 
     root.innerHTML = `
       <div class="offlineGame-over-overlay">

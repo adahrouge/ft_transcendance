@@ -3,6 +3,7 @@ import { authService } from "../services/auth";
 import { navigateTo } from "../router";
 import { getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
+import { showNotification, showConfirm } from "../utils/notifications";
 import type { TournamentListItem, Tournament, TournamentPlayer } from "../types/tournament";
 import "../styles/tournament.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -158,7 +159,7 @@ async function createTournament(size: 4 | 8) {
     const res = await tournamentService.createTournament(size);
     navigateTo(`/tournament/${res.tournament.id}`);
   } catch (e) {
-    alert("Failed to create tournament");
+    showNotification("Failed to create tournament", { type: 'error' });
   }
 }
 
@@ -338,29 +339,36 @@ async function loadTournamentDetail(id: number) {
       try {
         await tournamentService.joinTournament(id);
         loadTournamentDetail(id);
-      } catch (e) { alert("Failed to join"); }
+      } catch (e) { showNotification("Failed to join", { type: 'error' }); }
     });
 
     document.getElementById("btn-bots")?.addEventListener("click", async () => {
       try {
         await tournamentService.fillTournamentWithBots(id);
         loadTournamentDetail(id);
-      } catch (e) { alert("Failed to fill bots"); }
+      } catch (e) { showNotification("Failed to fill bots", { type: 'error' }); }
     });
 
     document.getElementById("btn-start")?.addEventListener("click", async () => {
       try {
         await tournamentService.startTournament(id);
         loadTournamentDetail(id);
-      } catch (e) { alert("Failed to start"); }
+      } catch (e) { showNotification("Failed to start", { type: 'error' }); }
     });
 
     document.getElementById("btn-delete")?.addEventListener("click", async () => {
-      if (confirm(i18n.t('confirm_delete'))) {
+      const confirmed = await showConfirm({
+        title: i18n.t('tournament'),
+        message: i18n.t('confirm_delete'),
+        confirmText: i18n.t('delete'),
+        cancelText: i18n.t('back')
+      });
+
+      if (confirmed) {
         try {
           await tournamentService.deleteTournament(id);
           navigateTo("/tournament");
-        } catch (e) { alert("Failed to delete"); }
+        } catch (e) { showNotification("Failed to delete", { type: 'error' }); }
       }
     });
 

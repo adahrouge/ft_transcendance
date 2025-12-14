@@ -12,9 +12,16 @@ import {
   updateUser,
   getMatchHistory,
   getFriends,
-  addFriend,
-  searchUsers
+  sendFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+  removeFriend,
+  getPendingFriendRequests,
+  getSentFriendRequests,
+  searchUsers,
+  addMatchHistory
 } from '../database/db.js';
+import { gameEngine } from '../game/GameEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,6 +113,35 @@ export async function userRoutes(fastify) {
       user: userData,
       token
     };
+  });
+
+  // Save offline match result
+  fastify.post('/api/users/me/offline-match', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { playerScore, aiScore, result, difficulty } = request.body;
+    
+    // We'll use a special ID for AI opponent (e.g., 0 or -1) or handle it in addMatchHistory
+    // Since addMatchHistory expects an opponent_id which references users table, 
+    // we might need to ensure a "Bot" user exists or allow NULL.
+    // Let's check if we can pass NULL for opponent_id.
+    
+    // In db.js:
+    // FOREIGN KEY (opponent_id) REFERENCES users(id)
+    // This means opponent_id must be a valid ID or NULL (if the column allows NULL).
+    // The schema definition: opponent_id INTEGER
+    // It doesn't say NOT NULL, so NULL is allowed.
+    
+    try {
+      await addMatchHistory(user.id, null, playerScore, aiScore, result);
+      return { success: true };
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(500).send({ error: 'Failed to save match history' });
+    }
   });
 
   // Helper function to verify Google ID token
@@ -273,15 +309,37 @@ export async function userRoutes(fastify) {
     return { matches: history };
   });
 
-  // Get user friends
+  // Get user friends (accepted only)
   fastify.get('/api/users/me/friends', async (request, reply) => {
     const user = await getUserFromToken(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
-    
+
     const friends = await getFriends(user.id);
     return { friends };
+  });
+
+  // Get pending friend requests (received by user)
+  fastify.get('/api/users/me/friend-requests', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const requests = await getPendingFriendRequests(user.id);
+    return { requests };
+  });
+
+  // Get sent friend requests (sent by user)
+  fastify.get('/api/users/me/friend-requests/sent', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const requests = await getSentFriendRequests(user.id);
+    return { requests };
   });
 
   // Search users
@@ -290,40 +348,143 @@ export async function userRoutes(fastify) {
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
-    
+
     const { q } = request.query;
     if (!q || q.length < 2) {
       return { users: [] };
     }
-    
+
     const users = await searchUsers(q);
     return { users };
   });
 
-  // Add friend
-  fastify.post('/api/users/me/friends', async (request, reply) => {
+  // Send friend request
+  fastify.post('/api/users/me/friends/request', async (request, reply) => {
     const user = await getUserFromToken(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
-    
+
     const { friend_id } = request.body;
     if (!friend_id) {
       return reply.code(400).send({ error: 'friend_id is required' });
     }
-    
+
     if (friend_id === user.id) {
-      return reply.code(400).send({ error: 'Cannot add yourself as a friend' });
+      return reply.code(400).send({ error: 'Cannot send friend request to yourself' });
     }
-    
+
+    // Verify friend exists
+    const friendUser = await getUserById(friend_id);
+    if (!friendUser) {
+      return reply.code(404).send({ error: 'User not found' });
+    }
+
     try {
-      const success = await addFriend(user.id, friend_id);
-      if (!success) {
-        return reply.code(409).send({ error: 'Already friends with this user' });
+      const result = await sendFriendRequest(user.id, friend_id);
+      if (!result.success) {
+        return reply.code(409).send({ error: result.error });
       }
-      return { success: true };
+
+      // Notify the recipient about the new friend request
+      gameEngine.sendFriendNotification(friend_id.toString(), 'friend_request_received', {
+        fromUserId: user.id,
+        fromUsername: user.display_name || user.username
+      });
+
+      return { success: true, message: 'Friend request sent' };
     } catch (err) {
-      return reply.code(500).send({ error: err.message || 'Failed to add friend' });
+      return reply.code(500).send({ error: err.message || 'Failed to send friend request' });
+    }
+  });
+
+  // Accept friend request
+  fastify.post('/api/users/me/friends/accept', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { friend_id } = request.body;
+    if (!friend_id) {
+      return reply.code(400).send({ error: 'friend_id is required' });
+    }
+
+    try {
+      await acceptFriendRequest(user.id, friend_id);
+
+      // Notify the original requester that their request was accepted
+      gameEngine.sendFriendNotification(friend_id.toString(), 'friend_request_accepted', {
+        byUserId: user.id,
+        byUsername: user.display_name || user.username
+      });
+
+      // Also notify the accepter (for their own UI update)
+      gameEngine.sendFriendNotification(user.id.toString(), 'friend_added', {
+        friendId: friend_id
+      });
+
+      return { success: true, message: 'Friend request accepted' };
+    } catch (err) {
+      return reply.code(404).send({ error: err.message || 'Friend request not found' });
+    }
+  });
+
+  // Reject friend request
+  fastify.post('/api/users/me/friends/reject', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { friend_id } = request.body;
+    if (!friend_id) {
+      return reply.code(400).send({ error: 'friend_id is required' });
+    }
+
+    try {
+      await rejectFriendRequest(user.id, friend_id);
+
+      // Notify the rejecter (for their own UI update)
+      gameEngine.sendFriendNotification(user.id.toString(), 'friend_request_rejected', {
+        friendId: friend_id
+      });
+
+      return { success: true, message: 'Friend request rejected' };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message || 'Failed to reject friend request' });
+    }
+  });
+
+  // Remove friend
+  fastify.delete('/api/users/me/friends/:friendId', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { friendId } = request.params;
+    if (!friendId) {
+      return reply.code(400).send({ error: 'friendId is required' });
+    }
+
+    try {
+      await removeFriend(user.id, parseInt(friendId));
+
+      // Notify the friend being removed
+      gameEngine.sendFriendNotification(friendId.toString(), 'friend_removed', {
+        byUserId: user.id,
+        byUsername: user.display_name || user.username
+      });
+
+      // Also notify the remover (for their own UI update)
+      gameEngine.sendFriendNotification(user.id.toString(), 'friend_removed', {
+        friendId: parseInt(friendId)
+      });
+
+      return { success: true, message: 'Friend removed' };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message || 'Failed to remove friend' });
     }
   });
 

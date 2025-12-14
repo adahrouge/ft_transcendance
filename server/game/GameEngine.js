@@ -1,4 +1,6 @@
-  class GameEngine {
+import { addMatchHistory } from '../database/db.js';
+
+class GameEngine {
   constructor() {
     this.games = new Map();
     this.connectedPlayers = new Map(); // userId -> Set of WebSocket connections
@@ -11,10 +13,16 @@
   }
 
   registerPlayer(userId, connection) {
+    const wasOnline = this.connectedPlayers.has(userId);
     if (!this.connectedPlayers.has(userId)) {
       this.connectedPlayers.set(userId, new Set());
     }
     this.connectedPlayers.get(userId).add(connection);
+    
+    // Broadcast online status change to friends
+    if (!wasOnline) {
+      this.broadcastUserStatusChange(userId, true);
+    }
   }
 
   unregisterPlayer(userId, connection) {
@@ -23,8 +31,17 @@
       connections.delete(connection);
       if (connections.size === 0) {
         this.connectedPlayers.delete(userId);
+        // Broadcast offline status change to friends
+        this.broadcastUserStatusChange(userId, false);
       }
     }
+  }
+
+  broadcastUserStatusChange(userId, isOnline) {
+    // This will be implemented to notify friends when user goes online/offline
+    console.log(`📡 User ${userId} status changed to ${isOnline ? 'online' : 'offline'}`);
+    // Send notification to all online users watching this user
+    // We'll implement this when we have a friends database connection
   }
 
   isUserOnline(userId) {
@@ -40,12 +57,37 @@
   }
 
   sendInvite(targetUserId, inviterName, gameId) {
+    console.log(`🎮 Sending game invite to user ${targetUserId} from ${inviterName} for game ${gameId}`);
     const connections = this.connectedPlayers.get(targetUserId.toString());
     if (connections) {
+      console.log(`✅ Found ${connections.size} connection(s) for user ${targetUserId}`);
       const message = JSON.stringify({
         type: 'GAME_INVITE',
         inviterName,
         gameId
+      });
+      connections.forEach(conn => {
+        if (conn.readyState === 1) {
+          conn.send(message);
+          console.log(`📤 Sent invite to user ${targetUserId}`);
+        } else {
+          console.log(`⚠️ Connection not ready for user ${targetUserId}, state: ${conn.readyState}`);
+        }
+      });
+      return true;
+    }
+    console.log(`❌ No connections found for user ${targetUserId}`);
+    console.log(`📋 Currently connected users:`, Array.from(this.connectedPlayers.keys()));
+    return false;
+  }
+
+  sendFriendNotification(targetUserId, eventType, data = {}) {
+    const connections = this.connectedPlayers.get(targetUserId.toString());
+    if (connections) {
+      const message = JSON.stringify({
+        type: 'FRIEND_EVENT',
+        eventType,
+        ...data
       });
       connections.forEach(conn => {
         if (conn.readyState === 1) {
@@ -59,7 +101,10 @@
 
   createGame(player1, player2 = null, isP1Bot = false, isP2Bot = false) {
     const gameId = `pong_${Date.now()}`;
-    const status = player2 ? 'playing' : 'waiting';
+    // If player2 is a bot, start playing immediately.
+    // If player2 is a human (invite), wait for them to join.
+    // If player2 is null (random match), wait for someone to join.
+    const status = (player2 && (isP2Bot || isP1Bot)) ? 'playing' : 'waiting';
 
     // Vertical orientation: paddleX is horizontal position, paddles at top/bottom
     const initialPaddleX = 300 - 40; // Center of 600px width, minus half paddle width (80/2)
@@ -113,6 +158,16 @@
     game.lastUpdate = Date.now();
 
     return this.getGameState(gameId);
+  }
+
+  startGame(gameId) {
+    const game = this.games.get(gameId);
+    if (game && game.status === 'waiting') {
+      game.status = 'playing';
+      game.lastUpdate = Date.now();
+      return true;
+    }
+    return false;
   }
 
   addConnection(gameId, connection) {
@@ -453,7 +508,7 @@
     };
   }
 
-  endGame(gameId) {
+  async endGame(gameId) {
     const game = this.games.get(gameId);
     if (game) {
       game.status = 'finished';
@@ -469,6 +524,33 @@
       if (interval) {
         clearInterval(interval);
         this.gameIntervals.delete(gameId);
+      }
+
+      // Save match history to database
+      try {
+        const p1 = game.players[0];
+        const p2 = game.players[1];
+
+        // Only save if it's not a bot game (or handle bots appropriately if desired)
+        // For now, we'll save for registered users.
+        
+        // Save for Player 1 if they are a registered user (have an ID)
+        if (p1.id && !p1.isBot && typeof p1.id === 'number') {
+          const result = p1.score > p2.score ? 'win' : (p1.score < p2.score ? 'loss' : 'draw');
+          const opponentId = (p2.id && !p2.isBot && typeof p2.id === 'number') ? p2.id : null;
+          await addMatchHistory(p1.id, opponentId, p1.score, p2.score, result);
+        }
+
+        // Save for Player 2 if they are a registered user
+        if (p2.id && !p2.isBot && typeof p2.id === 'number') {
+          const result = p2.score > p1.score ? 'win' : (p2.score < p1.score ? 'loss' : 'draw');
+          const opponentId = (p1.id && !p1.isBot && typeof p1.id === 'number') ? p1.id : null;
+          await addMatchHistory(p2.id, opponentId, p2.score, p1.score, result);
+        }
+        
+        console.log(`💾 Match history saved for game ${gameId}`);
+      } catch (err) {
+        console.error('Error saving match history:', err);
       }
     }
     return this.getGameState(gameId);

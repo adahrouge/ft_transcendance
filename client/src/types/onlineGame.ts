@@ -41,6 +41,12 @@ export interface GameMessage {
   conceder?: string;
   inviterName?: string;
   onlineStatus?: Record<string, boolean>;
+  eventType?: string;
+  fromUserId?: number;
+  fromUsername?: string;
+  byUserId?: number;
+  byUsername?: string;
+  friendId?: number;
 }
 
 export interface ChatMessage {

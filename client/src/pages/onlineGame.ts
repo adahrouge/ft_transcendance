@@ -28,6 +28,7 @@ export function renderOnlineGamePage(params?: Record<string, string>): string {
 }
 
 async function setupOnlineGame(params?: Record<string, string>) {
+  onlineGameService.clearCallbacks();
   const root = document.getElementById("game-root");
   if (!root) return;
 
@@ -220,8 +221,14 @@ function joinGame(root: HTMLElement, gameId: string) {
   clearLobbyRefresh();
   const token = getToken();
   onlineGameService.connect(token || undefined);
-  onlineGameService.joinGame(gameId);
-  renderGameView(root);
+  
+  // If we are already in this game (e.g. we created it), don't join again
+  if (onlineGameService.getCurrentGameId() === gameId) {
+    renderGameView(root);
+  } else {
+    onlineGameService.joinGame(gameId);
+    renderGameView(root);
+  }
 }
 
 async function renderGameView(root: HTMLElement) {
@@ -273,7 +280,7 @@ async function renderGameView(root: HTMLElement) {
   let player2Name = "Player 2";
   let currentBorderColor = customization.colors.border;
 
-  onlineGameService.onGameStateUpdate((state: OnlineGameState) => {
+  const handleStateUpdate = (state: OnlineGameState) => {
     if (!state) return;
 
     const statusEl = document.getElementById("status-msg");
@@ -322,7 +329,11 @@ async function renderGameView(root: HTMLElement) {
     ctx.fillStyle = customization.colors.background;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    if (state.status === 'waiting') {
+    // Check for waiting state - if status is waiting OR if we are player 1 and player 2 is missing/placeholder
+    const isWaiting = state.status === 'waiting' || 
+                     (state.players[1].name === "Waiting..." || state.players[1].name === "Player 2");
+
+    if (isWaiting) {
       ctx.fillStyle = "white";
       ctx.font = "24px monospace";
       ctx.textAlign = "center";
@@ -358,7 +369,15 @@ async function renderGameView(root: HTMLElement) {
     // Draw Ball (square for retro look)
     ctx.fillStyle = customization.colors.ball;
     ctx.fillRect(state.ball.x - BALL_R, state.ball.y - BALL_R, BALL_R * 2, BALL_R * 2);
-  });
+  };
+
+  onlineGameService.onGameStateUpdate(handleStateUpdate);
+
+  // Initial render if state exists
+  const initialState = onlineGameService.getGameState();
+  if (initialState) {
+    handleStateUpdate(initialState);
+  }
 
   // Handle goal scored - show flash animation
   onlineGameService.onGoalScored((scorer, _conceder) => {

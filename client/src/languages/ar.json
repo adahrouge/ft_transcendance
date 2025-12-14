@@ -163,5 +163,14 @@
   "retro": "ريترو",
   "ocean": "محيط",
   "fire": "نار",
-  "sunset": "غروب الشمس"
+  "sunset": "غروب الشمس",
+  "friend_requests": "طلبات الصداقة",
+  "sent_requests": "الطلبات المرسلة",
+  "pending": "قيد الانتظار",
+  "reject": "رفض",
+  "friend_request_sent": "تم إرسال طلب الصداقة!",
+  "confirm_remove_friend": "هل أنت متأكد أنك تريد إزالة هذا الصديق؟",
+  "sent_you_friend_request": "أرسل لك طلب صداقة",
+  "accepted_your_friend_request": "قبل طلب صداقتك",
+  "removed_you_as_friend": "أزالك كصديق"
 }

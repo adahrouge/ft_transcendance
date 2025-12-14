@@ -1,6 +1,7 @@
 import { navigateTo } from "../router";
-import { isAuthenticated } from "../utils/auth";
+import { isAuthenticated, getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
+import { onlineGameService } from "../services/onlineGame";
 import { boardCustomizationService } from "../services/boardCustomization";
 import { BoardCustomization, DEFAULT_CUSTOMIZATION, THEME_PRESETS } from "../types/boardCustomization";
 import "../styles/customizeBoard.css";
@@ -19,55 +20,60 @@ export function renderCustomizeBoardPage(): string {
           <h1 class="customize-board-title">${i18n.t('customize_board')}</h1>
           <p class="customize-board-subtitle">${i18n.t('personalize_board')}</p>
 
-          <!-- Theme Presets -->
-          <div class="mb-4">
-            <h3 class="customize-board-section-title">${i18n.t('theme_presets')}</h3>
-            <div class="grid grid-cols-3 md:grid-cols-6 gap-3" id="theme-presets"></div>
-          </div>
+          <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Controls Section -->
+            <div class="flex-1 order-2 lg:order-1">
+              <!-- Theme Presets -->
+              <div class="mb-6">
+                <h3 class="customize-board-section-title">${i18n.t('theme_presets')}</h3>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3" id="theme-presets"></div>
+              </div>
 
-          <!-- Color Customization -->
-          <div class="mb-4">
-            <h3 class="customize-board-section-title">${i18n.t('custom_colors')}</h3>
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div class="flex flex-col gap-2">
-                <label class="customize-board-label">${i18n.t('background')}</label>
-                <input type="color" id="color-background" class="customize-board-color-input">
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="customize-board-label">${i18n.t('paddle')}</label>
-                <input type="color" id="color-paddle" class="customize-board-color-input">
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="customize-board-label">${i18n.t('ball')}</label>
-                <input type="color" id="color-ball" class="customize-board-color-input">
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="customize-board-label">${i18n.t('border')}</label>
-                <input type="color" id="color-border" class="customize-board-color-input">
-              </div>
-              <div class="flex flex-col gap-2">
-                <label class="customize-board-label">${i18n.t('center_line')}</label>
-                <input type="color" id="color-centerline" class="customize-board-color-input">
+              <!-- Color Customization -->
+              <div class="mb-4">
+                <h3 class="customize-board-section-title">${i18n.t('custom_colors')}</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div class="flex flex-col gap-1">
+                    <label class="customize-board-label text-xs">${i18n.t('background')}</label>
+                    <input type="color" id="color-background" class="customize-board-color-input w-full h-8">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="customize-board-label text-xs">${i18n.t('paddle')}</label>
+                    <input type="color" id="color-paddle" class="customize-board-color-input w-full h-8">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="customize-board-label text-xs">${i18n.t('ball')}</label>
+                    <input type="color" id="color-ball" class="customize-board-color-input w-full h-8">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="customize-board-label text-xs">${i18n.t('border')}</label>
+                    <input type="color" id="color-border" class="customize-board-color-input w-full h-8">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="customize-board-label text-xs">${i18n.t('center_line')}</label>
+                    <input type="color" id="color-centerline" class="customize-board-color-input w-full h-8">
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Live Preview -->
-          <div class="mb-4">
-            <h3 class="customize-board-section-title">${i18n.t('preview')}</h3>
-            <div class="customize-board-preview-container">
-              <canvas id="preview-canvas" width="300" height="300" class="rounded-lg shadow-2xl max-w-full"></canvas>
+            <!-- Preview Section -->
+            <div class="flex-1 flex flex-col items-center order-1 lg:order-2">
+              <h3 class="customize-board-section-title w-full text-center lg:text-left">${i18n.t('preview')}</h3>
+              <div class="customize-board-preview-container mb-6">
+                <canvas id="preview-canvas" width="300" height="300" class="rounded-lg shadow-2xl max-w-full"></canvas>
+              </div>
+
+              <!-- Actions -->
+              <div class="flex gap-3 flex-wrap justify-center w-full">
+                <button class="customize-board-btn-secondary text-sm px-3 py-2" id="btn-reset">${i18n.t('reset_default')}</button>
+                <button class="customize-board-btn text-sm px-6 py-2" id="btn-save">${i18n.t('save')}</button>
+                <button class="customize-board-btn-secondary text-sm px-3 py-2" id="btn-back">${i18n.t('back')}</button>
+              </div>
+              
+              <div id="status-message" class="customize-board-status mt-4 text-center h-6"></div>
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-4 flex-wrap justify-center mt-6">
-            <button class="customize-board-btn-secondary" id="btn-reset">${i18n.t('reset_default')}</button>
-            <button class="customize-board-btn" id="btn-save">${i18n.t('save')}</button>
-            <button class="customize-board-btn-secondary" id="btn-back">${i18n.t('back')}</button>
-          </div>
-
-          <div id="status-message" class="customize-board-status"></div>
         </div>
       </div>
     </div>
@@ -170,6 +176,12 @@ async function setupCustomizeBoard() {
 
   setupThemePresetHandlers(currentCustomization);
   highlightActiveTheme(currentCustomization.theme);
+
+  // Connect to WebSocket to register as online
+  const token = getToken();
+  if (token) {
+    onlineGameService.connect(token);
+  }
 }
 
 function renderThemePresets(_currentCustomization: BoardCustomization) {

@@ -13,6 +13,7 @@ type GameEndCallback = (reason: string, message?: string) => void;
 type GoalScoredCallback = (scorer: string, conceder: string) => void;
 type GameInviteCallback = (inviterName: string, gameId: string) => void;
 type OnlineStatusCallback = (onlineStatus: Record<string, boolean>) => void;
+type FriendEventCallback = (eventType: string, data: Record<string, unknown>) => void;
 
 class OnlineGameService {
   private ws: WebSocket | null = null;
@@ -23,6 +24,7 @@ class OnlineGameService {
   private onGoalScoredCallbacks: GoalScoredCallback[] = [];
   private onGameInviteCallbacks: GameInviteCallback[] = [];
   private onOnlineStatusCallbacks: OnlineStatusCallback[] = [];
+  private onFriendEventCallbacks: FriendEventCallback[] = [];
   private currentGameId: string | null = null;
   private userRole: UserRole = "spectator";
   private messageQueue: string[] = [];
@@ -125,13 +127,22 @@ class OnlineGameService {
         console.error("Error from server:", data.message || data.error);
         break;
       case "GAME_INVITE":
+        console.log('📨 Received GAME_INVITE message:', data);
         if (data.inviterName && data.gameId) {
+          console.log(`🎮 Processing game invite from ${data.inviterName} for game ${data.gameId}`);
           this.notifyGameInviteCallbacks(data.inviterName, data.gameId);
+        } else {
+          console.warn('⚠️ Invalid GAME_INVITE data:', data);
         }
         break;
       case "ONLINE_STATUS_UPDATE":
         if (data.onlineStatus) {
           this.notifyOnlineStatusCallbacks(data.onlineStatus);
+        }
+        break;
+      case "FRIEND_EVENT":
+        if (data.eventType) {
+          this.notifyFriendEventCallbacks(data.eventType, data);
         }
         break;
     }
@@ -173,28 +184,60 @@ class OnlineGameService {
     }
   }
 
-  onGameStateUpdate(callback: GameStateCallback): void {
+  onGameStateUpdate(callback: GameStateCallback): () => void {
     this.onGameStateCallbacks.push(callback);
+    return () => {
+      const index = this.onGameStateCallbacks.indexOf(callback);
+      if (index > -1) this.onGameStateCallbacks.splice(index, 1);
+    };
   }
 
-  onChatMessage(callback: ChatMessageCallback): void {
+  onChatMessage(callback: ChatMessageCallback): () => void {
     this.onChatMessageCallbacks.push(callback);
+    return () => {
+      const index = this.onChatMessageCallbacks.indexOf(callback);
+      if (index > -1) this.onChatMessageCallbacks.splice(index, 1);
+    };
   }
 
-  onGameEnd(callback: GameEndCallback): void {
+  onGameEnd(callback: GameEndCallback): () => void {
     this.onGameEndCallbacks.push(callback);
+    return () => {
+      const index = this.onGameEndCallbacks.indexOf(callback);
+      if (index > -1) this.onGameEndCallbacks.splice(index, 1);
+    };
   }
 
-  onGoalScored(callback: GoalScoredCallback): void {
+  onGoalScored(callback: GoalScoredCallback): () => void {
     this.onGoalScoredCallbacks.push(callback);
+    return () => {
+      const index = this.onGoalScoredCallbacks.indexOf(callback);
+      if (index > -1) this.onGoalScoredCallbacks.splice(index, 1);
+    };
   }
 
-  onGameInvite(callback: GameInviteCallback): void {
+  onGameInvite(callback: GameInviteCallback): () => void {
     this.onGameInviteCallbacks.push(callback);
+    return () => {
+      const index = this.onGameInviteCallbacks.indexOf(callback);
+      if (index > -1) this.onGameInviteCallbacks.splice(index, 1);
+    };
   }
 
-  onOnlineStatusUpdate(callback: OnlineStatusCallback): void {
+  onOnlineStatusUpdate(callback: OnlineStatusCallback): () => void {
     this.onOnlineStatusCallbacks.push(callback);
+    return () => {
+      const index = this.onOnlineStatusCallbacks.indexOf(callback);
+      if (index > -1) this.onOnlineStatusCallbacks.splice(index, 1);
+    };
+  }
+
+  onFriendEvent(callback: FriendEventCallback): () => void {
+    this.onFriendEventCallbacks.push(callback);
+    return () => {
+      const index = this.onFriendEventCallbacks.indexOf(callback);
+      if (index > -1) this.onFriendEventCallbacks.splice(index, 1);
+    };
   }
 
   private notifyGameStateCallbacks(): void {
@@ -216,11 +259,16 @@ class OnlineGameService {
   }
 
   private notifyGameInviteCallbacks(inviterName: string, gameId: string): void {
+    console.log(`📢 Notifying ${this.onGameInviteCallbacks.length} game invite callback(s)`);
     this.onGameInviteCallbacks.forEach((callback) => callback(inviterName, gameId));
   }
 
   private notifyOnlineStatusCallbacks(onlineStatus: Record<string, boolean>): void {
     this.onOnlineStatusCallbacks.forEach((callback) => callback(onlineStatus));
+  }
+
+  private notifyFriendEventCallbacks(eventType: string, data: Record<string, unknown>): void {
+    this.onFriendEventCallbacks.forEach((callback) => callback(eventType, data));
   }
 
   getCurrentGameId(): string | null {
@@ -239,15 +287,21 @@ class OnlineGameService {
     if (this.ws) {
       this.ws.close();
       this.ws = null;
+      this.clearCallbacks();
       this.currentGameId = null;
       this.gameState = null;
-      this.onGameStateCallbacks = [];
-      this.onChatMessageCallbacks = [];
-      this.onGameEndCallbacks = [];
-      this.onGoalScoredCallbacks = [];
-      this.onOnlineStatusCallbacks = [];
       this.userRole = "spectator";
     }
+  }
+
+  clearCallbacks(): void {
+    this.onGameStateCallbacks = [];
+    this.onChatMessageCallbacks = [];
+    this.onGameEndCallbacks = [];
+    this.onGoalScoredCallbacks = [];
+    this.onOnlineStatusCallbacks = [];
+    this.onFriendEventCallbacks = [];
+    this.onGameInviteCallbacks = [];
   }
 }
 

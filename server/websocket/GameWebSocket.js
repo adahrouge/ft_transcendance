@@ -37,6 +37,9 @@ export function GameWebSocket(connection, req) {
       userId = user.id;
       username = user.display_name || user.username;
       userToken = token;
+      // Register player for online status and invites
+      gameEngine.registerPlayer(userId.toString(), connection.socket);
+      console.log(`✅ User ${username} (ID: ${userId}) registered as online`);
     }
   });
 
@@ -149,7 +152,13 @@ export function GameWebSocket(connection, req) {
           
           // If creating a game with a specific player, try to send them an invite
           if (data.player2Id) {
-            gameEngine.sendInvite(data.player2Id, username, game.id);
+            console.log(`🎯 Attempting to send invite - player2Id: ${data.player2Id}, inviter: ${username}, gameId: ${game.id}`);
+            const inviteSent = gameEngine.sendInvite(data.player2Id, username, game.id);
+            if (!inviteSent) {
+              console.log(`⚠️ Failed to send invite to player ${data.player2Id} - player may not be online`);
+            }
+          } else {
+            console.log(`ℹ️ No player2Id provided, skipping invite`);
           }
           
           // Send chat history
@@ -183,6 +192,11 @@ export function GameWebSocket(connection, req) {
                   role = isPlayer1 ? 'player1' : 'player2';
                   playerId = userId.toString();
                   
+                  // If this is the reserved player 2 joining, start the game
+                  if (isPlayer2 && game.status === 'waiting') {
+                      gameEngine.startGame(currentGameId);
+                  }
+
                   // Add connection to game
                   gameEngine.addConnection(currentGameId, connection.socket);
                   
