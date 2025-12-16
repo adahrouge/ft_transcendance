@@ -4,6 +4,7 @@ import { navigateTo } from "../router";
 import { getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { showNotification, showConfirm } from "../utils/notifications";
+import { tournamentGameService } from "../services/tournamentGame";
 import type { TournamentListItem, Tournament, TournamentPlayer } from "../types/tournament";
 import "../styles/tournament.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -249,7 +250,7 @@ async function loadTournamentDetail(id: number) {
 
           <div class="flex gap-4 justify-center mt-8 flex-wrap">
             ${!isFull ? `<button id="btn-join" class="bg-[#2c6b87] text-white px-6 py-2 font-['Pixel_Game'] hover:bg-[#3d8aa8]">${i18n.t('join')}</button>` : ''}
-            ${t.status === 'waiting' ? `<button id="btn-bots" class="bg-[#1a4558] text-[#5db3d1] px-6 py-2 font-['Pixel_Game'] hover:text-white">${i18n.t('fill_bots')}</button>` : ''}
+            ${!isFull && t.status === 'waiting' ? `<button id="btn-bots" class="bg-[#1a4558] text-[#5db3d1] px-6 py-2 font-['Pixel_Game'] hover:text-white">${i18n.t('fill_bots')}</button>` : ''}
             ${t.status === 'waiting' && isFull ? `<button id="btn-start" class="bg-green-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-green-500">${i18n.t('start')}</button>` : ''}
             ${currentUser && t.creator_id === currentUser.id ? `<button id="btn-delete" class="bg-red-600 text-white px-6 py-2 font-['Pixel_Game'] hover:bg-red-500">${i18n.t('delete')}</button>` : ''}
           </div>
@@ -322,9 +323,16 @@ async function loadTournamentDetail(id: number) {
 
     // Match Actions
     root.querySelectorAll('[data-play-match]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const matchId = (btn as HTMLElement).dataset.playMatch;
-        if (matchId) navigateTo(`/online-game?id=${matchId}`);
+        if (matchId) {
+          try {
+            const { gameId } = await tournamentGameService.getOrCreateGameForMatch(id, Number(matchId));
+            navigateTo(`/online-game?id=${gameId}`);
+          } catch (e) {
+            showNotification("Failed to start match", { type: 'error' });
+          }
+        }
       });
     });
 
