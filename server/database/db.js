@@ -143,6 +143,19 @@ export async function initDatabase() {
     console.error('Error adding board_customization column:', err);
   }
 
+  // Add game_type column if it doesn't exist
+  try {
+    const tableInfo = await dbAll('PRAGMA table_info(match_history)');
+    const hasGameTypeColumn = tableInfo.some(col => col.name === 'game_type');
+
+    if (!hasGameTypeColumn) {
+      await dbRun("ALTER TABLE match_history ADD COLUMN game_type TEXT DEFAULT 'pong'");
+      console.log('Added game_type column to match_history table');
+    }
+  } catch (err) {
+    console.error('Error adding game_type column:', err);
+  }
+
   console.log('Database initialized');
 }
 
@@ -234,11 +247,11 @@ export async function searchUsers(query) {
 }
 
 // Match history operations
-export async function addMatchHistory(userId, opponentId, userScore, opponentScore, result) {
+export async function addMatchHistory(userId, opponentId, userScore, opponentScore, result, gameType = 'pong') {
   await dbRun(
-    `INSERT INTO match_history (user_id, opponent_id, user_score, opponent_score, result)
-     VALUES (?, ?, ?, ?, ?)`,
-    [userId, opponentId, userScore, opponentScore, result]
+    `INSERT INTO match_history (user_id, opponent_id, user_score, opponent_score, result, game_type)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [userId, opponentId, userScore, opponentScore, result, gameType]
   );
 }
 

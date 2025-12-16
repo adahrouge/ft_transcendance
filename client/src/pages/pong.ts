@@ -1,11 +1,11 @@
-import { PongAI, DEFAULT_GAME_CONFIG, clamp } from "../utils/offlineGame";
+import { PongAI, DEFAULT_GAME_CONFIG, clamp } from "../utils/pong.ts";
 import { navigateTo } from "../router";
 import { isAuthenticated } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { boardCustomizationService } from "../services/boardCustomization";
 import type { BoardCustomization } from "../types/boardCustomization";
 import { statsService } from "../services/stats";
-import "../styles/offlineGame.css";
+import "../styles/pong.css";
 import backgroundImage from "../assets/images/background.jpg";
 
 // Game settings
@@ -215,9 +215,9 @@ export function renderGamePage(): string {
   }, 0);
 
   return `
-    <div class="offlineGame-container" style="background-image: url('${backgroundImage}')">
-      <div class="offlineGame-overlay"></div>
-      <div class="offlineGame-content">
+    <div class="pong-container" style="background-image: url('${backgroundImage}')">
+      <div class="pong-overlay"></div>
+      <div class="pong-content">
         <div id="game-root"></div>
       </div>
     </div>
@@ -231,14 +231,14 @@ function setupGame() {
   // Check auth
   if (!isAuthenticated()) {
     root.innerHTML = `
-      <div class="offlineGame-start-box">
-        <h1 class="offlineGame-title">PLAY OFFLINE</h1>
-        <p class="offlineGame-subtitle">${i18n.t('must_login')}</p>
-        <div class="offlineGame-controls">
-          <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-login">${i18n.t('login')}</button>
+      <div class="pong-start-box">
+        <h1 class="pong-title">${i18n.t('play_pong_title')}</h1>
+        <p class="pong-subtitle">${i18n.t('must_login')}</p>
+        <div class="pong-controls">
+          <button class="pong-btn pong-btn-fullwidth" id="btn-login">${i18n.t('login')}</button>
         </div>
-        <div class="offlineGame-controls">
-          <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+        <div class="pong-controls">
+          <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
         </div>
       </div>
     `;
@@ -253,23 +253,23 @@ function setupGame() {
 
 function showModeSelection(root: HTMLElement) {
   root.innerHTML = `
-    <div class="offlineGame-start-box">
-      <h1 class="offlineGame-title">PLAY OFFLINE</h1>
-      <p class="offlineGame-subtitle">${i18n.t('choose_mode')}</p>
+    <div class="pong-start-box">
+      <h1 class="pong-title">${i18n.t('play_pong_title')}</h1>
+      <p class="pong-subtitle">${i18n.t('choose_mode')}</p>
 
-      <div class="offlineGame-mode-buttons">
-        <button class="offlineGame-mode-btn" id="btn-vs-ai">
-          <span class="offlineGame-mode-title">${i18n.t('vs_ai')}</span>
-          <span class="offlineGame-mode-desc">${i18n.t('challenge_computer')}</span>
+      <div class="pong-mode-buttons">
+        <button class="pong-mode-btn" id="btn-vs-ai">
+          <span class="pong-mode-title">${i18n.t('vs_ai')}</span>
+          <span class="pong-mode-desc">${i18n.t('challenge_computer')}</span>
         </button>
-        <button class="offlineGame-mode-btn" id="btn-vs-friend">
-          <span class="offlineGame-mode-title">${i18n.t('vs_friend')}</span>
-          <span class="offlineGame-mode-desc">${i18n.t('local_2_player')}</span>
+        <button class="pong-mode-btn" id="btn-vs-friend">
+          <span class="pong-mode-title">${i18n.t('vs_friend')}</span>
+          <span class="pong-mode-desc">${i18n.t('local_2_player')}</span>
         </button>
       </div>
 
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
       </div>
     </div>
   `;
@@ -289,39 +289,39 @@ function showModeSelection(root: HTMLElement) {
 
 function showMatchSetup(root: HTMLElement) {
   root.innerHTML = `
-    <div class="offlineGame-start-box">
-      <h1 class="offlineGame-title">${i18n.t('play_vs_ai')}</h1>
-      <p class="offlineGame-subtitle">${i18n.t('controls_ai').replace('5', String(CONFIG.scoreToWin))}</p>
+    <div class="pong-start-box">
+      <h1 class="pong-title">${i18n.t('play_vs_ai')}</h1>
+      <p class="pong-subtitle">${i18n.t('controls_ai').replace('5', String(CONFIG.scoreToWin))}</p>
 
-      <div class="offlineGame-settings">
-        <div class="offlineGame-setting-row">
-          <span class="offlineGame-setting-label">BALL SPEED</span>
-          <div class="offlineGame-setting-options">
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "slow" ? "active" : ""}" data-speed="slow">SLOW</button>
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "normal" ? "active" : ""}" data-speed="normal">NORMAL</button>
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "fast" ? "active" : ""}" data-speed="fast">FAST</button>
+      <div class="pong-settings">
+        <div class="pong-setting-row">
+          <span class="pong-setting-label">BALL SPEED</span>
+          <div class="pong-setting-options">
+            <button class="pong-setting-btn ${selectedBallSpeed === "slow" ? "active" : ""}" data-speed="slow">SLOW</button>
+            <button class="pong-setting-btn ${selectedBallSpeed === "normal" ? "active" : ""}" data-speed="normal">NORMAL</button>
+            <button class="pong-setting-btn ${selectedBallSpeed === "fast" ? "active" : ""}" data-speed="fast">FAST</button>
           </div>
         </div>
 
-        <div class="offlineGame-setting-row">
-          <span class="offlineGame-setting-label">${i18n.t('ai_difficulty')}: <span id="difficulty-label">${getDifficultyLabel(selectedAIDifficulty)}</span></span>
-          <div class="offlineGame-slider-container">
-            <span class="offlineGame-slider-label">${i18n.t('easy')}</span>
-            <input type="range" id="difficulty-slider" class="offlineGame-slider" min="0" max="100" value="${selectedAIDifficulty}">
-            <span class="offlineGame-slider-label">${i18n.t('hard')}</span>
+        <div class="pong-setting-row">
+          <span class="pong-setting-label">${i18n.t('ai_difficulty')}: <span id="difficulty-label">${getDifficultyLabel(selectedAIDifficulty)}</span></span>
+          <div class="pong-slider-container">
+            <span class="pong-slider-label">${i18n.t('easy')}</span>
+            <input type="range" id="difficulty-slider" class="pong-slider" min="0" max="100" value="${selectedAIDifficulty}">
+            <span class="pong-slider-label">${i18n.t('hard')}</span>
           </div>
         </div>
       </div>
 
-      <div class="offlineGame-divider"></div>
+      <div class="pong-divider"></div>
 
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-start">START MATCH</button>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-fullwidth" id="btn-start">START MATCH</button>
       </div>
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
       </div>
-      <p class="offlineGame-info">Press SPACE to pause</p>
+      <p class="pong-info">Press SPACE to pause</p>
     </div>
   `;
 
@@ -350,30 +350,30 @@ function showMatchSetup(root: HTMLElement) {
 
 function showFriendMatchSetup(root: HTMLElement) {
   root.innerHTML = `
-    <div class="offlineGame-start-box">
-      <h1 class="offlineGame-title">${i18n.t('vs_friend')}</h1>
-      <p class="offlineGame-subtitle">${i18n.t('controls_friend').replace('5', String(CONFIG.scoreToWin))}</p>
+    <div class="pong-start-box">
+      <h1 class="pong-title">${i18n.t('vs_friend')}</h1>
+      <p class="pong-subtitle">${i18n.t('controls_friend').replace('5', String(CONFIG.scoreToWin))}</p>
 
-      <div class="offlineGame-settings">
-        <div class="offlineGame-setting-row">
-          <span class="offlineGame-setting-label">BALL SPEED</span>
-          <div class="offlineGame-setting-options">
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "slow" ? "active" : ""}" data-speed="slow">SLOW</button>
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "normal" ? "active" : ""}" data-speed="normal">NORMAL</button>
-            <button class="offlineGame-setting-btn ${selectedBallSpeed === "fast" ? "active" : ""}" data-speed="fast">FAST</button>
+      <div class="pong-settings">
+        <div class="pong-setting-row">
+          <span class="pong-setting-label">BALL SPEED</span>
+          <div class="pong-setting-options">
+            <button class="pong-setting-btn ${selectedBallSpeed === "slow" ? "active" : ""}" data-speed="slow">SLOW</button>
+            <button class="pong-setting-btn ${selectedBallSpeed === "normal" ? "active" : ""}" data-speed="normal">NORMAL</button>
+            <button class="pong-setting-btn ${selectedBallSpeed === "fast" ? "active" : ""}" data-speed="fast">FAST</button>
           </div>
         </div>
       </div>
 
-      <div class="offlineGame-divider"></div>
+      <div class="pong-divider"></div>
 
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-fullwidth" id="btn-start">START MATCH</button>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-fullwidth" id="btn-start">START MATCH</button>
       </div>
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary offlineGame-btn-fullwidth" id="btn-back">BACK</button>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
       </div>
-      <p class="offlineGame-info">Press SPACE to pause</p>
+      <p class="pong-info">Press SPACE to pause</p>
     </div>
   `;
 
@@ -394,27 +394,44 @@ async function startFriendMatch(root: HTMLElement) {
   // Load customization
   const customization = await boardCustomizationService.loadCustomization();
   root.innerHTML = `
-    <div class="offlineGame-box">
-      <div class="offlineGame-scoreboard">
+    <div class="pong-box">
+      <div class="pong-scoreboard">
         <div>
-          <div class="offlineGame-score-label">${i18n.t('p1')}</div>
-          <div class="offlineGame-score-value" id="score-p1">0</div>
+          <div class="pong-score-label">${i18n.t('p1')}</div>
+          <div class="pong-score-value" id="score-p1">0</div>
         </div>
-        <div class="offlineGame-score-divider">:</div>
+        <div class="pong-score-divider">:</div>
         <div>
-          <div class="offlineGame-score-label">${i18n.t('p2')}</div>
-          <div class="offlineGame-score-value" id="score-p2">0</div>
+          <div class="pong-score-label">${i18n.t('p2')}</div>
+          <div class="pong-score-value" id="score-p2">0</div>
         </div>
       </div>
-      <div class="offlineGame-canvas-wrapper">
-        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="offlineGame-canvas"></canvas>
-        <div class="offlineGame-countdown" id="countdown">
-          <span class="offlineGame-countdown-text" id="countdown-text">3</span>
+      <div class="pong-canvas-wrapper">
+        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="pong-canvas"></canvas>
+        <div class="pong-countdown" id="countdown">
+          <span class="pong-countdown-text" id="countdown-text">3</span>
         </div>
       </div>
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-pause">PAUSE</button>
-        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-quit">QUIT</button>
+      <!-- Touch controls for mobile -->
+      <div class="pong-touch-controls" id="friend-touch-controls">
+        <div class="pong-touch-section">
+          <span class="pong-touch-label">${i18n.t('p1')}</span>
+          <div class="pong-touch-buttons">
+            <button class="pong-touch-btn" id="friend-p1-left">◄</button>
+            <button class="pong-touch-btn" id="friend-p1-right">►</button>
+          </div>
+        </div>
+        <div class="pong-touch-section">
+          <span class="pong-touch-label">${i18n.t('p2')}</span>
+          <div class="pong-touch-buttons">
+            <button class="pong-touch-btn" id="friend-p2-left">◄</button>
+            <button class="pong-touch-btn" id="friend-p2-right">►</button>
+          </div>
+        </div>
+      </div>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary" id="btn-pause">PAUSE</button>
+        <button class="pong-btn pong-btn-secondary" id="btn-quit">QUIT</button>
       </div>
     </div>
   `;
@@ -478,6 +495,37 @@ async function startFriendMatch(root: HTMLElement) {
 
   window.addEventListener("keydown", keyDown, { capture: true });
   window.addEventListener("keyup", keyUp, { capture: true });
+
+  // Touch controls for mobile
+  const p1LeftBtn = document.getElementById("friend-p1-left");
+  const p1RightBtn = document.getElementById("friend-p1-right");
+  const p2LeftBtn = document.getElementById("friend-p2-left");
+  const p2RightBtn = document.getElementById("friend-p2-right");
+
+  if (p1LeftBtn) {
+    p1LeftBtn.addEventListener("touchstart", (e) => { e.preventDefault(); p1Keys.left = true; });
+    p1LeftBtn.addEventListener("touchend", (e) => { e.preventDefault(); p1Keys.left = false; });
+    p1LeftBtn.addEventListener("mousedown", () => p1Keys.left = true);
+    p1LeftBtn.addEventListener("mouseup", () => p1Keys.left = false);
+  }
+  if (p1RightBtn) {
+    p1RightBtn.addEventListener("touchstart", (e) => { e.preventDefault(); p1Keys.right = true; });
+    p1RightBtn.addEventListener("touchend", (e) => { e.preventDefault(); p1Keys.right = false; });
+    p1RightBtn.addEventListener("mousedown", () => p1Keys.right = true);
+    p1RightBtn.addEventListener("mouseup", () => p1Keys.right = false);
+  }
+  if (p2LeftBtn) {
+    p2LeftBtn.addEventListener("touchstart", (e) => { e.preventDefault(); p2Keys.left = true; });
+    p2LeftBtn.addEventListener("touchend", (e) => { e.preventDefault(); p2Keys.left = false; });
+    p2LeftBtn.addEventListener("mousedown", () => p2Keys.left = true);
+    p2LeftBtn.addEventListener("mouseup", () => p2Keys.left = false);
+  }
+  if (p2RightBtn) {
+    p2RightBtn.addEventListener("touchstart", (e) => { e.preventDefault(); p2Keys.right = true; });
+    p2RightBtn.addEventListener("touchend", (e) => { e.preventDefault(); p2Keys.right = false; });
+    p2RightBtn.addEventListener("mousedown", () => p2Keys.right = true);
+    p2RightBtn.addEventListener("mouseup", () => p2Keys.right = false);
+  }
 
   document.getElementById("btn-pause")?.addEventListener("click", () => {
     paused = !paused;
@@ -647,13 +695,13 @@ async function startFriendMatch(root: HTMLElement) {
     }
 
     root.innerHTML = `
-      <div class="offlineGame-over-overlay">
-        <div class="offlineGame-over-box">
-          <h1 class="offlineGame-over-title">${won ? i18n.t('player_1_wins') : i18n.t('player_2_wins')}</h1>
-          <p class="offlineGame-over-score">${scoreP1} - ${scoreP2}</p>
-          <div class="offlineGame-over-actions">
-            <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>
-            <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-back">BACK</button>
+      <div class="pong-over-overlay">
+        <div class="pong-over-box">
+          <h1 class="pong-over-title">${won ? i18n.t('player_1_wins') : i18n.t('player_2_wins')}</h1>
+          <p class="pong-over-score">${scoreP1} - ${scoreP2}</p>
+          <div class="pong-over-actions">
+            <button class="pong-btn" id="btn-rematch">REMATCH</button>
+            <button class="pong-btn pong-btn-secondary" id="btn-back">BACK</button>
           </div>
         </div>
       </div>
@@ -691,27 +739,37 @@ async function startMatch(root: HTMLElement) {
   // Load customization
   const customization = await boardCustomizationService.loadCustomization();
   root.innerHTML = `
-    <div class="offlineGame-box">
-      <div class="offlineGame-scoreboard">
+    <div class="pong-box">
+      <div class="pong-scoreboard">
         <div>
-          <div class="offlineGame-score-label">${i18n.t('you')}</div>
-          <div class="offlineGame-score-value" id="score-player">0</div>
+          <div class="pong-score-label">${i18n.t('you')}</div>
+          <div class="pong-score-value" id="score-player">0</div>
         </div>
-        <div class="offlineGame-score-divider">:</div>
+        <div class="pong-score-divider">:</div>
         <div>
-          <div class="offlineGame-score-label">${i18n.t('ai')}</div>
-          <div class="offlineGame-score-value" id="score-ai">0</div>
+          <div class="pong-score-label">${i18n.t('ai')}</div>
+          <div class="pong-score-value" id="score-ai">0</div>
         </div>
       </div>
-      <div class="offlineGame-canvas-wrapper">
-        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="offlineGame-canvas"></canvas>
-        <div class="offlineGame-countdown" id="countdown">
-          <span class="offlineGame-countdown-text" id="countdown-text">3</span>
+      <div class="pong-canvas-wrapper">
+        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="pong-canvas"></canvas>
+        <div class="pong-countdown" id="countdown">
+          <span class="pong-countdown-text" id="countdown-text">3</span>
         </div>
       </div>
-      <div class="offlineGame-controls">
-        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-pause">PAUSE</button>
-        <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-quit">QUIT</button>
+      <!-- Touch controls for mobile -->
+      <div class="pong-touch-controls pong-touch-controls-single" id="ai-touch-controls">
+        <div class="pong-touch-section pong-touch-single">
+          <span class="pong-touch-label">${i18n.t('you')}</span>
+          <div class="pong-touch-buttons">
+            <button class="pong-touch-btn" id="ai-player-left">◄</button>
+            <button class="pong-touch-btn" id="ai-player-right">►</button>
+          </div>
+        </div>
+      </div>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary" id="btn-pause">PAUSE</button>
+        <button class="pong-btn pong-btn-secondary" id="btn-quit">QUIT</button>
       </div>
     </div>
   `;
@@ -797,6 +855,23 @@ async function startMatch(root: HTMLElement) {
 
   window.addEventListener("keydown", keyDown, { capture: true });
   window.addEventListener("keyup", keyUp, { capture: true });
+
+  // Touch controls for mobile
+  const playerLeftBtn = document.getElementById("ai-player-left");
+  const playerRightBtn = document.getElementById("ai-player-right");
+
+  if (playerLeftBtn) {
+    playerLeftBtn.addEventListener("touchstart", (e) => { e.preventDefault(); keys.left = true; });
+    playerLeftBtn.addEventListener("touchend", (e) => { e.preventDefault(); keys.left = false; });
+    playerLeftBtn.addEventListener("mousedown", () => keys.left = true);
+    playerLeftBtn.addEventListener("mouseup", () => keys.left = false);
+  }
+  if (playerRightBtn) {
+    playerRightBtn.addEventListener("touchstart", (e) => { e.preventDefault(); keys.right = true; });
+    playerRightBtn.addEventListener("touchend", (e) => { e.preventDefault(); keys.right = false; });
+    playerRightBtn.addEventListener("mousedown", () => keys.right = true);
+    playerRightBtn.addEventListener("mouseup", () => keys.right = false);
+  }
 
   // Button handlers
   document.getElementById("btn-pause")?.addEventListener("click", () => {
@@ -998,13 +1073,13 @@ async function startMatch(root: HTMLElement) {
     }
 
     root.innerHTML = `
-      <div class="offlineGame-over-overlay">
-        <div class="offlineGame-over-box">
-          <h1 class="offlineGame-over-title">${won ? i18n.t('you_win') : i18n.t('you_lose')}</h1>
-          <p class="offlineGame-over-score">${scorePlayer} - ${scoreAI}</p>
-          <div class="offlineGame-over-actions">
-            <button class="offlineGame-btn" id="btn-rematch">REMATCH</button>
-            <button class="offlineGame-btn offlineGame-btn-secondary" id="btn-back">BACK</button>
+      <div class="pong-over-overlay">
+        <div class="pong-over-box">
+          <h1 class="pong-over-title">${won ? i18n.t('you_win') : i18n.t('you_lose')}</h1>
+          <p class="pong-over-score">${scorePlayer} - ${scoreAI}</p>
+          <div class="pong-over-actions">
+            <button class="pong-btn" id="btn-rematch">REMATCH</button>
+            <button class="pong-btn pong-btn-secondary" id="btn-back">BACK</button>
           </div>
         </div>
       </div>

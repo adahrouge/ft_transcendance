@@ -2,8 +2,7 @@ import Navigo from "navigo";
 import { renderAuthPage } from "./pages/auth";
 import { renderLandingPage } from "./pages/landingPage";
 import { renderHomePage } from "./pages/home";
-import { renderGamePage } from "./pages/offlineGame";
-import { renderOnlineGamePage } from "./pages/onlineGame";
+import { renderGamePage } from "./pages/pong";
 import { renderProfilePage } from "./pages/profile";
 import { renderFriendPage } from "./pages/friend";
 import { renderTournamentPage } from "./pages/tournament";
@@ -11,6 +10,7 @@ import { renderStatsPage } from "./pages/stats";
 import { renderCustomizeBoardPage } from "./pages/customizeBoard";
 import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
+import { renderTicTacToePage } from "./pages/tictactoe";
 
 const router = new Navigo("/");
 
@@ -42,19 +42,15 @@ export function setupRouter() {
       const app = getAppContainer();
       app.innerHTML = renderHomePage();
     })
-    .on("/game", () => {
-      console.log("Route: Game Page");
+    .on("/pong", () => {
+      console.log("Route: Pong Game Page");
       const app = getAppContainer();
       app.innerHTML = renderGamePage();
     })
-    .on("/online-game", (match) => {
-      console.log("Route: Online Game Page");
+    .on("/tictactoe", () => {
+      console.log("Route: Tic-Tac-Toe Page");
       const app = getAppContainer();
-      let params = match?.params;
-      if (!params && window.location.search) {
-        params = Object.fromEntries(new URLSearchParams(window.location.search));
-      }
-      app.innerHTML = renderOnlineGamePage(params ?? undefined);
+      app.innerHTML = renderTicTacToePage();
     })
     .on("/profile", () => {
       console.log("Route: Profile Page");

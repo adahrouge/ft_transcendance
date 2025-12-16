@@ -13,10 +13,9 @@
     @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
   }
 
-  /* Main box - matches offlineGame-start-box */
+  /* Main box - matches pong-start-box */
   .home-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center;
-    min-width: 500px;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[500px];
     image-rendering: pixelated;
     box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
       5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
@@ -27,12 +26,12 @@
     @apply hidden;
   }
 
-  /* Title - matches offlineGame-title */
+  /* Title - matches pong-title */
   .home-title {
     @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl text-center mb-4;
   }
 
-  /* Subtitle - matches offlineGame-subtitle */
+  /* Subtitle - matches pong-subtitle */
   .home-subtitle {
     @apply text-[#5db3d1] font-['Pixel_Game'] text-sm text-center mb-6;
   }
@@ -90,17 +89,17 @@
     @apply translate-y-0.5;
   }
 
-  /* Divider - matches offlineGame-divider */
+  /* Divider - matches pong-divider */
   .home-divider {
     @apply w-full h-[2px] bg-[#2c6b87] my-6;
   }
 
-  /* Controls container - matches offlineGame-controls */
+  /* Controls container - matches pong-controls */
   .home-controls {
     @apply flex gap-4 justify-center;
   }
 
-  /* Button - matches offlineGame-btn */
+  /* Button - matches pong-btn */
   .home-btn {
     @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
     padding: 1rem 1.5rem;
@@ -117,7 +116,7 @@
       -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
   }
 
-  /* Secondary button - matches offlineGame-btn-secondary */
+  /* Secondary button - matches pong-btn-secondary */
   .home-btn-secondary {
     @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
     box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
@@ -125,7 +124,7 @@
       -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
   }
 
-  /* Full width button - matches offlineGame-btn-fullwidth */
+  /* Full width button - matches pong-btn-fullwidth */
   .home-btn-fullwidth {
     @apply w-full;
   }

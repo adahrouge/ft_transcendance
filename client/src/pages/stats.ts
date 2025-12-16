@@ -2,7 +2,6 @@ import { statsService } from "../services/stats";
 import { navigateTo } from "../router";
 import { getAvatarUrl } from "../utils/home";
 import { i18n } from "../services/i18n";
-import { onlineGameService } from "../services/onlineGame";
 import { getToken } from "../utils/auth";
 import type { MatchHistoryItem, StatsUser, PlayerStats } from "../types/stats";
 import "../styles/stats.css";
@@ -87,10 +86,13 @@ async function loadStats() {
             ${matchHistory.length === 0 ? `<p class="stats-empty">${i18n.t('no_matches')}</p>` : matchHistory.map(m => `
               <div class="stats-match-item">
                 <div class="stats-match-opponent">
+                  <span class="stats-match-type" style="font-size: 10px; color: #5db3d1; margin-right: 8px; border: 1px solid #2c6b87; padding: 2px 4px;">
+                    ${m.game_type === 'tictactoe' ? 'TTT' : 'PONG'}
+                  </span>
                   <span class="stats-match-vs">${i18n.t('vs')}</span>
                   <span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>
                 </div>
-                <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : 'stats-loss'}">
+                <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : (m.result === 'draw' ? 'text-yellow-400' : 'stats-loss')}">
                   ${m.user_score} - ${m.opponent_score}
                 </div>
               </div>
@@ -105,12 +107,6 @@ async function loadStats() {
     `;
 
     document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
-
-    // Connect to WebSocket to register as online
-    const token = getToken();
-    if (token) {
-      onlineGameService.connect(token);
-    }
 
   } catch (err) {
     root.innerHTML = '<div class="text-red-500 font-[\'Pixel_Game\']">Failed to load statistics.</div>';

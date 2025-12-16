@@ -21,7 +21,6 @@ import {
   searchUsers,
   addMatchHistory
 } from '../database/db.js';
-import { gameEngine } from '../game/GameEngine.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -122,7 +121,7 @@ export async function userRoutes(fastify) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
 
-    const { playerScore, aiScore, result, difficulty } = request.body;
+    const { playerScore, aiScore, result, difficulty, gameType } = request.body;
     
     // We'll use a special ID for AI opponent (e.g., 0 or -1) or handle it in addMatchHistory
     // Since addMatchHistory expects an opponent_id which references users table, 
@@ -136,7 +135,7 @@ export async function userRoutes(fastify) {
     // It doesn't say NOT NULL, so NULL is allowed.
     
     try {
-      await addMatchHistory(user.id, null, playerScore, aiScore, result);
+      await addMatchHistory(user.id, null, playerScore, aiScore, result, gameType || 'pong');
       return { success: true };
     } catch (err) {
       request.log.error(err);
@@ -386,12 +385,6 @@ export async function userRoutes(fastify) {
         return reply.code(409).send({ error: result.error });
       }
 
-      // Notify the recipient about the new friend request
-      gameEngine.sendFriendNotification(friend_id.toString(), 'friend_request_received', {
-        fromUserId: user.id,
-        fromUsername: user.display_name || user.username
-      });
-
       return { success: true, message: 'Friend request sent' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to send friend request' });
@@ -412,17 +405,6 @@ export async function userRoutes(fastify) {
 
     try {
       await acceptFriendRequest(user.id, friend_id);
-
-      // Notify the original requester that their request was accepted
-      gameEngine.sendFriendNotification(friend_id.toString(), 'friend_request_accepted', {
-        byUserId: user.id,
-        byUsername: user.display_name || user.username
-      });
-
-      // Also notify the accepter (for their own UI update)
-      gameEngine.sendFriendNotification(user.id.toString(), 'friend_added', {
-        friendId: friend_id
-      });
 
       return { success: true, message: 'Friend request accepted' };
     } catch (err) {
@@ -445,11 +427,6 @@ export async function userRoutes(fastify) {
     try {
       await rejectFriendRequest(user.id, friend_id);
 
-      // Notify the rejecter (for their own UI update)
-      gameEngine.sendFriendNotification(user.id.toString(), 'friend_request_rejected', {
-        friendId: friend_id
-      });
-
       return { success: true, message: 'Friend request rejected' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to reject friend request' });
@@ -470,17 +447,6 @@ export async function userRoutes(fastify) {
 
     try {
       await removeFriend(user.id, parseInt(friendId));
-
-      // Notify the friend being removed
-      gameEngine.sendFriendNotification(friendId.toString(), 'friend_removed', {
-        byUserId: user.id,
-        byUsername: user.display_name || user.username
-      });
-
-      // Also notify the remover (for their own UI update)
-      gameEngine.sendFriendNotification(user.id.toString(), 'friend_removed', {
-        friendId: parseInt(friendId)
-      });
 
       return { success: true, message: 'Friend removed' };
     } catch (err) {

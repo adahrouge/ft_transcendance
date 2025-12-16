@@ -1,7 +1,6 @@
 import { navigateTo } from "../router";
 import { isAuthenticated, getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
-import { onlineGameService } from "../services/onlineGame";
 import { boardCustomizationService } from "../services/boardCustomization";
 import { BoardCustomization, DEFAULT_CUSTOMIZATION, THEME_PRESETS } from "../types/boardCustomization";
 import "../styles/customizeBoard.css";
@@ -20,19 +19,19 @@ export function renderCustomizeBoardPage(): string {
           <h1 class="customize-board-title">${i18n.t('customize_board')}</h1>
           <p class="customize-board-subtitle">${i18n.t('personalize_board')}</p>
 
-          <div class="flex flex-col lg:flex-row gap-8">
+          <div class="flex flex-col lg:flex-row gap-4 lg:gap-8">
             <!-- Controls Section -->
             <div class="flex-1 order-2 lg:order-1">
               <!-- Theme Presets -->
-              <div class="mb-6">
-                <h3 class="customize-board-section-title">${i18n.t('theme_presets')}</h3>
-                <div class="grid grid-cols-3 sm:grid-cols-4 gap-3" id="theme-presets"></div>
+              <div class="mb-4">
+                <h3 class="customize-board-section-title text-sm sm:text-base">${i18n.t('theme_presets')}</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" id="theme-presets"></div>
               </div>
 
               <!-- Color Customization -->
               <div class="mb-4">
-                <h3 class="customize-board-section-title">${i18n.t('custom_colors')}</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <h3 class="customize-board-section-title text-sm sm:text-base">${i18n.t('custom_colors')}</h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div class="flex flex-col gap-1">
                     <label class="customize-board-label text-xs">${i18n.t('background')}</label>
                     <input type="color" id="color-background" class="customize-board-color-input w-full h-8">
@@ -59,19 +58,19 @@ export function renderCustomizeBoardPage(): string {
 
             <!-- Preview Section -->
             <div class="flex-1 flex flex-col items-center order-1 lg:order-2">
-              <h3 class="customize-board-section-title w-full text-center lg:text-left">${i18n.t('preview')}</h3>
-              <div class="customize-board-preview-container mb-6">
-                <canvas id="preview-canvas" width="300" height="300" class="rounded-lg shadow-2xl max-w-full"></canvas>
+              <h3 class="customize-board-section-title w-full text-center lg:text-left text-sm sm:text-base mb-2">${i18n.t('preview')}</h3>
+              <div class="customize-board-preview-container mb-4 w-full max-w-[280px] sm:max-w-[300px]">
+                <canvas id="preview-canvas" width="300" height="300" class="rounded-lg shadow-2xl w-full h-auto"></canvas>
               </div>
 
               <!-- Actions -->
-              <div class="flex gap-3 flex-wrap justify-center w-full">
-                <button class="customize-board-btn-secondary text-sm px-3 py-2" id="btn-reset">${i18n.t('reset_default')}</button>
-                <button class="customize-board-btn text-sm px-6 py-2" id="btn-save">${i18n.t('save')}</button>
-                <button class="customize-board-btn-secondary text-sm px-3 py-2" id="btn-back">${i18n.t('back')}</button>
+              <div class="flex gap-2 flex-wrap justify-center w-full">
+                <button class="customize-board-btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-2 flex-1 sm:flex-none min-w-[80px]" id="btn-reset">${i18n.t('reset_default')}</button>
+                <button class="customize-board-btn text-xs sm:text-sm px-3 sm:px-6 py-2 flex-1 sm:flex-none min-w-[80px]" id="btn-save">${i18n.t('save')}</button>
+                <button class="customize-board-btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-2 flex-1 sm:flex-none min-w-[80px]" id="btn-back">${i18n.t('back')}</button>
               </div>
               
-              <div id="status-message" class="customize-board-status mt-4 text-center h-6"></div>
+              <div id="status-message" class="customize-board-status mt-3 text-center h-5 text-xs sm:text-sm"></div>
             </div>
           </div>
         </div>
@@ -176,12 +175,6 @@ async function setupCustomizeBoard() {
 
   setupThemePresetHandlers(currentCustomization);
   highlightActiveTheme(currentCustomization.theme);
-
-  // Connect to WebSocket to register as online
-  const token = getToken();
-  if (token) {
-    onlineGameService.connect(token);
-  }
 }
 
 function renderThemePresets(_currentCustomization: BoardCustomization) {

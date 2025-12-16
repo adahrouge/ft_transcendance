@@ -1,4 +1,4 @@
-import type { AIConfig, BallState, AISnapshot, GameConfig } from "../types/offlineGame";
+import type { AIConfig, BallState, AISnapshot, GameConfig } from "../types/pong";
 
 // Default game configuration for vertical retro pong
 export const DEFAULT_GAME_CONFIG: GameConfig = {

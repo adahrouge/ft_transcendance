@@ -13,7 +13,7 @@ export interface MatchHistoryItem {
   opponent_score: number;
   result: "win" | "loss" | "draw";
   played_at: string;
-  game_type: "online" | "tournament";
+  game_type: "online" | "tournament" | "pong" | "tictactoe";
 }
 
 export interface PlayerStats {

@@ -1,3 +1,4 @@
 @import "tailwindcss";
 @import "./styles/landingPage.css";
 @import "./styles/auth.css";
+@import "./styles/responsive.css";

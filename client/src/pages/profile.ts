@@ -4,7 +4,6 @@ import { navigateTo } from "../router";
 import { getAvatarUrl } from "../utils/home";
 import { i18n } from "../services/i18n";
 import { showNotification } from "../utils/notifications";
-import { onlineGameService } from "../services/onlineGame";
 import { getToken } from "../utils/auth";
 import type { ProfileUser } from "../types/profile";
 import "../styles/profile.css";
@@ -197,10 +196,6 @@ async function loadProfile() {
 
     // Connect to WebSocket to register as online
     const token = getToken();
-    if (token) {
-      onlineGameService.connect(token);
-    }
-
   } catch (err) {
     root.innerHTML = '<div class="text-red-500">Failed to load profile.</div>';
   }

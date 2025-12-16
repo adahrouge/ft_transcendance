@@ -1,0 +1,332 @@
+@import "tailwindcss";
+
+@layer components {
+  .pong-container {
+    @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+  }
+
+  .pong-overlay {
+    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  }
+
+  .pong-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+  }
+
+  /* Game wrapper box - matching auth-box style */
+  .pong-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm;
+    image-rendering: pixelated;
+
+    /* Pixelated border */
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .pong-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl text-center mb-4;
+  }
+
+  .pong-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm text-center mb-6;
+  }
+
+  /* Scoreboard */
+  .pong-scoreboard {
+    @apply flex justify-between items-center mb-4 px-4;
+  }
+
+  .pong-score-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg;
+  }
+
+  .pong-score-value {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-2xl min-w-[40px] text-center;
+  }
+
+  .pong-score-divider {
+    @apply text-[#3d8aa8] font-['Pixel_Game'] text-2xl mx-4;
+  }
+
+  /* Canvas wrapper with pixel border */
+  .pong-canvas-wrapper {
+    @apply relative;
+    image-rendering: pixelated;
+
+    /* Inner pixelated border */
+    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+  }
+
+  .pong-canvas {
+    @apply block;
+    image-rendering: pixelated;
+    background: #0a0a12;
+  }
+
+  /* Game controls */
+  .pong-controls {
+    @apply flex gap-4 mt-6 justify-center;
+  }
+
+  .pong-btn {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-lg px-6 py-3 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    border: none;
+
+    /* Pixelated border with 3D effect */
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .pong-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  .pong-btn-secondary {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  /* Countdown overlay */
+  .pong-countdown {
+    @apply absolute inset-0 flex items-center justify-center;
+    background: rgba(0, 0, 0, 0.6);
+  }
+
+  .pong-countdown-text {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-8xl;
+    text-shadow: 0 0 20px #3d8aa8;
+  }
+
+  /* Game over modal */
+  .pong-over-overlay {
+    @apply fixed inset-0 bg-black/80 flex items-center justify-center z-[10000];
+  }
+
+  .pong-over-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-8 backdrop-blur-sm text-center;
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  .pong-over-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-4xl mb-4;
+  }
+
+  .pong-over-score {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-2xl mb-6;
+  }
+
+  .pong-over-actions {
+    @apply flex gap-4 justify-center;
+  }
+
+  /* Pre-game start screen */
+  .pong-start-box {
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[500px];
+    image-rendering: pixelated;
+
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  /* Full width button variant */
+  .pong-btn-fullwidth {
+    @apply w-full;
+  }
+
+  .pong-info {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-4;
+  }
+
+  /* Settings section */
+  .pong-settings {
+    @apply my-8 space-y-6;
+  }
+
+  .pong-setting-row {
+    @apply flex flex-col items-center gap-3;
+  }
+
+  .pong-setting-label {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg;
+  }
+
+  .pong-setting-options {
+    @apply flex gap-3 justify-center flex-wrap;
+  }
+
+  .pong-setting-btn {
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-base px-5 py-2 cursor-pointer transition-all duration-100;
+    border: none;
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .pong-setting-btn:hover {
+    @apply text-[#e0f7ff];
+  }
+
+  .pong-setting-btn.active {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white;
+
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+
+  .pong-divider {
+    @apply w-full h-[2px] bg-[#2c6b87] my-6;
+  }
+
+  /* Slider styles */
+  .pong-slider-container {
+    @apply flex items-center gap-4 w-full justify-center;
+  }
+
+  .pong-slider-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs min-w-[40px];
+  }
+
+  .pong-slider {
+    @apply w-full max-w-[280px] h-3 rounded-none cursor-pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background: linear-gradient(to right, #0d1a28, #0a1420);
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .pong-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
+    cursor: pointer;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+  }
+
+  .pong-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+  }
+
+  .pong-slider:hover::-webkit-slider-thumb {
+    background: linear-gradient(to bottom, #5db3d1, #4a9dc0);
+  }
+
+  .pong-slider:hover::-moz-range-thumb {
+    background: linear-gradient(to bottom, #5db3d1, #4a9dc0);
+  }
+
+  /* Mode selection buttons */
+  .pong-mode-buttons {
+    @apply flex flex-col gap-4 my-8;
+  }
+
+  .pong-mode-btn {
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-left p-5 cursor-pointer transition-all duration-100;
+    border: none;
+
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .pong-mode-btn:hover {
+    @apply bg-gradient-to-b from-[#1a2d40] to-[#0d1a28];
+
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  .pong-mode-btn:active {
+    @apply translate-y-[2px];
+  }
+
+  .pong-mode-title {
+    @apply block text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-1;
+  }
+
+  .pong-mode-desc {
+    @apply block text-[#5db3d1] font-['Pixel_Game'] text-sm;
+  }
+
+  /* Touch controls for mobile */
+  .pong-touch-controls {
+    @apply flex justify-between gap-4 mt-4 mb-2;
+  }
+
+  .pong-touch-controls-single {
+    @apply justify-center;
+  }
+
+  .pong-touch-section {
+    @apply flex flex-col items-center gap-2;
+  }
+
+  .pong-touch-single {
+    @apply w-full max-w-[300px];
+  }
+
+  .pong-touch-label {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs uppercase;
+  }
+
+  .pong-touch-buttons {
+    @apply flex gap-3;
+  }
+
+  .pong-touch-btn {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
+    width: 64px;
+    height: 64px;
+    border: none;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pong-touch-btn:active {
+    @apply translate-y-1 from-[#4a9dc0] to-[#3d8aa8];
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  /* Hide touch controls on desktop with keyboard */
+  @media (hover: hover) and (pointer: fine) {
+    .pong-touch-controls {
+      @apply hidden;
+    }
+  }
+}

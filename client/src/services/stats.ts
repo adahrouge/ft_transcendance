@@ -20,7 +20,7 @@ export const statsService = {
     return apiRequest<{ user: StatsUser }>("/api/users/me");
   },
 
-  async saveOfflineMatch(data: { playerScore: number; aiScore: number; result: 'win' | 'loss'; difficulty: string }): Promise<void> {
+  async saveOfflineMatch(data: { playerScore: number; aiScore: number; result: 'win' | 'loss' | 'draw'; difficulty: string; gameType?: string }): Promise<void> {
     return apiRequest<void>("/api/users/me/offline-match", {
       method: "POST",
       body: JSON.stringify(data),

@@ -2,7 +2,6 @@ import { homeService } from "../services/home";
 import { getAvatarUrl, getDisplayName, DEFAULT_AVATAR } from "../utils/home";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
-import { onlineGameService } from "../services/onlineGame";
 import { getToken } from "../utils/auth";
 import type { UserProfile } from "../types/home";
 import "../styles/home.css";
@@ -62,10 +61,10 @@ export function renderHomePage(): string {
               </div>
             </div>
             <div class="home-controls">
-              <button id="btn-offline" class="home-btn home-btn-fullwidth">${i18n.t('play_offline')}</button>
+              <button id="btn-pong" class="home-btn home-btn-fullwidth">${i18n.t('play_pong')}</button>
             </div>
             <div class="home-controls">
-              <button id="btn-online" class="home-btn home-btn-fullwidth">${i18n.t('play_online')}</button>
+              <button id="btn-tictactoe" class="home-btn home-btn-fullwidth">${i18n.t('play_tictactoe')}</button>
             </div>
         </div>
       </div>
@@ -78,12 +77,6 @@ async function loadUserAndSetup() {
     currentUser = await homeService.getCurrentUser();
     updateProfileDisplay();
     setupEventListeners();
-
-    // Connect to WebSocket to register as online
-    const token = getToken();
-    if (token) {
-      onlineGameService.connect(token);
-    }
   } catch (error) {
     console.error("Failed to load user:", error);
     navigateTo("/auth");
@@ -116,7 +109,7 @@ function setupEventListeners() {
   document.getElementById("btn-customize")?.addEventListener("click", () => navigateTo("/customize-board"));
 
   // Game buttons
-  document.getElementById("btn-offline")?.addEventListener("click", () => navigateTo("/game"));
-  document.getElementById("btn-online")?.addEventListener("click", () => navigateTo("/online-game"));
+  document.getElementById("btn-pong")?.addEventListener("click", () => navigateTo("/pong"));
+  document.getElementById("btn-tictactoe")?.addEventListener("click", () => navigateTo("/tictactoe"));
 }
 
