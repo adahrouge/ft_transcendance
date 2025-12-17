@@ -25,7 +25,6 @@ const getAppContainer = (): HTMLElement => {
 export function setupRouter() {
   router
     .on("/", () => {
-      console.log("Route: Landing Page");
       const app = getAppContainer();
       app.innerHTML = renderLandingPage();
     })
@@ -38,52 +37,42 @@ export function setupRouter() {
         router.navigate("/auth");
         return;
       }
-      console.log("Route: Home Page");
       const app = getAppContainer();
       app.innerHTML = renderHomePage();
     })
     .on("/pong", () => {
-      console.log("Route: Pong Game Page");
       const app = getAppContainer();
       app.innerHTML = renderGamePage();
     })
     .on("/tictactoe", () => {
-      console.log("Route: Tic-Tac-Toe Page");
       const app = getAppContainer();
       app.innerHTML = renderTicTacToePage();
     })
     .on("/profile", () => {
-      console.log("Route: Profile Page");
       const app = getAppContainer();
       app.innerHTML = renderProfilePage();
     })
     .on("/friend", () => {
-      console.log("Route: Friend Page");
       const app = getAppContainer();
       app.innerHTML = renderFriendPage();
     })
     .on("/stats", () => {
-      console.log("Route: Stats Page");
       const app = getAppContainer();
       app.innerHTML = renderStatsPage();
     })
     .on("/tournament", () => {
-      console.log("Route: Tournament Page");
       const app = getAppContainer();
       app.innerHTML = renderTournamentPage();
     })
     .on("/tournament/:id", (match) => {
-      console.log("Route: Tournament Detail Page");
       const app = getAppContainer();
       app.innerHTML = renderTournamentPage(match?.data ?? undefined);
     })
     .on("/customize-board", () => {
-      console.log("Route: Customize Board Page");
       const app = getAppContainer();
       app.innerHTML = renderCustomizeBoardPage();
     })
     .notFound(() => {
-      console.log("Route: 404 Not Found");
       const app = getAppContainer();
       app.innerHTML = renderNotFoundPage();
     });

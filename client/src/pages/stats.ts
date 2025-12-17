@@ -2,7 +2,6 @@ import { statsService } from "../services/stats";
 import { navigateTo } from "../router";
 import { getAvatarUrl } from "../utils/home";
 import { i18n } from "../services/i18n";
-import { getToken } from "../utils/auth";
 import type { MatchHistoryItem, StatsUser, PlayerStats } from "../types/stats";
 import "../styles/stats.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -38,12 +37,12 @@ async function loadStats() {
     try {
       const historyResponse = await statsService.getMatchHistory();
       matchHistory = historyResponse.matches || [];
-    } catch (e) { console.error(e); }
+    } catch { /* ignore if not available */ }
 
     try {
       const statsResponse = await statsService.getStats();
       stats = statsResponse.stats;
-    } catch (e) { console.error(e); }
+    } catch { /* ignore if not available */ }
 
     // Calculate stats from match history if stats endpoint not available
     const totalGames = stats?.total_games ?? matchHistory.length;

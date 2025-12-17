@@ -14,12 +14,9 @@ class NotificationManager {
 
     try {
       this.currentUser = await authService.getCurrentUser();
-    } catch (e) {
-      console.error("Failed to get current user for notifications");
+    } catch {
       return;
     }
-
-    console.log("✅ Global notification manager initialized");
   }
 
   // Allow friend page to register for friend updates

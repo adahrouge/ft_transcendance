@@ -9,9 +9,6 @@ import { tournamentRoutes } from '../routes/tournaments.js';
 import { tournamentGamesRoutes } from '../routes/tournamentGames.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import os from 'os';
-import { execSync } from 'child_process';
-
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -73,24 +70,11 @@ setInterval(async () => {
   }
 }, 60000); // Run every 60 seconds
 
-// Helper function to get local IP address
-function getHostLANIP() {
-  return process.env.HOST_LAN_IP || 'localhost';
-}
-
-
-
 // Start server
 const start = async () => {
   try {
     await fastify.listen({ port: 3001, host: '0.0.0.0' });
-    const lanIP = getHostLANIP();
-
-    console.log('Pong server running on port 3001');
-    console.log('');
-    console.log('Access the game at:');
-    console.log(`   - Local: https://localhost:8443`);
-    console.log(`   - Network: https://${lanIP}:8443`);
+    fastify.log.info('Pong server running on port 3001');
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

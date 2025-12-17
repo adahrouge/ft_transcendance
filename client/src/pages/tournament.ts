@@ -43,7 +43,7 @@ class TournamentChat {
             data.messages.forEach((m: any) => this.onMessage(m));
           }
         }
-      } catch (e) { console.error(e); }
+      } catch { /* ignore parse errors */ }
     };
   }
 

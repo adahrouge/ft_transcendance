@@ -1,7 +1,6 @@
 import { authService } from "../services/auth";
 import { navigateTo } from "../router";
 import { initializeGoogleOAuth, triggerGoogleSignIn, decodeGoogleToken, isGoogleOAuthConfigured } from "../utils/google-oauth";
-import { getToken } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { showNotification } from "../utils/notifications";
 import "../styles/auth.css";
@@ -120,26 +119,16 @@ function setupAuthInteractions() {
       });
       navigateTo("/home");
     } catch (error) {
-      if (errorDiv)
-        errorDiv.textContent = i18n.t('login_failed');
-      console.error(error);
+      if (errorDiv) errorDiv.textContent = i18n.t('login_failed');
     }
   });
 
-  const registerForm = document.getElementById(
-    "register-form"
-  ) as HTMLFormElement;
+  const registerForm = document.getElementById("register-form") as HTMLFormElement;
   registerForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const usernameInput = document.getElementById(
-      "register-username"
-    ) as HTMLInputElement;
-    const emailInput = document.getElementById(
-      "register-email"
-    ) as HTMLInputElement;
-    const passwordInput = document.getElementById(
-      "register-password"
-    ) as HTMLInputElement;
+    const usernameInput = document.getElementById("register-username") as HTMLInputElement;
+    const emailInput = document.getElementById("register-email") as HTMLInputElement;
+    const passwordInput = document.getElementById("register-password") as HTMLInputElement;
     const errorDiv = document.getElementById("register-error");
 
     try {
@@ -150,9 +139,7 @@ function setupAuthInteractions() {
       });
       navigateTo("/home");
     } catch (error) {
-      if (errorDiv)
-        errorDiv.textContent = i18n.t('registration_failed');
-      console.error(error);
+      if (errorDiv) errorDiv.textContent = i18n.t('registration_failed');
     }
   });
 
@@ -161,29 +148,19 @@ function setupAuthInteractions() {
   if (googleBtn) {
     googleBtn.addEventListener("click", async (e) => {
       e.preventDefault();
-      console.log("Google button clicked");
 
       if (!isGoogleOAuthConfigured()) {
-        showNotification("Google OAuth not configured. Check console for setup instructions.", { type: 'warning', duration: 5000 });
-        console.warn("⚠️ Google OAuth not configured.\n\nTo enable Google Sign-In:\n\n1. Get a Google Client ID from https://console.cloud.google.com/\n2. Create client/.env.local with:\n   VITE_GOOGLE_CLIENT_ID=your_client_id_here\n3. Restart the app");
+        showNotification("Google OAuth not configured", { type: 'warning', duration: 5000 });
         return;
       }
 
       try {
-        console.log("Triggering Google Sign-In...");
-        // Trigger Google Sign-In
         const response = await triggerGoogleSignIn();
-        console.log("Google Sign-In response:", response);
-        
+
         if (response && response.credential) {
-          console.log("Got credential, decoding...");
-          // Decode the JWT to get user information
           const userData = decodeGoogleToken(response.credential);
-          console.log("User data:", userData);
           const { email, name, sub: googleId } = userData;
 
-          console.log("Sending to backend...");
-          // Call the backend Google auth endpoint
           const result = await authService.googleAuth(
             response.credential,
             email,
@@ -191,25 +168,16 @@ function setupAuthInteractions() {
             googleId
           );
 
-          console.log("Backend response:", result);
-          console.log("Token stored:", getToken() ? "Yes" : "No");
-          
           if (result && result.token) {
-            console.log("Token received, waiting before redirect...");
-            // Small delay to ensure token is set
             await new Promise(resolve => setTimeout(resolve, 100));
-            console.log("Redirecting to home...");
             navigateTo("/home");
           } else {
-            console.error("No token in result:", result);
             showNotification("Authentication succeeded but no token received. Please try again.", { type: 'error' });
           }
         } else {
-          console.error("No credential in response:", response);
           showNotification("Failed to authenticate with Google. Please try again.", { type: 'error' });
         }
       } catch (error) {
-        console.error("Google Sign-In error:", error);
         showNotification(`Google authentication failed: ${(error as Error).message}`, { type: 'error' });
       }
     });

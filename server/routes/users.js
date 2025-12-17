@@ -239,7 +239,7 @@ export async function userRoutes(fastify) {
         };
       }
     } catch (error) {
-      console.error('Google OAuth error:', error);
+      request.log.error('Google OAuth error:', error);
       return reply.code(401).send({ error: error.message || 'Google authentication failed' });
     }
   });
@@ -499,7 +499,7 @@ export async function userRoutes(fastify) {
       const { password_hash, ...userData } = updatedUser;
       return { user: userData };
     } catch (err) {
-      console.error('Error uploading avatar:', err);
+      request.log.error('Error uploading avatar:', err);
       return reply.code(500).send({ error: 'Failed to upload avatar' });
     }
   });
@@ -543,7 +543,7 @@ export async function userRoutes(fastify) {
         customization: updatedUser.board_customization
       };
     } catch (err) {
-      console.error('Error saving board customization:', err);
+      request.log.error('Error saving board customization:', err);
       return reply.code(500).send({ error: 'Failed to save customization' });
     }
   });
