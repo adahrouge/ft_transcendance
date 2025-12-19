@@ -158,5 +158,14 @@
   "confirm_remove_friend": "Are you sure you want to remove this friend?",
   "sent_you_friend_request": "sent you a friend request",
   "accepted_your_friend_request": "accepted your friend request",
-  "removed_you_as_friend": "removed you as a friend"
+  "removed_you_as_friend": "removed you as a friend",
+  "fill_all_fields": "Please fill in all fields",
+  "login_success": "Login successful!",
+  "register_success": "Registration successful!",
+  "username_too_short": "Username must be at least 3 characters",
+  "password_too_short": "Password must be at least 6 characters",
+  "invalid_email": "Please enter a valid email",
+  "google_not_configured": "Google OAuth not configured",
+  "google_auth_failed": "Google authentication failed",
+  "signing_in": "Signing in..."
 }

@@ -11,6 +11,7 @@ import { renderCustomizeBoardPage } from "./pages/customizeBoard";
 import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
 import { renderTicTacToePage } from "./pages/tictactoe";
+import { renderNavbar, initializeNavbar, clearNavbarCache } from "./components/navbar";
 
 const router = new Navigo("/");
 
@@ -22,59 +23,79 @@ const getAppContainer = (): HTMLElement => {
   return app as HTMLElement;
 };
 
+// Helper to render page with navbar for authenticated users
+function renderWithNavbar(pageContent: string, needsAuth: boolean = true): void {
+  const app = getAppContainer();
+  
+  if (needsAuth && !isAuthenticated()) {
+    router.navigate("/auth");
+    return;
+  }
+  
+  if (isAuthenticated()) {
+    document.body.classList.add('has-navbar');
+    app.innerHTML = renderNavbar() + pageContent;
+    // Initialize navbar after DOM is ready
+    setTimeout(() => initializeNavbar(), 0);
+  } else {
+    document.body.classList.remove('has-navbar');
+    app.innerHTML = pageContent;
+  }
+}
+
+// Helper to render page without navbar (landing, auth)
+function renderWithoutNavbar(pageContent: string): void {
+  const app = getAppContainer();
+  document.body.classList.remove('has-navbar');
+  app.innerHTML = pageContent;
+}
+
 export function setupRouter() {
   router
     .on("/", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderLandingPage();
+      renderWithoutNavbar(renderLandingPage());
     })
     .on("/auth", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderAuthPage();
+      // Clear navbar cache on auth page
+      clearNavbarCache();
+      renderWithoutNavbar(renderAuthPage());
     })
     .on("/home", () => {
+      renderWithNavbar(renderHomePage());
+    })
+    .on("/pong", () => {
+      renderWithNavbar(renderGamePage());
+    })
+    .on("/tictactoe", () => {
+      renderWithNavbar(renderTicTacToePage());
+    })
+    .on("/profile", () => {
+      renderWithNavbar(renderProfilePage());
+    })
+    .on("/friend", () => {
+      renderWithNavbar(renderFriendPage());
+    })
+    .on("/stats", () => {
+      renderWithNavbar(renderStatsPage());
+    })
+    .on("/tournament", () => {
+      renderWithNavbar(renderTournamentPage());
+    })
+    .on("/tournament/:id", (match) => {
       if (!isAuthenticated()) {
         router.navigate("/auth");
         return;
       }
       const app = getAppContainer();
-      app.innerHTML = renderHomePage();
-    })
-    .on("/pong", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderGamePage();
-    })
-    .on("/tictactoe", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderTicTacToePage();
-    })
-    .on("/profile", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderProfilePage();
-    })
-    .on("/friend", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderFriendPage();
-    })
-    .on("/stats", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderStatsPage();
-    })
-    .on("/tournament", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderTournamentPage();
-    })
-    .on("/tournament/:id", (match) => {
-      const app = getAppContainer();
-      app.innerHTML = renderTournamentPage(match?.data ?? undefined);
+      document.body.classList.add('has-navbar');
+      app.innerHTML = renderNavbar() + renderTournamentPage(match?.data ?? undefined);
+      setTimeout(() => initializeNavbar(), 0);
     })
     .on("/customize-board", () => {
-      const app = getAppContainer();
-      app.innerHTML = renderCustomizeBoardPage();
+      renderWithNavbar(renderCustomizeBoardPage());
     })
     .notFound(() => {
-      const app = getAppContainer();
-      app.innerHTML = renderNotFoundPage();
+      renderWithNavbar(renderNotFoundPage(), false);
     });
 
   router.resolve();

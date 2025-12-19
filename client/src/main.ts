@@ -1,4 +1,5 @@
 import "./style.css";
+import "./styles/navbar.css";
 import { setupRouter } from "./router";
 import { notificationManager } from "./services/notificationManager";
 import { getToken } from "./utils/auth";

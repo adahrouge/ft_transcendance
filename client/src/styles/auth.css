@@ -139,4 +139,26 @@
   .error-message {
     @apply text-[#ff6b6b] font-['Pixel_Game'] text-sm min-h-5;
   }
+
+  /* Loading spinner animation */
+  .spinner {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .btn-loading {
+    @apply flex items-center justify-center;
+  }
+
+  .hidden {
+    display: none !important;
+  }
 }

@@ -46,41 +46,46 @@ async function getUserFromToken(request) {
 export async function userRoutes(fastify) {
   // Register new user
   fastify.post('/api/users/register', async (request, reply) => {
-    const { username, email, password, display_name } = request.body;
-    
-    if (!username || !email || !password) {
-      return reply.code(400).send({ error: 'Username, email, and password are required' });
+    try {
+      const { username, email, password, display_name } = request.body;
+      
+      if (!username || !email || !password) {
+        return reply.code(400).send({ error: 'Username, email, and password are required' });
+      }
+      
+      // Check if username already exists
+      const existingUsername = await getUserByUsername(username);
+      if (existingUsername) {
+        return reply.code(409).send({ error: 'Username already taken' });
+      }
+      
+      // Check if email already exists
+      const existingEmail = await getUserByEmail(email);
+      if (existingEmail) {
+        return reply.code(409).send({ error: 'Email already in use' });
+      }
+      
+      // Hash password
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      // Create user
+      const user = await createUser(username, email, passwordHash, display_name);
+      
+      // Generate JWT token
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
+        expiresIn: '7d'
+      });
+      
+      // Return user data (without password)
+      const { password_hash, ...userData } = user;
+      return {
+        user: userData,
+        token
+      };
+    } catch (err) {
+      request.log.error('Registration error:', err);
+      return reply.code(500).send({ error: 'Registration failed: ' + err.message });
     }
-    
-    // Check if username already exists
-    const existingUsername = await getUserByUsername(username);
-    if (existingUsername) {
-      return reply.code(409).send({ error: 'Username already taken' });
-    }
-    
-    // Check if email already exists
-    const existingEmail = await getUserByEmail(email);
-    if (existingEmail) {
-      return reply.code(409).send({ error: 'Email already in use' });
-    }
-    
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
-    
-    // Create user
-    const user = await createUser(username, email, passwordHash, display_name);
-    
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-      expiresIn: '7d'
-    });
-    
-    // Return user data (without password)
-    const { password_hash, ...userData } = user;
-    return {
-      user: userData,
-      token
-    };
   });
 
   // Login

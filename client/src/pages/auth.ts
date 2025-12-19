@@ -6,11 +6,14 @@ import { showNotification } from "../utils/notifications";
 import "../styles/auth.css";
 import backgroundImage from "../assets/images/background.jpg";
 
+let isSubmitting = false;
+
 export function renderAuthPage(): string {
   // Initialize Google OAuth with client ID from environment
   const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || '';
   if (googleClientId) {
-    initializeGoogleOAuth(googleClientId);
+    // Pre-load the Google script immediately
+    initializeGoogleOAuth(googleClientId).catch(console.error);
   }
 
   setTimeout(() => {
@@ -34,14 +37,21 @@ export function renderAuthPage(): string {
           <form id="login-form" class="auth-form active flex flex-col gap-4">
             <div class="form-group">
               <label for="login-username">${i18n.t('username')}</label>
-              <input type="text" id="login-username" class="pixel-input" placeholder="${i18n.t('enter_username')}" required>
+              <input type="text" id="login-username" class="pixel-input" placeholder="${i18n.t('enter_username')}" required autocomplete="username">
             </div>
             <div class="form-group">
               <label for="login-password">${i18n.t('password')}</label>
-              <input type="password" id="login-password" class="pixel-input" placeholder="${i18n.t('enter_password')}" required>
+              <input type="password" id="login-password" class="pixel-input" placeholder="${i18n.t('enter_password')}" required autocomplete="current-password">
             </div>
             <div id="login-error" class="error-message"></div>
-            <button type="submit" class="submit-btn pixel-btn">${i18n.t('login')}</button>
+            <button type="submit" class="submit-btn pixel-btn" id="login-submit">
+              <span class="btn-text">${i18n.t('login')}</span>
+              <span class="btn-loading hidden">
+                <svg class="spinner" viewBox="0 0 24 24" width="20" height="20">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" />
+                </svg>
+              </span>
+            </button>
 
             <div class="divider">${i18n.t('or')}</div>
 
@@ -59,23 +69,48 @@ export function renderAuthPage(): string {
           <form id="register-form" class="auth-form hidden flex-col gap-4">
             <div class="form-group">
               <label for="register-username">${i18n.t('username')}</label>
-              <input type="text" id="register-username" class="pixel-input" placeholder="${i18n.t('choose_username')}" required>
+              <input type="text" id="register-username" class="pixel-input" placeholder="${i18n.t('choose_username')}" required autocomplete="username" minlength="3" maxlength="20">
             </div>
             <div class="form-group">
               <label for="register-email">${i18n.t('email')}</label>
-              <input type="email" id="register-email" class="pixel-input" placeholder="${i18n.t('enter_email')}" required>
+              <input type="email" id="register-email" class="pixel-input" placeholder="${i18n.t('enter_email')}" required autocomplete="email">
             </div>
             <div class="form-group">
               <label for="register-password">${i18n.t('password')}</label>
-              <input type="password" id="register-password" class="pixel-input" placeholder="${i18n.t('create_password')}" required>
+              <input type="password" id="register-password" class="pixel-input" placeholder="${i18n.t('create_password')}" required autocomplete="new-password" minlength="6">
             </div>
             <div id="register-error" class="error-message"></div>
-            <button type="submit" class="submit-btn pixel-btn">${i18n.t('sign_up')}</button>
+            <button type="submit" class="submit-btn pixel-btn" id="register-submit">
+              <span class="btn-text">${i18n.t('sign_up')}</span>
+              <span class="btn-loading hidden">
+                <svg class="spinner" viewBox="0 0 24 24" width="20" height="20">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" />
+                </svg>
+              </span>
+            </button>
           </form>
         </div>
       </div>
     </div>
   `;
+}
+
+function setButtonLoading(buttonId: string, loading: boolean) {
+  const button = document.getElementById(buttonId) as HTMLButtonElement;
+  if (!button) return;
+  
+  const btnText = button.querySelector('.btn-text') as HTMLElement;
+  const btnLoading = button.querySelector('.btn-loading') as HTMLElement;
+  
+  if (loading) {
+    button.disabled = true;
+    btnText?.classList.add('hidden');
+    btnLoading?.classList.remove('hidden');
+  } else {
+    button.disabled = false;
+    btnText?.classList.remove('hidden');
+    btnLoading?.classList.add('hidden');
+  }
 }
 
 function setupAuthInteractions() {
@@ -84,6 +119,8 @@ function setupAuthInteractions() {
 
   tabs.forEach((tab) => {
     tab.addEventListener("click", () => {
+      if (isSubmitting) return;
+      
       const target = (tab as HTMLElement).dataset.tab;
 
       tabs.forEach((t) => t.classList.remove("active"));
@@ -98,48 +135,105 @@ function setupAuthInteractions() {
           form.classList.remove("flex");
         }
       });
+      
+      // Clear any error messages
+      const loginError = document.getElementById("login-error");
+      const registerError = document.getElementById("register-error");
+      if (loginError) loginError.textContent = '';
+      if (registerError) registerError.textContent = '';
     });
   });
 
   const loginForm = document.getElementById("login-form") as HTMLFormElement;
   loginForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const usernameInput = document.getElementById(
-      "login-username"
-    ) as HTMLInputElement;
-    const passwordInput = document.getElementById(
-      "login-password"
-    ) as HTMLInputElement;
+    if (isSubmitting) return;
+    
+    const usernameInput = document.getElementById("login-username") as HTMLInputElement;
+    const passwordInput = document.getElementById("login-password") as HTMLInputElement;
     const errorDiv = document.getElementById("login-error");
+    
+    // Clear previous errors
+    if (errorDiv) errorDiv.textContent = '';
+    
+    // Validate inputs
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value;
+    
+    if (!username || !password) {
+      if (errorDiv) errorDiv.textContent = 'Please fill in all fields';
+      return;
+    }
+
+    isSubmitting = true;
+    setButtonLoading('login-submit', true);
 
     try {
-      await authService.login({
-        username: usernameInput.value,
-        password: passwordInput.value,
-      });
+      await authService.login({ username, password });
+      showNotification('Login successful!', { type: 'success', duration: 2000 });
       navigateTo("/home");
     } catch (error) {
-      if (errorDiv) errorDiv.textContent = i18n.t('login_failed');
+      const errorMessage = (error as Error).message || i18n.t('login_failed');
+      if (errorDiv) errorDiv.textContent = errorMessage;
+    } finally {
+      isSubmitting = false;
+      setButtonLoading('login-submit', false);
     }
   });
 
   const registerForm = document.getElementById("register-form") as HTMLFormElement;
   registerForm?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    
     const usernameInput = document.getElementById("register-username") as HTMLInputElement;
     const emailInput = document.getElementById("register-email") as HTMLInputElement;
     const passwordInput = document.getElementById("register-password") as HTMLInputElement;
     const errorDiv = document.getElementById("register-error");
+    
+    // Clear previous errors
+    if (errorDiv) errorDiv.textContent = '';
+    
+    // Validate inputs
+    const username = usernameInput.value.trim();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    
+    if (!username || !email || !password) {
+      if (errorDiv) errorDiv.textContent = 'Please fill in all fields';
+      return;
+    }
+    
+    if (username.length < 3) {
+      if (errorDiv) errorDiv.textContent = 'Username must be at least 3 characters';
+      return;
+    }
+    
+    if (password.length < 6) {
+      if (errorDiv) errorDiv.textContent = 'Password must be at least 6 characters';
+      return;
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      if (errorDiv) errorDiv.textContent = 'Please enter a valid email';
+      return;
+    }
+
+    isSubmitting = true;
+    setButtonLoading('register-submit', true);
 
     try {
-      await authService.register({
-        username: usernameInput.value,
-        email: emailInput.value,
-        password: passwordInput.value,
-      });
+      await authService.register({ username, email, password });
+      showNotification('Registration successful!', { type: 'success', duration: 2000 });
       navigateTo("/home");
     } catch (error) {
-      if (errorDiv) errorDiv.textContent = i18n.t('registration_failed');
+      const errorMessage = (error as Error).message || i18n.t('registration_failed');
+      if (errorDiv) errorDiv.textContent = errorMessage;
+    } finally {
+      isSubmitting = false;
+      setButtonLoading('register-submit', false);
     }
   });
 
@@ -148,16 +242,26 @@ function setupAuthInteractions() {
   if (googleBtn) {
     googleBtn.addEventListener("click", async (e) => {
       e.preventDefault();
+      if (isSubmitting) return;
 
       if (!isGoogleOAuthConfigured()) {
         showNotification("Google OAuth not configured", { type: 'warning', duration: 5000 });
         return;
       }
 
+      isSubmitting = true;
+      googleBtn.disabled = true;
+      googleBtn.innerHTML = `
+        <svg class="spinner" viewBox="0 0 24 24" width="18" height="18">
+          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="31.4 31.4" />
+        </svg>
+        <span>Signing in...</span>
+      `;
+
       try {
         const response = await triggerGoogleSignIn();
 
-        if (response && response.credential) {
+        if (response?.credential) {
           const userData = decodeGoogleToken(response.credential);
           const { email, name, sub: googleId } = userData;
 
@@ -168,17 +272,30 @@ function setupAuthInteractions() {
             googleId
           );
 
-          if (result && result.token) {
-            await new Promise(resolve => setTimeout(resolve, 100));
+          if (result?.token) {
+            showNotification('Login successful!', { type: 'success', duration: 2000 });
             navigateTo("/home");
           } else {
-            showNotification("Authentication succeeded but no token received. Please try again.", { type: 'error' });
+            showNotification("Authentication failed. Please try again.", { type: 'error' });
           }
-        } else {
-          showNotification("Failed to authenticate with Google. Please try again.", { type: 'error' });
         }
       } catch (error) {
-        showNotification(`Google authentication failed: ${(error as Error).message}`, { type: 'error' });
+        const errorMsg = (error as Error).message;
+        if (!errorMsg.includes('cancelled') && !errorMsg.includes('dismissed')) {
+          showNotification(`Google authentication failed: ${errorMsg}`, { type: 'error' });
+        }
+      } finally {
+        isSubmitting = false;
+        googleBtn.disabled = false;
+        googleBtn.innerHTML = `
+          <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+            <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+            <path fill="#FBBC05" d="M3.964 10.706c-.18-.54-.282-1.117-.282-1.706s.102-1.166.282-1.706V4.962H.957C.348 6.175 0 7.55 0 9s.348 2.825.957 4.038l3.007-2.332z"/>
+            <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.962L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+          </svg>
+          <span>${i18n.t('continue_with_google')}</span>
+        `;
       }
     });
   }
