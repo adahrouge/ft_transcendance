@@ -266,6 +266,10 @@ function showModeSelection(root: HTMLElement) {
           <span class="pong-mode-title">${i18n.t('vs_friend')}</span>
           <span class="pong-mode-desc">${i18n.t('local_2_player')}</span>
         </button>
+        <button class="pong-mode-btn pong-mode-btn-tournament" id="btn-tournament">
+          <span class="pong-mode-title">🏆 TOURNAMENT</span>
+          <span class="pong-mode-desc">Local bracket vs AI bots</span>
+        </button>
       </div>
 
       <div class="pong-controls">
@@ -284,8 +288,682 @@ function showModeSelection(root: HTMLElement) {
     showFriendMatchSetup(root);
   });
 
+  document.getElementById("btn-tournament")?.addEventListener("click", () => {
+    showTournamentSetup(root);
+  });
+
   document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
 }
+
+// ============ LOCAL TOURNAMENT SYSTEM ============
+
+interface TournamentParticipant {
+  name: string;
+  isPlayer: boolean;
+  difficulty: number; // AI difficulty 0-100
+}
+
+interface TournamentMatchup {
+  p1: TournamentParticipant | null;
+  p2: TournamentParticipant | null;
+  winner: TournamentParticipant | null;
+  p1Score: number;
+  p2Score: number;
+}
+
+interface LocalTournament {
+  size: 4 | 8;
+  participants: TournamentParticipant[];
+  bracket: TournamentMatchup[][];
+  currentRound: number;
+  currentMatch: number;
+  isActive: boolean;
+}
+
+let activeTournament: LocalTournament | null = null;
+
+const BOT_NAMES = [
+  "RoboPong", "ByteBot", "PixelAce", "NeonKnight", 
+  "CyberPaddle", "GlitchMaster", "LaserLord", "TurboTron"
+];
+
+function generateBots(count: number): TournamentParticipant[] {
+  const bots: TournamentParticipant[] = [];
+  const shuffledNames = [...BOT_NAMES].sort(() => Math.random() - 0.5);
+  
+  for (let i = 0; i < count; i++) {
+    bots.push({
+      name: shuffledNames[i % shuffledNames.length],
+      isPlayer: false,
+      difficulty: 30 + Math.random() * 50 // Random difficulty between 30-80
+    });
+  }
+  return bots;
+}
+
+function createBracket(participants: TournamentParticipant[]): TournamentMatchup[][] {
+  const bracket: TournamentMatchup[][] = [];
+  const numRounds = Math.log2(participants.length);
+  
+  // First round - pair up participants
+  const firstRound: TournamentMatchup[] = [];
+  for (let i = 0; i < participants.length; i += 2) {
+    firstRound.push({
+      p1: participants[i],
+      p2: participants[i + 1],
+      winner: null,
+      p1Score: 0,
+      p2Score: 0
+    });
+  }
+  bracket.push(firstRound);
+  
+  // Create empty slots for subsequent rounds
+  let matchCount = firstRound.length / 2;
+  for (let r = 1; r < numRounds; r++) {
+    const round: TournamentMatchup[] = [];
+    for (let m = 0; m < matchCount; m++) {
+      round.push({
+        p1: null,
+        p2: null,
+        winner: null,
+        p1Score: 0,
+        p2Score: 0
+      });
+    }
+    bracket.push(round);
+    matchCount /= 2;
+  }
+  
+  return bracket;
+}
+
+function showTournamentSetup(root: HTMLElement) {
+  // Check if tournament is already in progress
+  if (activeTournament && activeTournament.isActive) {
+    showTournamentBracket(root);
+    return;
+  }
+  
+  root.innerHTML = `
+    <div class="pong-start-box">
+      <h1 class="pong-title">🏆 TOURNAMENT</h1>
+      <p class="pong-subtitle">Local bracket tournament vs AI bots</p>
+
+      <div class="pong-mode-buttons">
+        <button class="pong-mode-btn" id="btn-4man">
+          <span class="pong-mode-title">4 PLAYERS</span>
+          <span class="pong-mode-desc">You + 3 AI bots (2 rounds)</span>
+        </button>
+        <button class="pong-mode-btn" id="btn-8man">
+          <span class="pong-mode-title">8 PLAYERS</span>
+          <span class="pong-mode-desc">You + 7 AI bots (3 rounds)</span>
+        </button>
+      </div>
+
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("btn-4man")?.addEventListener("click", () => startLocalTournament(root, 4));
+  document.getElementById("btn-8man")?.addEventListener("click", () => startLocalTournament(root, 8));
+  document.getElementById("btn-back")?.addEventListener("click", () => showModeSelection(root));
+}
+
+function startLocalTournament(root: HTMLElement, size: 4 | 8) {
+  // Create player
+  const player: TournamentParticipant = {
+    name: "YOU",
+    isPlayer: true,
+    difficulty: 0
+  };
+  
+  // Generate AI bots
+  const bots = generateBots(size - 1);
+  
+  // Shuffle all participants (player gets random position)
+  const allParticipants = [player, ...bots].sort(() => Math.random() - 0.5);
+  
+  // Create bracket
+  const bracket = createBracket(allParticipants);
+  
+  activeTournament = {
+    size,
+    participants: allParticipants,
+    bracket,
+    currentRound: 0,
+    currentMatch: 0,
+    isActive: true
+  };
+  
+  showTournamentBracket(root);
+}
+
+function showTournamentBracket(root: HTMLElement) {
+  if (!activeTournament) {
+    showTournamentSetup(root);
+    return;
+  }
+  
+  const t = activeTournament;
+  const roundNames = t.size === 4 
+    ? ["SEMI-FINALS", "FINAL"]
+    : ["QUARTER-FINALS", "SEMI-FINALS", "FINAL"];
+  
+  // Find next match to play (player's match or bot vs bot to simulate)
+  let nextMatch: { round: number; match: number } | null = null;
+  let playerEliminated = false;
+  
+  for (let r = 0; r < t.bracket.length; r++) {
+    for (let m = 0; m < t.bracket[r].length; m++) {
+      const match = t.bracket[r][m];
+      if (match.p1 && match.p2 && !match.winner) {
+        nextMatch = { round: r, match: m };
+        break;
+      }
+    }
+    if (nextMatch) break;
+  }
+  
+  // Check if player was eliminated
+  const playerInTournament = t.bracket.some(round => 
+    round.some(match => 
+      (match.p1?.isPlayer || match.p2?.isPlayer) && 
+      (!match.winner || match.winner.isPlayer)
+    )
+  );
+  
+  // Check if tournament is complete
+  const finalMatch = t.bracket[t.bracket.length - 1][0];
+  const tournamentComplete = finalMatch.winner !== null;
+  
+  if (!playerInTournament && !tournamentComplete) {
+    playerEliminated = true;
+  }
+  
+  root.innerHTML = `
+    <div class="pong-start-box" style="max-width: 700px;">
+      <h1 class="pong-title">🏆 TOURNAMENT - ${t.size} PLAYERS</h1>
+      
+      ${tournamentComplete ? `
+        <div class="pong-tournament-winner">
+          <div class="pong-winner-crown">👑</div>
+          <div class="pong-winner-text">${finalMatch.winner?.isPlayer ? 'CONGRATULATIONS!' : finalMatch.winner?.name + ' WINS'}</div>
+          ${finalMatch.winner?.isPlayer ? '<div class="pong-winner-subtitle">YOU ARE THE CHAMPION!</div>' : ''}
+        </div>
+      ` : playerEliminated ? `
+        <div class="pong-eliminated">
+          <div class="pong-eliminated-text">YOU WERE ELIMINATED</div>
+          <div class="pong-eliminated-subtitle">Watch the remaining matches or quit</div>
+        </div>
+      ` : ''}
+      
+      <div class="pong-bracket">
+        ${t.bracket.map((round, r) => `
+          <div class="pong-bracket-round">
+            <div class="pong-bracket-round-title">${roundNames[r]}</div>
+            ${round.map((match, m) => {
+              const isNext = nextMatch && nextMatch.round === r && nextMatch.match === m;
+              const isPlayerMatch = match.p1?.isPlayer || match.p2?.isPlayer;
+              return `
+                <div class="pong-bracket-match ${isNext ? 'pong-bracket-match-next' : ''} ${match.winner ? 'pong-bracket-match-done' : ''}">
+                  <div class="pong-bracket-player ${match.winner === match.p1 ? 'pong-bracket-winner' : ''} ${match.p1?.isPlayer ? 'pong-bracket-you' : ''}">
+                    ${match.p1?.name || 'TBD'} ${match.winner ? `(${match.p1Score})` : ''}
+                  </div>
+                  <div class="pong-bracket-vs">vs</div>
+                  <div class="pong-bracket-player ${match.winner === match.p2 ? 'pong-bracket-winner' : ''} ${match.p2?.isPlayer ? 'pong-bracket-you' : ''}">
+                    ${match.p2?.name || 'TBD'} ${match.winner ? `(${match.p2Score})` : ''}
+                  </div>
+                  ${isNext && !tournamentComplete ? `
+                    <button class="pong-bracket-play-btn" data-round="${r}" data-match="${m}">
+                      ${isPlayerMatch ? 'PLAY' : 'SIMULATE'}
+                    </button>
+                  ` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `).join('')}
+      </div>
+
+      <div class="pong-controls">
+        ${tournamentComplete && finalMatch.winner?.isPlayer ? `
+          <button class="pong-btn pong-btn-fullwidth" id="btn-save-win">SAVE VICTORY</button>
+        ` : ''}
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-quit-tournament">
+          ${tournamentComplete ? 'BACK TO MENU' : 'QUIT TOURNAMENT'}
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Play button handlers
+  root.querySelectorAll('.pong-bracket-play-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const r = parseInt((btn as HTMLElement).dataset.round || '0');
+      const m = parseInt((btn as HTMLElement).dataset.match || '0');
+      const match = t.bracket[r][m];
+      
+      if (match.p1?.isPlayer || match.p2?.isPlayer) {
+        // Player match - play the game
+        playTournamentMatch(root, r, m);
+      } else {
+        // Bot vs bot - simulate
+        simulateBotMatch(root, r, m);
+      }
+    });
+  });
+
+  document.getElementById("btn-save-win")?.addEventListener("click", async () => {
+    try {
+      await statsService.saveTournamentWin({
+        size: t.size,
+        rounds: t.bracket.length
+      });
+      import("../utils/notifications").then(({ showNotification }) => {
+        showNotification("Tournament victory saved! 🏆", { type: 'success' });
+      });
+    } catch (e) {
+      console.error("Failed to save tournament win:", e);
+    }
+  });
+
+  document.getElementById("btn-quit-tournament")?.addEventListener("click", () => {
+    activeTournament = null;
+    showModeSelection(root);
+  });
+}
+
+function simulateBotMatch(root: HTMLElement, roundIndex: number, matchIndex: number) {
+  if (!activeTournament) return;
+  
+  const match = activeTournament.bracket[roundIndex][matchIndex];
+  if (!match.p1 || !match.p2) return;
+  
+  // Simulate scores based on difficulty difference
+  const difficultyDiff = (match.p1.difficulty - match.p2.difficulty) / 100;
+  const p1Advantage = 0.5 + difficultyDiff * 0.3;
+  
+  let p1Score = 0;
+  let p2Score = 0;
+  
+  while (p1Score < CONFIG.scoreToWin && p2Score < CONFIG.scoreToWin) {
+    if (Math.random() < p1Advantage) {
+      p1Score++;
+    } else {
+      p2Score++;
+    }
+  }
+  
+  match.p1Score = p1Score;
+  match.p2Score = p2Score;
+  match.winner = p1Score > p2Score ? match.p1 : match.p2;
+  
+  // Advance winner to next round
+  advanceWinner(roundIndex, matchIndex);
+  
+  // Refresh bracket view
+  showTournamentBracket(root);
+}
+
+function advanceWinner(roundIndex: number, matchIndex: number) {
+  if (!activeTournament) return;
+  
+  const winner = activeTournament.bracket[roundIndex][matchIndex].winner;
+  if (!winner) return;
+  
+  // Check if there's a next round
+  if (roundIndex + 1 < activeTournament.bracket.length) {
+    const nextMatchIndex = Math.floor(matchIndex / 2);
+    const nextMatch = activeTournament.bracket[roundIndex + 1][nextMatchIndex];
+    
+    // Put winner in correct slot
+    if (matchIndex % 2 === 0) {
+      nextMatch.p1 = winner;
+    } else {
+      nextMatch.p2 = winner;
+    }
+  }
+}
+
+async function playTournamentMatch(root: HTMLElement, roundIndex: number, matchIndex: number) {
+  if (!activeTournament) return;
+  
+  const match = activeTournament.bracket[roundIndex][matchIndex];
+  if (!match.p1 || !match.p2) return;
+  
+  // Determine which is player and which is AI
+  const playerIsP1 = match.p1.isPlayer;
+  const aiParticipant = playerIsP1 ? match.p2 : match.p1;
+  
+  // Start tournament match
+  await startTournamentMatch(root, roundIndex, matchIndex, aiParticipant.difficulty, aiParticipant.name);
+}
+
+async function startTournamentMatch(
+  root: HTMLElement, 
+  roundIndex: number, 
+  matchIndex: number,
+  aiDifficulty: number,
+  aiName: string
+) {
+  const customization = await boardCustomizationService.loadCustomization();
+  
+  root.innerHTML = `
+    <div class="pong-box">
+      <div class="pong-tournament-header">
+        <span class="pong-tournament-round">TOURNAMENT MATCH</span>
+      </div>
+      <div class="pong-scoreboard">
+        <div>
+          <div class="pong-score-label">YOU</div>
+          <div class="pong-score-value" id="score-player">0</div>
+        </div>
+        <div class="pong-score-divider">:</div>
+        <div>
+          <div class="pong-score-label">${aiName}</div>
+          <div class="pong-score-value" id="score-ai">0</div>
+        </div>
+      </div>
+      <div class="pong-canvas-wrapper">
+        <canvas id="game-canvas" width="${CONFIG.width}" height="${CONFIG.height}" class="pong-canvas"></canvas>
+        <div class="pong-countdown" id="countdown">
+          <span class="pong-countdown-text" id="countdown-text">3</span>
+        </div>
+      </div>
+      <div class="pong-controls">
+        <button class="pong-btn pong-btn-secondary" id="btn-pause">PAUSE</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
+  const ctx = canvas.getContext("2d")!;
+  const countdownEl = document.getElementById("countdown") as HTMLDivElement;
+  const countdownText = document.getElementById("countdown-text") as HTMLSpanElement;
+
+  const ballSpeed = BALL_SPEEDS["normal"];
+  const aiConfig = getAIConfigFromDifficulty(aiDifficulty);
+
+  // Game state
+  let playerX = CONFIG.width / 2 - CONFIG.paddleW / 2;
+  let aiX = CONFIG.width / 2 - CONFIG.paddleW / 2;
+  let ballX = CONFIG.width / 2;
+  let ballY = CONFIG.height / 2;
+  let ballVX = (Math.random() < 0.5 ? 1 : -1) * ballSpeed * 0.5;
+  let ballVY = -ballSpeed;
+  let scorePlayer = 0;
+  let scoreAI = 0;
+  let paused = false;
+  let gameStarted = false;
+  let servePaused = false;
+
+  const keys = { left: false, right: false };
+
+  const VISION_MS = aiConfig.visionMs;
+  let nextVisionTs = 0;
+  let sampledBall = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
+
+  const ai = new PongAI({
+    tableW: CONFIG.width,
+    tableH: CONFIG.height,
+    paddleW: CONFIG.paddleW,
+    paddleH: CONFIG.paddleH,
+    paddleY: 10,
+    ballSize: CONFIG.ballSize,
+    baseBallSpeed: ballSpeed,
+    maxSpeed: aiConfig.maxSpeed,
+    maxAccel: aiConfig.maxAccel,
+    reactionMs: 180,
+    aimJitter: 18,
+    steadyJitter: 1.25,
+    overshootBias: aiConfig.overshootBias,
+    minReactionMs: aiConfig.minReactionMs,
+    maxReactionMs: aiConfig.maxReactionMs,
+    minJitter: aiConfig.minJitter,
+    maxJitter: aiConfig.maxJitter,
+    focusCycleMs: 2600,
+    defocusFrac: aiConfig.defocusFrac,
+    defocusMultiplier: aiConfig.defocusMultiplier,
+  });
+
+  function updateScoreboard() {
+    const playerEl = document.getElementById("score-player");
+    const aiEl = document.getElementById("score-ai");
+    if (playerEl) playerEl.textContent = String(scorePlayer);
+    if (aiEl) aiEl.textContent = String(scoreAI);
+  }
+
+  function keyDown(e: KeyboardEvent) {
+    if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D", " "].includes(e.key)) {
+      e.preventDefault();
+    }
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = true;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = true;
+    if (e.key === " ") paused = !paused;
+  }
+
+  function keyUp(e: KeyboardEvent) {
+    if (["ArrowLeft", "ArrowRight", "a", "d", "A", "D"].includes(e.key)) {
+      e.preventDefault();
+    }
+    if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") keys.left = false;
+    if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") keys.right = false;
+  }
+
+  window.addEventListener("keydown", keyDown, { capture: true });
+  window.addEventListener("keyup", keyUp, { capture: true });
+
+  document.getElementById("btn-pause")?.addEventListener("click", () => {
+    paused = !paused;
+  });
+
+  const dt = 1000 / 60;
+  let acc = 0;
+  let last = performance.now();
+
+  function stopRaf() {
+    if (globalRaf !== null) {
+      cancelAnimationFrame(globalRaf);
+      globalRaf = null;
+    }
+  }
+
+  function frame(now: number) {
+    if (!document.body.contains(canvas)) {
+      teardown();
+      return;
+    }
+
+    const elapsed = now - last;
+    last = now;
+    acc += elapsed;
+
+    while (acc >= dt) {
+      step(dt / 1000, now);
+      acc -= dt;
+    }
+
+    render();
+
+    if (isOver()) {
+      endTournamentMatch();
+      return;
+    }
+
+    globalRaf = requestAnimationFrame(frame);
+  }
+
+  function updateAIVision(nowMs: number) {
+    if (nowMs >= nextVisionTs) {
+      sampledBall = { x: ballX, y: ballY, vx: ballVX, vy: ballVY };
+      nextVisionTs = nowMs + VISION_MS;
+    }
+  }
+
+  function step(dtSec: number, nowMs: number) {
+    if (paused || !gameStarted || servePaused) return;
+
+    // Player movement
+    if (keys.left) playerX -= CONFIG.paddleSpeed * dtSec;
+    if (keys.right) playerX += CONFIG.paddleSpeed * dtSec;
+    playerX = clamp(playerX, 0, CONFIG.width - CONFIG.paddleW);
+
+    // AI movement
+    updateAIVision(nowMs);
+    ai.update(dtSec, nowMs, aiX, sampledBall, scoreAI, scorePlayer);
+    
+    const snap = ai.getSnapshot();
+    const aiDesiredCenter = (snap.targetX ?? aiX) + CONFIG.paddleW / 2;
+    const aiCenter = aiX + CONFIG.paddleW / 2;
+    const deadband = 3;
+    const aiKeysLocal = { left: false, right: false };
+    aiKeysLocal.left = aiCenter > aiDesiredCenter + deadband;
+    aiKeysLocal.right = aiCenter < aiDesiredCenter - deadband;
+
+    if (aiKeysLocal.left) aiX -= CONFIG.paddleSpeed * dtSec;
+    if (aiKeysLocal.right) aiX += CONFIG.paddleSpeed * dtSec;
+    aiX = clamp(aiX, 0, CONFIG.width - CONFIG.paddleW);
+
+    // Ball movement
+    ballX += ballVX * dtSec;
+    ballY += ballVY * dtSec;
+
+    const halfBall = CONFIG.ballSize / 2;
+
+    // Wall collisions
+    if (ballX - halfBall < 0) {
+      ballX = halfBall;
+      ballVX *= -1;
+    }
+    if (ballX + halfBall > CONFIG.width) {
+      ballX = CONFIG.width - halfBall;
+      ballVX *= -1;
+    }
+
+    // AI paddle collision
+    const aiPaddleY = 10;
+    if (ballY - halfBall <= aiPaddleY + CONFIG.paddleH && ballVY < 0) {
+      if (ballX >= aiX && ballX <= aiX + CONFIG.paddleW) {
+        ballVY *= -1;
+        const rel = (ballX - (aiX + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
+        ballVX = rel * ballSpeed;
+        ballY = aiPaddleY + CONFIG.paddleH + halfBall;
+      }
+    }
+
+    // Player scores
+    if (ballY + halfBall < 0) {
+      scorePlayer++;
+      serve(1);
+    }
+
+    // Player paddle collision
+    const playerPaddleY = CONFIG.height - CONFIG.paddleH - 10;
+    if (ballY + halfBall >= playerPaddleY && ballVY > 0) {
+      if (ballX >= playerX && ballX <= playerX + CONFIG.paddleW) {
+        ballVY *= -1;
+        const rel = (ballX - (playerX + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
+        ballVX = rel * ballSpeed;
+        ballY = playerPaddleY - halfBall;
+      }
+    }
+
+    // AI scores
+    if (ballY - halfBall > CONFIG.height) {
+      scoreAI++;
+      serve(-1);
+    }
+
+    updateScoreboard();
+  }
+
+  function render() {
+    renderGame(ctx, playerX, aiX, ballX, ballY, customization);
+  }
+
+  function serve(dir: number) {
+    servePaused = true;
+    ballX = CONFIG.width / 2;
+    ballY = CONFIG.height / 2;
+    ballVX = 0;
+    ballVY = 0;
+    
+    countdownEl.style.display = "flex";
+    countdownText.textContent = "●";
+    
+    setTimeout(() => {
+      countdownEl.style.display = "none";
+      ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
+      ballVY = dir * ballSpeed;
+      servePaused = false;
+    }, 1000);
+  }
+
+  function isOver() {
+    return scorePlayer >= CONFIG.scoreToWin || scoreAI >= CONFIG.scoreToWin;
+  }
+
+  function endTournamentMatch() {
+    teardown();
+    
+    if (!activeTournament) return;
+    
+    const match = activeTournament.bracket[roundIndex][matchIndex];
+    const playerWon = scorePlayer >= CONFIG.scoreToWin;
+    
+    // Determine scores based on player position
+    if (match.p1?.isPlayer) {
+      match.p1Score = scorePlayer;
+      match.p2Score = scoreAI;
+      match.winner = playerWon ? match.p1 : match.p2;
+    } else {
+      match.p1Score = scoreAI;
+      match.p2Score = scorePlayer;
+      match.winner = playerWon ? match.p2 : match.p1;
+    }
+    
+    // Advance winner
+    advanceWinner(roundIndex, matchIndex);
+    
+    // Show result briefly then return to bracket
+    root.innerHTML = `
+      <div class="pong-over-overlay">
+        <div class="pong-over-box">
+          <h1 class="pong-over-title">${playerWon ? 'YOU WIN!' : 'YOU LOSE!'}</h1>
+          <p class="pong-over-score">${scorePlayer} - ${scoreAI}</p>
+          <div class="pong-over-actions">
+            <button class="pong-btn" id="btn-continue">CONTINUE</button>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    document.getElementById("btn-continue")?.addEventListener("click", () => {
+      showTournamentBracket(root);
+    });
+  }
+
+  function teardown() {
+    stopRaf();
+    window.removeEventListener("keydown", keyDown, { capture: true } as EventListenerOptions);
+    window.removeEventListener("keyup", keyUp, { capture: true } as EventListenerOptions);
+  }
+
+  // Initial render and countdown
+  updateScoreboard();
+  render();
+
+  startCountdown(countdownEl, countdownText, 3, () => paused, () => {
+    gameStarted = true;
+    last = performance.now();
+    globalRaf = requestAnimationFrame(frame);
+  });
+}
+
+// ============ END TOURNAMENT SYSTEM ============
 
 function showMatchSetup(root: HTMLElement) {
   root.innerHTML = `
@@ -454,6 +1132,7 @@ async function startFriendMatch(root: HTMLElement) {
   let scoreP2 = 0;
   let paused = false;
   let gameStarted = false;
+  let servePaused = false; // Pause after scoring
 
   // Keys for both players
   const p1Keys = { left: false, right: false };
@@ -572,7 +1251,7 @@ async function startFriendMatch(root: HTMLElement) {
   }
 
   function step(dtSec: number) {
-    if (paused || !gameStarted) return;
+    if (paused || !gameStarted || servePaused) return;
 
     // Player 1 paddle (bottom)
     if (p1Keys.left) p1X -= CONFIG.paddleSpeed * dtSec;
@@ -642,10 +1321,23 @@ async function startFriendMatch(root: HTMLElement) {
   }
 
   function serve(dir: number) {
+    // Pause briefly after scoring
+    servePaused = true;
     ballX = CONFIG.width / 2;
     ballY = CONFIG.height / 2;
-    ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
-    ballVY = dir * ballSpeed;
+    ballVX = 0;
+    ballVY = 0;
+    
+    // Show countdown overlay
+    countdownEl.style.display = "flex";
+    countdownText.textContent = "●";
+    
+    setTimeout(() => {
+      countdownEl.style.display = "none";
+      ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
+      ballVY = dir * ballSpeed;
+      servePaused = false;
+    }, 1000);
   }
 
   function isOver() {
@@ -794,6 +1486,7 @@ async function startMatch(root: HTMLElement) {
   let scoreAI = 0;
   let paused = false;
   let gameStarted = false;
+  let servePaused = false; // Pause after scoring
 
   // Keys
   const keys = { left: false, right: false };
@@ -928,7 +1621,7 @@ async function startMatch(root: HTMLElement) {
   }
 
   function step(dtSec: number, nowMs: number) {
-    if (paused || !gameStarted) return;
+    if (paused || !gameStarted || servePaused) return;
 
     updateAIVision(nowMs);
 
@@ -1020,10 +1713,23 @@ async function startMatch(root: HTMLElement) {
   }
 
   function serve(dir: number) {
+    // Pause briefly after scoring
+    servePaused = true;
     ballX = CONFIG.width / 2;
     ballY = CONFIG.height / 2;
-    ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
-    ballVY = dir * ballSpeed;
+    ballVX = 0;
+    ballVY = 0;
+    
+    // Show countdown overlay
+    countdownEl.style.display = "flex";
+    countdownText.textContent = "●";
+    
+    setTimeout(() => {
+      countdownEl.style.display = "none";
+      ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
+      ballVY = dir * ballSpeed;
+      servePaused = false;
+    }, 1000);
   }
 
   function isOver() {

@@ -49,6 +49,7 @@ async function loadStats() {
     const wins = stats?.wins ?? matchHistory.filter(m => m.result === 'win').length;
     const losses = stats?.losses ?? (totalGames - wins);
     const winRate = stats?.win_rate ?? (totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0);
+    const tournamentsWon = stats?.tournaments_won ?? matchHistory.filter(m => m.game_type === 'tournament' && m.result === 'win').length;
 
     root.innerHTML = `
       <div class="stats-box">
@@ -77,6 +78,10 @@ async function loadStats() {
             <div class="stats-card-value">${winRate}%</div>
             <div class="stats-card-label">${i18n.t('win_rate')}</div>
           </div>
+          <div class="stats-card stats-card-tournament">
+            <div class="stats-card-value">🏆 ${tournamentsWon}</div>
+            <div class="stats-card-label">Tournaments</div>
+          </div>
         </div>
 
         <div class="stats-history-section">
@@ -85,14 +90,16 @@ async function loadStats() {
             ${matchHistory.length === 0 ? `<p class="stats-empty">${i18n.t('no_matches')}</p>` : matchHistory.map(m => `
               <div class="stats-match-item">
                 <div class="stats-match-opponent">
-                  <span class="stats-match-type" style="font-size: 10px; color: #5db3d1; margin-right: 8px; border: 1px solid #2c6b87; padding: 2px 4px;">
-                    ${m.game_type === 'tictactoe' ? 'TTT' : 'PONG'}
+                  <span class="stats-match-type" style="font-size: 10px; color: ${m.game_type === 'tournament' ? '#eab308' : '#5db3d1'}; margin-right: 8px; border: 1px solid ${m.game_type === 'tournament' ? '#eab308' : '#2c6b87'}; padding: 2px 4px;">
+                    ${m.game_type === 'tournament' ? '🏆 WIN' : (m.game_type === 'tictactoe' ? 'TTT' : 'PONG')}
                   </span>
-                  <span class="stats-match-vs">${i18n.t('vs')}</span>
-                  <span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>
+                  ${m.game_type !== 'tournament' ? `
+                    <span class="stats-match-vs">${i18n.t('vs')}</span>
+                    <span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>
+                  ` : `<span class="stats-match-name" style="color: #eab308;">Tournament Champion!</span>`}
                 </div>
                 <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : (m.result === 'draw' ? 'text-yellow-400' : 'stats-loss')}">
-                  ${m.user_score} - ${m.opponent_score}
+                  ${m.game_type === 'tournament' ? `${m.user_score}-man` : `${m.user_score} - ${m.opponent_score}`}
                 </div>
               </div>
             `).join('')}

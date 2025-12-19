@@ -26,6 +26,13 @@ export const statsService = {
       body: JSON.stringify(data),
     });
   },
+
+  async saveTournamentWin(data: { size: 4 | 8; rounds: number }): Promise<void> {
+    return apiRequest<void>("/api/users/me/tournament-win", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 export type { StatsUser, PlayerStats, MatchHistoryItem };

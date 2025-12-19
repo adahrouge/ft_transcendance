@@ -329,4 +329,107 @@
       @apply hidden;
     }
   }
+
+  /* ============ TOURNAMENT STYLES ============ */
+  
+  .pong-mode-btn-tournament {
+    @apply border-2 border-yellow-500/50;
+    background: linear-gradient(135deg, #1a4558 0%, #0d2137 100%);
+  }
+
+  .pong-mode-btn-tournament:hover {
+    @apply border-yellow-400;
+    background: linear-gradient(135deg, #2c6b87 0%, #1a4558 100%);
+  }
+
+  .pong-bracket {
+    @apply flex gap-4 justify-center overflow-x-auto py-4 px-2;
+  }
+
+  .pong-bracket-round {
+    @apply flex flex-col gap-4 min-w-[180px];
+  }
+
+  .pong-bracket-round-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs text-center mb-2 uppercase;
+  }
+
+  .pong-bracket-match {
+    @apply bg-[#0d1a28] border-2 border-[#2c6b87] p-3 flex flex-col gap-1 relative;
+  }
+
+  .pong-bracket-match-next {
+    @apply border-yellow-500 animate-pulse;
+  }
+
+  .pong-bracket-match-done {
+    @apply opacity-70;
+  }
+
+  .pong-bracket-player {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xs truncate;
+  }
+
+  .pong-bracket-winner {
+    @apply text-green-400;
+  }
+
+  .pong-bracket-you {
+    @apply text-yellow-400 font-bold;
+  }
+
+  .pong-bracket-vs {
+    @apply text-[#5db3d1] text-[10px] text-center;
+  }
+
+  .pong-bracket-play-btn {
+    @apply absolute -bottom-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-['Pixel_Game'] px-3 py-1 hover:bg-green-500 cursor-pointer;
+    border: none;
+  }
+
+  .pong-tournament-winner {
+    @apply text-center py-6 mb-4;
+  }
+
+  .pong-winner-crown {
+    @apply text-5xl mb-2;
+    animation: bounce 1s ease-in-out infinite;
+  }
+
+  .pong-winner-text {
+    @apply text-yellow-400 font-['Pixel_Game'] text-2xl;
+  }
+
+  .pong-winner-subtitle {
+    @apply text-green-400 font-['Pixel_Game'] text-lg mt-2;
+  }
+
+  .pong-eliminated {
+    @apply text-center py-4 mb-4 bg-red-900/30 border border-red-600/50;
+  }
+
+  .pong-eliminated-text {
+    @apply text-red-400 font-['Pixel_Game'] text-xl;
+  }
+
+  .pong-eliminated-subtitle {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
+  }
+
+  .pong-tournament-header {
+    @apply text-center mb-4;
+  }
+
+  .pong-tournament-round {
+    @apply text-yellow-400 font-['Pixel_Game'] text-sm;
+  }
+
+  @keyframes bounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
 }

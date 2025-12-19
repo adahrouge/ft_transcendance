@@ -2,79 +2,196 @@
 
 /*
  * Global Responsive Styles
- * Breakpoints:
- * - Mobile: < 480px
- * - Tablet: 480px - 768px
- * - Desktop: > 768px
+ * Improved scaling for all screen sizes
  */
 
 @layer components {
   /* ============================================
-   * MOBILE STYLES (Default - Mobile First)
+   * BASE SCALING - Viewport-based sizing
+   * ============================================ */
+  
+  /* Root scaling for better proportions */
+  :root {
+    --scale-factor: 1;
+  }
+
+  /* Auto-scale based on viewport */
+  @media (min-width: 1920px) {
+    :root {
+      --scale-factor: 1.15;
+    }
+  }
+
+  @media (min-width: 2560px) {
+    :root {
+      --scale-factor: 1.3;
+    }
+  }
+
+  @media (max-width: 1366px) {
+    :root {
+      --scale-factor: 0.9;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    :root {
+      --scale-factor: 0.85;
+    }
+  }
+
+  /* ============================================
+   * SCALED CONTAINERS
    * ============================================ */
 
-  /* Landing page responsive */
-  @media (max-width: 479px) {
-    .main-title span {
-      @apply text-[60px];
-    }
-
-    .press-start {
-      @apply text-lg;
-    }
+  /* Game containers should scale properly */
+  .pong-start-box,
+  .tictactoe-start-box,
+  .home-box,
+  .stats-box,
+  .friend-box {
+    transform: scale(var(--scale-factor));
+    transform-origin: center center;
   }
 
-  @media (min-width: 480px) and (max-width: 767px) {
-    .main-title span {
-      @apply text-[80px];
-    }
-
-    .press-start {
-      @apply text-xl;
-    }
+  /* Game canvas containers */
+  .pong-box {
+    transform: scale(var(--scale-factor));
+    transform-origin: center center;
   }
 
-  /* Game canvas responsive wrapper */
-  .responsive-canvas-container {
-    @apply w-full max-w-[400px] mx-auto;
+  /* ============================================
+   * LANDING PAGE
+   * ============================================ */
+  .main-title span {
+    font-size: clamp(40px, 8vw, 120px);
   }
 
-  .responsive-canvas {
-    @apply w-full h-auto;
-    aspect-ratio: 1 / 1;
+  .press-start {
+    font-size: clamp(14px, 2.5vw, 24px);
   }
 
-  .responsive-canvas-pong {
-    @apply w-full h-auto;
-    aspect-ratio: 2 / 1;
+  /* ============================================
+   * AUTH PAGE - Better proportions
+   * ============================================ */
+  .auth-box {
+    transform: scale(var(--scale-factor));
+    transform-origin: center center;
   }
 
-  /* Make all game canvases responsive */
-  .pong-canvas,
-  .tictactoe-canvas {
+  /* ============================================
+   * HOME PAGE - Proper scaling
+   * ============================================ */
+  .home-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    padding-top: 80px; /* Account for navbar */
+  }
+
+  #home-main {
+    max-width: min(500px, 90vw);
+  }
+
+  .home-profile-bar {
+    @apply flex items-center justify-between w-full;
+    padding: clamp(0.5rem, 2vw, 1rem);
+  }
+
+  .home-avatar {
+    width: clamp(2rem, 5vw, 3rem);
+    height: clamp(2rem, 5vw, 3rem);
+  }
+
+  .home-username {
+    font-size: clamp(12px, 2vw, 18px);
+  }
+
+  .home-btn {
+    font-size: clamp(14px, 2.5vw, 20px);
+    padding: clamp(0.5rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  /* ============================================
+   * PONG GAME - Canvas scaling
+   * ============================================ */
+  .pong-content {
+    @apply relative z-10 flex flex-col items-center justify-center h-full;
+    padding-top: 80px; /* Account for navbar */
+  }
+
+  .pong-canvas-wrapper {
+    @apply relative;
     max-width: 100%;
-    width: 100%;
-    height: auto !important;
-    display: block;
+    overflow: hidden;
   }
 
-  /* Ensure canvas wrappers are responsive */
-  .pong-canvas-wrapper,
-  .tictactoe-canvas-wrapper {
-    @apply w-full;
+  .pong-canvas {
+    @apply block;
+    image-rendering: pixelated;
     max-width: 100%;
+    height: auto;
+  }
+
+  /* Mode buttons proper sizing */
+  .pong-mode-btn {
+    min-height: clamp(80px, 12vh, 120px);
+  }
+
+  .pong-mode-title {
+    font-size: clamp(16px, 2.5vw, 24px);
+  }
+
+  .pong-mode-desc {
+    font-size: clamp(10px, 1.5vw, 14px);
+  }
+
+  /* ============================================
+   * STATS PAGE
+   * ============================================ */
+  .stats-content {
+    @apply relative z-10 flex flex-col items-center justify-start h-full overflow-y-auto;
+    padding-top: 80px;
+    padding-bottom: 20px;
+  }
+
+  .stats-box {
+    max-width: min(800px, 95vw);
+    transform: scale(var(--scale-factor));
+    transform-origin: top center;
+  }
+
+  /* ============================================
+   * FRIEND PAGE
+   * ============================================ */
+  .friend-content {
+    @apply relative z-10 flex flex-col items-center justify-start h-full overflow-y-auto;
+    padding-top: 80px;
+    padding-bottom: 20px;
+  }
+
+  /* ============================================
+   * PROFILE PAGE
+   * ============================================ */
+  .profile-content {
+    @apply relative z-10 flex flex-col items-center justify-start h-full overflow-y-auto;
+    padding-top: 80px;
+    padding-bottom: 20px;
   }
 
   /* ============================================
    * MOBILE BREAKPOINT (< 480px)
    * ============================================ */
   @media (max-width: 479px) {
+    :root {
+      --scale-factor: 0.85;
+    }
+
     /* Auth page */
     .auth-box {
       @apply p-4;
       height: auto;
-      min-height: 80%;
+      min-height: 70%;
       max-width: 95%;
+      transform: none;
     }
 
     .auth-header h1 {
@@ -104,8 +221,13 @@
     }
 
     /* Home page */
-    .home-box {
-      @apply p-6;
+    .home-content {
+      padding-top: 70px;
+    }
+
+    .home-box,
+    #home-main {
+      transform: none;
       max-width: 95%;
     }
 
@@ -143,13 +265,19 @@
       @apply text-2xl;
     }
 
-    /* Game boxes (pong, tictactoe) */
+    /* Game boxes */
     .pong-start-box,
     .tictactoe-start-box {
+      transform: none;
       @apply p-4;
       min-width: auto !important;
       width: 95%;
       max-width: 95%;
+    }
+
+    .pong-box {
+      transform: none;
+      @apply p-3;
     }
 
     .pong-title,
@@ -162,311 +290,18 @@
       @apply text-xs;
     }
 
-    .pong-btn,
-    .tictactoe-btn {
-      @apply text-sm px-4 py-2;
-      min-height: 48px;
+    .pong-content,
+    .tictactoe-content {
+      padding-top: 70px;
     }
 
-    .pong-mode-btn,
-    .tictactoe-mode-btn {
-      @apply p-3;
-      min-height: 64px;
+    /* Stats */
+    .stats-content {
+      padding-top: 70px;
     }
 
-    .pong-mode-title,
-    .tictactoe-mode-title {
-      @apply text-base;
-    }
-
-    .pong-mode-desc,
-    .tictactoe-mode-desc {
-      @apply text-xs;
-    }
-
-    .pong-setting-label,
-    .tictactoe-setting-label {
-      @apply text-sm;
-    }
-
-    .pong-slider-container,
-    .tictactoe-slider-container {
-      @apply flex-col gap-2;
-    }
-
-    .pong-slider,
-    .tictactoe-slider {
-      @apply w-full max-w-full;
-    }
-
-    .pong-slider-label,
-    .tictactoe-slider-label {
-      @apply text-xs;
-    }
-
-    /* Game in progress */
-    .pong-box,
-    .tictactoe-box {
-      @apply p-3;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .pong-canvas,
-    .tictactoe-canvas {
-      max-width: 100%;
-      height: auto !important;
-    }
-
-    .pong-scoreboard,
-    .tictactoe-scoreboard {
-      @apply px-2 flex-wrap justify-center gap-2 mb-2;
-    }
-
-    .pong-score-label,
-    .tictactoe-score-label {
-      @apply text-xs;
-    }
-
-    .pong-score-value,
-    .tictactoe-score-value {
-      @apply text-base;
-    }
-
-    .pong-score-divider,
-    .tictactoe-score-divider {
-      @apply text-base mx-2;
-    }
-
-    .pong-countdown-text,
-    .tictactoe-countdown-text {
-      @apply text-6xl;
-    }
-
-    .pong-controls,
-    .tictactoe-controls {
-      @apply gap-2 mt-4 flex-wrap;
-    }
-
-    /* Touch controls mobile */
-    .pong-touch-controls {
-      @apply gap-2 mt-3 mb-2;
-    }
-
-    .pong-touch-btn {
-      width: 56px;
-      height: 56px;
-      @apply text-xl;
-    }
-
-    .pong-touch-label {
-      @apply text-xs;
-    }
-
-    /* Game over modal */
-    .pong-over-box,
-    .tictactoe-over-box {
-      @apply p-4;
-      max-width: 95%;
-      width: 95%;
-    }
-
-    .pong-over-title,
-    .tictactoe-over-title {
-      @apply text-xl;
-    }
-
-    .pong-over-score,
-    .tictactoe-over-score {
-      @apply text-lg;
-    }
-
-    .pong-over-actions,
-    .tictactoe-over-actions {
-      @apply flex-col gap-2;
-    }
-
-    /* Stats page */
     .stats-box {
-      padding: 1rem;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .stats-title {
-      @apply text-xl;
-    }
-
-    .stats-player-info {
-      @apply flex-col gap-2;
-    }
-
-    .stats-avatar {
-      @apply w-12 h-12;
-    }
-
-    .stats-player-name {
-      @apply text-base;
-    }
-
-    .stats-grid {
-      @apply gap-2;
-    }
-
-    .stats-card {
-      padding: 0.75rem;
-    }
-
-    .stats-card-value {
-      @apply text-xl;
-    }
-
-    .stats-card-label {
-      @apply text-xs;
-    }
-
-    .stats-match-item {
-      @apply flex-col gap-2 text-center;
-      padding: 0.5rem;
-    }
-
-    .stats-back-btn {
-      @apply text-base;
-      padding: 0.75rem 1rem;
-      min-height: 48px;
-    }
-
-    /* Profile page */
-    .profile-box {
-      padding: 1rem;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .profile-title {
-      @apply text-xl;
-    }
-
-    .profile-avatar {
-      width: 4rem;
-      height: 4rem;
-    }
-
-    .profile-display-name {
-      @apply text-base;
-    }
-
-    .profile-btn,
-    .profile-back-btn {
-      @apply text-base;
-      padding: 0.75rem 1rem;
-      min-height: 48px;
-    }
-
-    /* Friend page */
-    .friend-box {
-      padding: 1rem;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .friend-title {
-      @apply text-xl;
-    }
-
-    .friend-list-item {
-      @apply flex-col gap-2 text-center p-2;
-    }
-
-    .friend-search-bar {
-      @apply flex-col gap-2;
-    }
-
-    .friend-search-input {
-      padding: 0.75rem;
-    }
-
-    .friend-search-btn {
-      padding: 0.75rem;
-      min-height: 48px;
-    }
-
-    .friend-back-btn {
-      @apply text-base;
-      padding: 0.75rem 1rem;
-      min-height: 48px;
-    }
-
-    /* Tournament page */
-    .tournament-box {
-      @apply p-3;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .tournament-title {
-      @apply text-xl;
-    }
-
-    .tournament-detail-header {
-      @apply flex-col gap-2 text-center;
-    }
-
-    .tournament-detail-title {
-      @apply text-lg;
-    }
-
-    .tournament-actions {
-      @apply flex-col gap-2;
-    }
-
-    .tournament-action-btn {
-      min-height: 48px;
-    }
-
-    .tournament-players-grid {
-      @apply gap-2;
-    }
-
-    /* Customize board */
-    .customize-board-box {
-      padding: 1rem;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .customize-board-title {
-      @apply text-xl;
-    }
-
-    .customize-board-btn {
-      @apply text-base px-4 py-2;
-      min-height: 48px;
-    }
-
-    /* Modal */
-    .modal-box {
-      @apply p-4;
-      width: 95%;
-      max-width: 95%;
-    }
-
-    .modal-title {
-      @apply text-xl;
-    }
-
-    .modal-actions {
-      @apply flex-col gap-2;
-    }
-
-    .btn-save,
-    .btn-cancel {
-      @apply text-base py-2;
-      min-height: 48px;
-    }
-
-    .avatar-preview {
-      @apply w-20 h-20;
+      transform: none;
     }
   }
 
@@ -474,217 +309,65 @@
    * TABLET BREAKPOINT (480px - 768px)
    * ============================================ */
   @media (min-width: 480px) and (max-width: 767px) {
-    /* Game boxes */
+    :root {
+      --scale-factor: 0.9;
+    }
+
+    .auth-box {
+      max-width: 90%;
+    }
+
+    .home-box,
+    #home-main {
+      max-width: 90%;
+    }
+
     .pong-start-box,
     .tictactoe-start-box {
-      @apply p-6;
-      min-width: auto !important;
-      width: 90%;
-      max-width: 500px;
-    }
-
-    .pong-box,
-    .tictactoe-box {
-      @apply p-5;
-      width: 90%;
-      max-width: 600px;
-    }
-
-    .home-box {
-      @apply p-8;
-      max-width: 500px;
-    }
-
-    .home-profile-bar {
-      @apply flex-row;
-    }
-
-    .home-title {
-      @apply text-3xl;
-    }
-
-    /* Stats and profile */
-    .stats-box,
-    .profile-box,
-    .friend-box {
-      padding: 2rem;
-      width: 90%;
-      max-width: 700px;
-    }
-
-    .stats-title,
-    .profile-title,
-    .friend-title {
-      @apply text-2xl;
-    }
-
-    /* Stats grid */
-    .stats-grid {
-      @apply grid-cols-2 gap-3;
-    }
-
-    .stats-card-value {
-      @apply text-2xl;
-    }
-
-    /* Tournament */
-    .tournament-box {
-      @apply p-5;
-      width: 90%;
-      max-width: 900px;
-    }
-
-    .tournament-title {
-      @apply text-2xl;
-    }
-
-    .tournament-players-grid {
-      @apply grid-cols-2;
-    }
-
-    /* Auth */
-    .auth-box {
-      @apply p-8;
-      max-width: 500px;
-    }
-
-    .auth-header h1 {
-      @apply text-5xl;
-    }
-
-    /* Canvas responsive */
-    .pong-canvas,
-    .tictactoe-canvas {
-      max-width: 100%;
-      height: auto !important;
+      max-width: 90%;
     }
   }
 
   /* ============================================
-   * DESKTOP BREAKPOINT (>= 768px)
+   * DESKTOP BREAKPOINT (> 768px)
    * ============================================ */
   @media (min-width: 768px) {
-    /* Game boxes can use larger min-width on desktop */
+    /* Ensure proper centering with navbar */
+    .home-content,
+    .pong-content,
+    .stats-content,
+    .friend-content,
+    .profile-content {
+      padding-top: 80px;
+    }
+  }
+
+  /* ============================================
+   * LARGE SCREENS (> 1440px)
+   * ============================================ */
+  @media (min-width: 1440px) {
     .pong-start-box,
     .tictactoe-start-box {
-      min-width: 500px;
+      min-width: 480px;
+    }
+
+    .pong-mode-btn {
+      min-height: 100px;
     }
   }
 
   /* ============================================
-   * TOUCH DEVICE ENHANCEMENTS
+   * TOUCH CONTROLS - Always show on touch devices
    * ============================================ */
   @media (hover: none) and (pointer: coarse) {
-    /* Larger touch targets */
-    .pong-btn,
-    .tictactoe-btn,
-    .home-btn,
-    .pixel-btn {
-      min-height: 48px;
-    }
-
-    .home-action-btn {
-      min-width: 44px;
-      min-height: 44px;
-    }
-
-    /* Remove hover effects on touch devices */
-    .pong-btn:hover,
-    .tictactoe-btn:hover,
-    .home-btn:hover {
-      transform: none;
+    .pong-touch-controls {
+      display: flex !important;
     }
   }
 
-  /* ============================================
-   * LANDSCAPE MODE ON MOBILE
-   * ============================================ */
-  @media (max-height: 500px) and (orientation: landscape) {
-    .pong-content,
-    .tictactoe-content,
-    .home-content,
-    .stats-content,
-    .profile-content,
-    .friend-content,
-    .tournament-content,
-    .auth-content,
-    .customize-board-content {
-      @apply py-2;
-      overflow-y: auto;
-    }
-
-    .pong-start-box,
-    .tictactoe-start-box,
-    .home-box,
-    .auth-box {
-      @apply p-3;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .pong-box,
-    .tictactoe-box {
-      @apply p-3;
-      max-height: 95vh;
-      overflow-y: auto;
-    }
-
-    .pong-settings,
-    .tictactoe-settings {
-      @apply my-2 space-y-3;
-    }
-
-    .pong-mode-buttons,
-    .tictactoe-mode-buttons {
-      @apply my-3 gap-2;
-    }
-
-    .pong-title,
-    .tictactoe-title,
-    .home-title,
-    .stats-title,
-    .profile-title,
-    .friend-title,
-    .tournament-title {
-      @apply text-xl mb-2;
-    }
-
-    .pong-subtitle,
-    .tictactoe-subtitle,
-    .home-subtitle {
-      @apply text-xs mb-3;
-    }
-
-    .pong-scoreboard,
-    .tictactoe-scoreboard {
-      @apply mb-2;
-    }
-
-    .stats-box,
-    .profile-box,
-    .friend-box,
-    .tournament-box {
-      padding: 1rem;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-  }
-
-  /* ============================================
-   * SAFE AREA INSETS (for notched devices)
-   * ============================================ */
-  @supports (padding: env(safe-area-inset-bottom)) {
-    .pong-container,
-    .tictactoe-container,
-    .home-container,
-    .auth-container,
-    .stats-container,
-    .friend-container,
-    .profile-container,
-    .tournament-container {
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-      padding-bottom: env(safe-area-inset-bottom);
+  @media (hover: hover) and (pointer: fine) {
+    .pong-touch-controls {
+      display: none;
     }
   }
 }

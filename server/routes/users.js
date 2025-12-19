@@ -148,6 +148,29 @@ export async function userRoutes(fastify) {
     }
   });
 
+  // Save tournament win
+  fastify.post('/api/users/me/tournament-win', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { size, rounds } = request.body;
+    
+    try {
+      // Add to match history as a tournament win
+      await addMatchHistory(user.id, null, size, 0, 'win', 'tournament');
+      
+      // Could also update a tournaments_won stat in user profile if column exists
+      // For now, we just record it in match history
+      
+      return { success: true, message: 'Tournament victory recorded!' };
+    } catch (err) {
+      request.log.error(err);
+      return reply.code(500).send({ error: 'Failed to save tournament win' });
+    }
+  });
+
   // Helper function to verify Google ID token
   async function verifyGoogleToken(idToken) {
     return new Promise((resolve, reject) => {

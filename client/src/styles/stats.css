@@ -48,7 +48,7 @@
 
   /* Stats grid */
   .stats-grid {
-    @apply grid grid-cols-2 md:grid-cols-4 gap-4 mb-6;
+    @apply grid grid-cols-2 md:grid-cols-5 gap-4 mb-6;
   }
 
   .stats-card {
@@ -69,6 +69,12 @@
     box-shadow: 0 -3px 0 0 #ef4444, 3px -3px 0 0 #ef4444, 3px 0 0 0 #ef4444,
       3px 3px 0 0 #ef4444, 0 3px 0 0 #ef4444, -3px 3px 0 0 #ef4444,
       -3px 0 0 0 #ef4444, -3px -3px 0 0 #ef4444;
+  }
+
+  .stats-card-tournament {
+    box-shadow: 0 -3px 0 0 #eab308, 3px -3px 0 0 #eab308, 3px 0 0 0 #eab308,
+      3px 3px 0 0 #eab308, 0 3px 0 0 #eab308, -3px 3px 0 0 #eab308,
+      -3px 0 0 0 #eab308, -3px -3px 0 0 #eab308;
   }
 
   .stats-card-value {

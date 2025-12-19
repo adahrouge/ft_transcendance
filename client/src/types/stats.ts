@@ -24,6 +24,7 @@ export interface PlayerStats {
   win_rate: number;
   longest_win_streak: number;
   current_win_streak: number;
+  tournaments_won?: number;
 }
 
 export interface StatsResponse {
