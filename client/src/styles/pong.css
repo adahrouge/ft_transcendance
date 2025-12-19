@@ -432,4 +432,228 @@
       transform: translateY(-10px);
     }
   }
+
+  /* ============ FIFA-STYLE BRACKET ============ */
+  
+  .fifa-tournament-box {
+    max-width: 900px !important;
+    padding: 2rem;
+  }
+
+  .fifa-bracket {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: 20px 0;
+    overflow-x: auto;
+  }
+
+  .fifa-bracket-4 {
+    gap: 8px;
+  }
+
+  .fifa-bracket-8 {
+    gap: 4px;
+  }
+
+  .fifa-round {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .fifa-round-quarters {
+    gap: 12px;
+  }
+
+  .fifa-round-semis {
+    gap: 40px;
+  }
+
+  .fifa-round-final {
+    gap: 16px;
+  }
+
+  .fifa-round-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-[10px] uppercase tracking-wider text-center mb-2;
+    min-width: 100px;
+  }
+
+  .fifa-match {
+    @apply relative;
+    background: linear-gradient(135deg, #0d1a28 0%, #1a2d40 100%);
+    border: 2px solid #2c6b87;
+    min-width: 140px;
+    transition: all 0.2s ease;
+  }
+
+  .fifa-match-next {
+    border-color: #eab308;
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+    animation: pulse 2s infinite;
+  }
+
+  .fifa-match-done {
+    opacity: 0.7;
+    border-color: #1a4558;
+  }
+
+  .fifa-match-players {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fifa-player {
+    @apply flex justify-between items-center px-3 py-2 text-[#e0f7ff] font-['Pixel_Game'] text-xs;
+    border-bottom: 1px solid #2c6b87;
+  }
+
+  .fifa-player:last-child {
+    border-bottom: none;
+  }
+
+  .fifa-player-winner {
+    @apply text-green-400 bg-green-900/30;
+  }
+
+  .fifa-player-you {
+    @apply text-yellow-400;
+  }
+
+  .fifa-player-name {
+    @apply truncate;
+    max-width: 80px;
+  }
+
+  .fifa-player-score {
+    @apply text-[#e0f7ff] font-bold min-w-[20px] text-center;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .fifa-play-btn {
+    @apply absolute -bottom-4 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-['Pixel_Game'] px-4 py-1 hover:bg-green-500 cursor-pointer transition-all;
+    border: none;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+    z-index: 10;
+  }
+
+  .fifa-connectors {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 30px;
+    gap: 60px;
+  }
+
+  .fifa-connectors-8 {
+    gap: 80px;
+  }
+
+  .fifa-connector-group {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .fifa-connector-line {
+    width: 30px;
+    height: 2px;
+    background: linear-gradient(90deg, #2c6b87 0%, #5db3d1 50%, #2c6b87 100%);
+  }
+
+  .fifa-trophy {
+    @apply text-4xl text-center;
+    animation: bounce 1.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(234, 179, 8, 0.5));
+  }
+
+  .fifa-winner-banner {
+    @apply text-center py-6 mb-6;
+    background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(161, 98, 7, 0.2) 100%);
+    border: 2px solid #eab308;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
+    }
+    to {
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.6);
+    }
+  }
+
+  .fifa-winner-crown {
+    @apply text-5xl mb-2;
+    animation: bounce 1s ease-in-out infinite;
+  }
+
+  .fifa-winner-name {
+    @apply text-yellow-400 font-['Pixel_Game'] text-2xl;
+  }
+
+  .fifa-winner-subtitle {
+    @apply text-green-400 font-['Pixel_Game'] text-lg mt-2;
+  }
+
+  .fifa-eliminated-banner {
+    @apply text-center py-4 mb-4;
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(127, 29, 29, 0.2) 100%);
+    border: 2px solid #ef4444;
+  }
+
+  .fifa-eliminated-icon {
+    @apply text-3xl mb-2;
+  }
+
+  .fifa-eliminated-text {
+    @apply text-red-400 font-['Pixel_Game'] text-xl;
+  }
+
+  .fifa-eliminated-hint {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
+  }
+
+  @keyframes pulse {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(234, 179, 8, 0.7);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .fifa-bracket {
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .fifa-connectors {
+      width: 100%;
+      height: 20px;
+      flex-direction: row;
+      gap: 20px;
+    }
+
+    .fifa-connector-line {
+      width: 2px;
+      height: 20px;
+    }
+
+    .fifa-round {
+      width: 100%;
+    }
+
+    .fifa-match {
+      width: 100%;
+      max-width: 200px;
+    }
+  }
 }

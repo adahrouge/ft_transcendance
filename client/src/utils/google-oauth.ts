@@ -69,143 +69,67 @@ export function getGoogleConfig(): GoogleOAuthConfig | null {
 }
 
 export function isGoogleOAuthConfigured(): boolean {
-  return googleConfig !== null && googleConfig.clientId !== '';
+  return googleConfig !== null && (window as any).google !== undefined;
 }
 
-// Fast Google Sign-In using popup
 export async function triggerGoogleSignIn(): Promise<any> {
   if (!isGoogleOAuthConfigured()) {
     throw new Error('Google OAuth not configured');
   }
 
-  // Ensure script is loaded
-  await initializeGoogleOAuth(googleConfig!.clientId);
-  
-  const google = (window as any).google;
-  if (!google?.accounts?.id) {
-    throw new Error('Google Sign-In library not available');
-  }
-
   return new Promise((resolve, reject) => {
-    const timeoutId = setTimeout(() => {
-      reject(new Error('Google sign-in timed out'));
-    }, 60000);
-
     try {
-      google.accounts.id.initialize({
+      (window as any).google.accounts.id.initialize({
         client_id: googleConfig!.clientId,
+        use_fedcm_for_prompt: false,
         callback: (response: any) => {
-          clearTimeout(timeoutId);
-          if (response?.credential) {
+          if (response.credential) {
             resolve(response);
           } else {
-            reject(new Error('No credential received'));
+            reject(new Error('No credential in response'));
           }
         },
-        auto_select: false,
-        cancel_on_tap_outside: false,
-        use_fedcm_for_prompt: true, // Enable FedCM for future compatibility
       });
 
-      // Use prompt() for the One Tap UI which is faster
-      google.accounts.id.prompt((notification: any) => {
-        // Check if prompt was displayed or needs fallback
-        const notDisplayed = notification.isNotDisplayed && notification.isNotDisplayed();
-        const skipped = notification.isSkippedMoment && notification.isSkippedMoment();
-        const dismissed = notification.isDismissedMoment && notification.isDismissedMoment();
-        
-        if (notDisplayed) {
-          // If One Tap isn't displayed, fall back to button click
-          fallbackToButtonFlow(google, resolve, reject, timeoutId);
-        } else if (skipped) {
-          // User closed the prompt
-          clearTimeout(timeoutId);
-          reject(new Error('Sign-in was cancelled'));
-        } else if (dismissed) {
-          const reason = notification.getDismissedReason && notification.getDismissedReason();
-          if (reason === 'credential_returned') {
-            // Success - callback will be triggered
-          } else {
-            clearTimeout(timeoutId);
-            reject(new Error('Sign-in dismissed'));
-          }
+      // First try One Tap without FedCM
+      const unsubscribe = (window as any).google.accounts.id.renderButton(
+        document.getElementById('google-signin-button'),
+        {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
         }
-      });
+      );
+
+      // Also try One Tap prompt as fallback
+      setTimeout(() => {
+        try {
+          (window as any).google.accounts.id.prompt((notification: any) => {
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              // One Tap not shown, button is already rendered above
+            }
+          });
+        } catch (e) {
+          console.error('One Tap prompt failed, using button instead');
+        }
+      }, 500);
+
     } catch (error) {
-      clearTimeout(timeoutId);
       reject(error);
     }
   });
 }
 
-function fallbackToButtonFlow(
-  google: any,
-  resolve: (value: any) => void,
-  reject: (reason: any) => void,
-  timeoutId: ReturnType<typeof setTimeout>
-) {
-  // Create a hidden container for the button
-  const container = document.createElement('div');
-  container.style.position = 'fixed';
-  container.style.top = '50%';
-  container.style.left = '50%';
-  container.style.transform = 'translate(-50%, -50%)';
-  container.style.zIndex = '99999';
-  container.style.background = 'white';
-  container.style.padding = '20px';
-  container.style.borderRadius = '8px';
-  container.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
-  document.body.appendChild(container);
-
-  // Re-initialize with the callback
-  google.accounts.id.initialize({
-    client_id: googleConfig!.clientId,
-    callback: (response: any) => {
-      clearTimeout(timeoutId);
-      container.remove();
-      if (response?.credential) {
-        resolve(response);
-      } else {
-        reject(new Error('No credential received'));
-      }
-    },
-  });
-
-  google.accounts.id.renderButton(container, {
-    type: 'standard',
-    theme: 'outline',
-    size: 'large',
-    text: 'signin_with',
-    width: 280,
-  });
-
-  // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = '✕';
-  closeBtn.style.cssText = 'position:absolute;top:5px;right:10px;border:none;background:none;font-size:18px;cursor:pointer;color:#666;';
-  closeBtn.onclick = () => {
-    clearTimeout(timeoutId);
-    container.remove();
-    reject(new Error('Sign-in cancelled'));
-  };
-  container.appendChild(closeBtn);
-}
-
-// Decode Google JWT token to extract user info
 export function decodeGoogleToken(token: string): any {
   try {
     const parts = token.split('.');
-    if (parts.length !== 3) {
-      throw new Error('Invalid token format');
-    }
-    
-    const payload = parts[1];
-    const padded = payload.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = atob(padded);
-    
-    return JSON.parse(decoded);
+    if (parts.length !== 3) throw new Error('Invalid token format');
+
+    const decoded = JSON.parse(atob(parts[1]));
+    return decoded;
   } catch (error) {
-    console.error('Error decoding Google token:', error);
-    throw error;
+    console.error('Failed to decode token:', error);
+    return null;
   }
 }

@@ -80,7 +80,7 @@ async function loadStats() {
           </div>
           <div class="stats-card stats-card-tournament">
             <div class="stats-card-value">🏆 ${tournamentsWon}</div>
-            <div class="stats-card-label">Tournaments</div>
+            <div class="stats-card-label">${i18n.t('tournaments_won')}</div>
           </div>
         </div>
 
@@ -96,7 +96,7 @@ async function loadStats() {
                   ${m.game_type !== 'tournament' ? `
                     <span class="stats-match-vs">${i18n.t('vs')}</span>
                     <span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>
-                  ` : `<span class="stats-match-name" style="color: #eab308;">Tournament Champion!</span>`}
+                  ` : `<span class="stats-match-name" style="color: #eab308;">${i18n.t('tournament_champion')}</span>`}
                 </div>
                 <div class="stats-match-result ${m.result === 'win' ? 'stats-win' : (m.result === 'draw' ? 'text-yellow-400' : 'stats-loss')}">
                   ${m.game_type === 'tournament' ? `${m.user_score}-man` : `${m.user_score} - ${m.opponent_score}`}

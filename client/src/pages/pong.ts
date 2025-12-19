@@ -321,6 +321,7 @@ interface LocalTournament {
 }
 
 let activeTournament: LocalTournament | null = null;
+let tournamentWinSaved = false; // Prevent duplicate saves
 
 const BOT_NAMES = [
   "RoboPong", "ByteBot", "PixelAce", "NeonKnight", 
@@ -387,22 +388,22 @@ function showTournamentSetup(root: HTMLElement) {
   
   root.innerHTML = `
     <div class="pong-start-box">
-      <h1 class="pong-title">🏆 TOURNAMENT</h1>
-      <p class="pong-subtitle">Local bracket tournament vs AI bots</p>
+      <h1 class="pong-title">🏆 ${i18n.t('local_tournament')}</h1>
+      <p class="pong-subtitle">${i18n.t('local_tournament_desc')}</p>
 
       <div class="pong-mode-buttons">
         <button class="pong-mode-btn" id="btn-4man">
-          <span class="pong-mode-title">4 PLAYERS</span>
-          <span class="pong-mode-desc">You + 3 AI bots (2 rounds)</span>
+          <span class="pong-mode-title">${i18n.t('tournament_4_players')}</span>
+          <span class="pong-mode-desc">${i18n.t('tournament_4_desc')}</span>
         </button>
         <button class="pong-mode-btn" id="btn-8man">
-          <span class="pong-mode-title">8 PLAYERS</span>
-          <span class="pong-mode-desc">You + 7 AI bots (3 rounds)</span>
+          <span class="pong-mode-title">${i18n.t('tournament_8_players')}</span>
+          <span class="pong-mode-desc">${i18n.t('tournament_8_desc')}</span>
         </button>
       </div>
 
       <div class="pong-controls">
-        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">BACK</button>
+        <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-back">${i18n.t('back')}</button>
       </div>
     </div>
   `;
@@ -413,9 +414,12 @@ function showTournamentSetup(root: HTMLElement) {
 }
 
 function startLocalTournament(root: HTMLElement, size: 4 | 8) {
+  // Reset save flag for new tournament
+  tournamentWinSaved = false;
+  
   // Create player
   const player: TournamentParticipant = {
-    name: "YOU",
+    name: i18n.t('you').toUpperCase(),
     isPlayer: true,
     difficulty: 0
   };
@@ -449,12 +453,11 @@ function showTournamentBracket(root: HTMLElement) {
   
   const t = activeTournament;
   const roundNames = t.size === 4 
-    ? ["SEMI-FINALS", "FINAL"]
-    : ["QUARTER-FINALS", "SEMI-FINALS", "FINAL"];
+    ? [i18n.t('semi_finals'), i18n.t('final')]
+    : [i18n.t('quarter_finals'), i18n.t('semi_finals'), i18n.t('final')];
   
   // Find next match to play (player's match or bot vs bot to simulate)
   let nextMatch: { round: number; match: number } | null = null;
-  let playerEliminated = false;
   
   for (let r = 0; r < t.bracket.length; r++) {
     for (let m = 0; m < t.bracket[r].length; m++) {
@@ -479,99 +482,158 @@ function showTournamentBracket(root: HTMLElement) {
   const finalMatch = t.bracket[t.bracket.length - 1][0];
   const tournamentComplete = finalMatch.winner !== null;
   
-  if (!playerInTournament && !tournamentComplete) {
-    playerEliminated = true;
-  }
+  const playerEliminated = !playerInTournament && !tournamentComplete;
+
+  // Build FIFA-style bracket HTML
+  const buildFifaBracket = () => {
+    if (t.size === 4) {
+      // 4-player bracket: 2 semi-finals -> 1 final
+      return `
+        <div class="fifa-bracket fifa-bracket-4">
+          <div class="fifa-round fifa-round-semis">
+            <div class="fifa-round-title">${roundNames[0]}</div>
+            ${buildMatchCard(0, 0, nextMatch)}
+            ${buildMatchCard(0, 1, nextMatch)}
+          </div>
+          <div class="fifa-connectors">
+            <div class="fifa-connector-line"></div>
+          </div>
+          <div class="fifa-round fifa-round-final">
+            <div class="fifa-round-title">${roundNames[1]}</div>
+            ${buildMatchCard(1, 0, nextMatch)}
+            <div class="fifa-trophy">🏆</div>
+          </div>
+        </div>
+      `;
+    } else {
+      // 8-player bracket: 4 quarter-finals -> 2 semi-finals -> 1 final
+      return `
+        <div class="fifa-bracket fifa-bracket-8">
+          <div class="fifa-round fifa-round-quarters">
+            <div class="fifa-round-title">${roundNames[0]}</div>
+            ${buildMatchCard(0, 0, nextMatch)}
+            ${buildMatchCard(0, 1, nextMatch)}
+            ${buildMatchCard(0, 2, nextMatch)}
+            ${buildMatchCard(0, 3, nextMatch)}
+          </div>
+          <div class="fifa-connectors fifa-connectors-8">
+            <div class="fifa-connector-group">
+              <div class="fifa-connector-line"></div>
+            </div>
+            <div class="fifa-connector-group">
+              <div class="fifa-connector-line"></div>
+            </div>
+          </div>
+          <div class="fifa-round fifa-round-semis">
+            <div class="fifa-round-title">${roundNames[1]}</div>
+            ${buildMatchCard(1, 0, nextMatch)}
+            ${buildMatchCard(1, 1, nextMatch)}
+          </div>
+          <div class="fifa-connectors">
+            <div class="fifa-connector-line"></div>
+          </div>
+          <div class="fifa-round fifa-round-final">
+            <div class="fifa-round-title">${roundNames[2]}</div>
+            ${buildMatchCard(2, 0, nextMatch)}
+            <div class="fifa-trophy">🏆</div>
+          </div>
+        </div>
+      `;
+    }
+  };
+
+  const buildMatchCard = (roundIdx: number, matchIdx: number, next: { round: number; match: number } | null) => {
+    const match = t.bracket[roundIdx]?.[matchIdx];
+    if (!match) return '';
+    
+    const isNext = next && next.round === roundIdx && next.match === matchIdx;
+    const isPlayerMatch = match.p1?.isPlayer || match.p2?.isPlayer;
+    const isDone = match.winner !== null;
+    
+    return `
+      <div class="fifa-match ${isNext ? 'fifa-match-next' : ''} ${isDone ? 'fifa-match-done' : ''}">
+        <div class="fifa-match-players">
+          <div class="fifa-player ${match.winner === match.p1 ? 'fifa-player-winner' : ''} ${match.p1?.isPlayer ? 'fifa-player-you' : ''}">
+            <span class="fifa-player-name">${match.p1?.name || i18n.t('tbd_short')}</span>
+            ${isDone ? `<span class="fifa-player-score">${match.p1Score}</span>` : ''}
+          </div>
+          <div class="fifa-player ${match.winner === match.p2 ? 'fifa-player-winner' : ''} ${match.p2?.isPlayer ? 'fifa-player-you' : ''}">
+            <span class="fifa-player-name">${match.p2?.name || i18n.t('tbd_short')}</span>
+            ${isDone ? `<span class="fifa-player-score">${match.p2Score}</span>` : ''}
+          </div>
+        </div>
+        ${isNext && !tournamentComplete ? `
+          <button class="fifa-play-btn" data-round="${roundIdx}" data-match="${matchIdx}">
+            ${isPlayerMatch ? i18n.t('play') : i18n.t('simulate')}
+          </button>
+        ` : ''}
+      </div>
+    `;
+  };
   
   root.innerHTML = `
-    <div class="pong-start-box" style="max-width: 700px;">
-      <h1 class="pong-title">🏆 TOURNAMENT - ${t.size} PLAYERS</h1>
+    <div class="pong-start-box fifa-tournament-box">
+      <h1 class="pong-title">🏆 ${i18n.t('local_tournament')} - ${t.size} ${i18n.t('players')}</h1>
       
       ${tournamentComplete ? `
-        <div class="pong-tournament-winner">
-          <div class="pong-winner-crown">👑</div>
-          <div class="pong-winner-text">${finalMatch.winner?.isPlayer ? 'CONGRATULATIONS!' : finalMatch.winner?.name + ' WINS'}</div>
-          ${finalMatch.winner?.isPlayer ? '<div class="pong-winner-subtitle">YOU ARE THE CHAMPION!</div>' : ''}
+        <div class="fifa-winner-banner">
+          <div class="fifa-winner-crown">👑</div>
+          <div class="fifa-winner-name">${finalMatch.winner?.isPlayer ? i18n.t('congratulations') : finalMatch.winner?.name + ' ' + i18n.t('wins_tournament')}</div>
+          ${finalMatch.winner?.isPlayer ? `<div class="fifa-winner-subtitle">${i18n.t('you_are_champion')}</div>` : ''}
         </div>
       ` : playerEliminated ? `
-        <div class="pong-eliminated">
-          <div class="pong-eliminated-text">YOU WERE ELIMINATED</div>
-          <div class="pong-eliminated-subtitle">Watch the remaining matches or quit</div>
+        <div class="fifa-eliminated-banner">
+          <div class="fifa-eliminated-icon">💀</div>
+          <div class="fifa-eliminated-text">${i18n.t('you_were_eliminated')}</div>
+          <div class="fifa-eliminated-hint">${i18n.t('watch_remaining')}</div>
         </div>
       ` : ''}
       
-      <div class="pong-bracket">
-        ${t.bracket.map((round, r) => `
-          <div class="pong-bracket-round">
-            <div class="pong-bracket-round-title">${roundNames[r]}</div>
-            ${round.map((match, m) => {
-              const isNext = nextMatch && nextMatch.round === r && nextMatch.match === m;
-              const isPlayerMatch = match.p1?.isPlayer || match.p2?.isPlayer;
-              return `
-                <div class="pong-bracket-match ${isNext ? 'pong-bracket-match-next' : ''} ${match.winner ? 'pong-bracket-match-done' : ''}">
-                  <div class="pong-bracket-player ${match.winner === match.p1 ? 'pong-bracket-winner' : ''} ${match.p1?.isPlayer ? 'pong-bracket-you' : ''}">
-                    ${match.p1?.name || 'TBD'} ${match.winner ? `(${match.p1Score})` : ''}
-                  </div>
-                  <div class="pong-bracket-vs">vs</div>
-                  <div class="pong-bracket-player ${match.winner === match.p2 ? 'pong-bracket-winner' : ''} ${match.p2?.isPlayer ? 'pong-bracket-you' : ''}">
-                    ${match.p2?.name || 'TBD'} ${match.winner ? `(${match.p2Score})` : ''}
-                  </div>
-                  ${isNext && !tournamentComplete ? `
-                    <button class="pong-bracket-play-btn" data-round="${r}" data-match="${m}">
-                      ${isPlayerMatch ? 'PLAY' : 'SIMULATE'}
-                    </button>
-                  ` : ''}
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `).join('')}
-      </div>
+      ${buildFifaBracket()}
 
-      <div class="pong-controls">
-        ${tournamentComplete && finalMatch.winner?.isPlayer ? `
-          <button class="pong-btn pong-btn-fullwidth" id="btn-save-win">SAVE VICTORY</button>
-        ` : ''}
+      <div class="pong-controls" style="margin-top: 24px;">
         <button class="pong-btn pong-btn-secondary pong-btn-fullwidth" id="btn-quit-tournament">
-          ${tournamentComplete ? 'BACK TO MENU' : 'QUIT TOURNAMENT'}
+          ${tournamentComplete ? i18n.t('back_to_menu') : i18n.t('quit_tournament')}
         </button>
       </div>
     </div>
   `;
 
   // Play button handlers
-  root.querySelectorAll('.pong-bracket-play-btn').forEach(btn => {
+  root.querySelectorAll('.fifa-play-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const r = parseInt((btn as HTMLElement).dataset.round || '0');
       const m = parseInt((btn as HTMLElement).dataset.match || '0');
       const match = t.bracket[r][m];
       
       if (match.p1?.isPlayer || match.p2?.isPlayer) {
-        // Player match - play the game
         playTournamentMatch(root, r, m);
       } else {
-        // Bot vs bot - simulate
         simulateBotMatch(root, r, m);
       }
     });
   });
 
-  document.getElementById("btn-save-win")?.addEventListener("click", async () => {
-    try {
-      await statsService.saveTournamentWin({
-        size: t.size,
-        rounds: t.bracket.length
-      });
+  // Auto-save tournament win when player is the champion
+  if (tournamentComplete && finalMatch.winner?.isPlayer && !tournamentWinSaved) {
+    tournamentWinSaved = true; // Prevent duplicate saves
+    // Auto-save the victory
+    statsService.saveTournamentWin({
+      size: t.size,
+      rounds: t.bracket.length
+    }).then(() => {
       import("../utils/notifications").then(({ showNotification }) => {
-        showNotification("Tournament victory saved! 🏆", { type: 'success' });
+        showNotification(i18n.t('tournament_victory_saved'), { type: 'success' });
       });
-    } catch (e) {
-      console.error("Failed to save tournament win:", e);
-    }
-  });
+    }).catch((e) => {
+      console.error("Failed to auto-save tournament win:", e);
+      tournamentWinSaved = false; // Allow retry
+    });
+  }
 
   document.getElementById("btn-quit-tournament")?.addEventListener("click", () => {
     activeTournament = null;
+    tournamentWinSaved = false;
     showModeSelection(root);
   });
 }
@@ -932,10 +994,10 @@ async function startTournamentMatch(
     root.innerHTML = `
       <div class="pong-over-overlay">
         <div class="pong-over-box">
-          <h1 class="pong-over-title">${playerWon ? 'YOU WIN!' : 'YOU LOSE!'}</h1>
+          <h1 class="pong-over-title">${playerWon ? i18n.t('you_win') : i18n.t('you_lose')}</h1>
           <p class="pong-over-score">${scorePlayer} - ${scoreAI}</p>
           <div class="pong-over-actions">
-            <button class="pong-btn" id="btn-continue">CONTINUE</button>
+            <button class="pong-btn" id="btn-continue">${i18n.t('continue')}</button>
           </div>
         </div>
       </div>
