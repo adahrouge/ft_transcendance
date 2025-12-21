@@ -3,47 +3,78 @@
 @layer components {
   /* Page layout */
   .stats-container {
-    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+    @apply fixed inset-0 w-full h-full overflow-y-auto bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
   }
 
   .stats-overlay {
-    @apply absolute inset-0 bg-black/70 pointer-events-none;
+    @apply fixed inset-0 w-full h-full bg-black/70 pointer-events-none;
   }
 
   .stats-content {
-    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    @apply relative z-10 flex flex-col items-center justify-center min-h-full w-full p-4;
   }
 
   /* Main stats box */
   .stats-box {
-    @apply relative w-full bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm text-center;
-    padding: 2.5rem;
-    max-width: 800px;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[600px] mx-auto text-center overflow-y-auto;
+    padding: 1.5rem;
     image-rendering: pixelated;
-    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
-      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
-      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  /* Custom scrollbar for stats box */
+  .stats-box::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .stats-box::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .stats-box::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .stats-box::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
   }
 
   .stats-title {
     @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6;
   }
 
-  /* Player info */
-  .stats-player-info {
-    @apply flex items-center justify-center gap-4 mb-6;
+  /* Stats Header */
+  .stats-header {
+    @apply flex flex-col items-center gap-2 mb-6 pb-4;
+    border-bottom: 2px solid #2c6b87;
+  }
+
+  .stats-avatar-wrapper {
+    @apply relative;
   }
 
   .stats-avatar {
-    @apply w-16 h-16 object-cover;
+    @apply object-cover;
+    width: 6rem;
+    height: 6rem;
     image-rendering: pixelated;
-    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
-      2px 2px 0 0 #5db3d1, 0 2px 0 0 #5db3d1, -2px 2px 0 0 #5db3d1,
-      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
+    box-shadow: 0 -4px 0 0 #5db3d1, 4px -4px 0 0 #5db3d1, 4px 0 0 0 #5db3d1,
+      4px 4px 0 0 #5db3d1, 0 4px 0 0 #5db3d1, -4px 4px 0 0 #5db3d1,
+      -4px 0 0 0 #5db3d1, -4px -4px 0 0 #5db3d1;
+  }
+
+  .stats-header-info {
+    @apply text-center;
   }
 
   .stats-player-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-2xl;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-1;
+  }
+
+  .stats-username {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
   }
 
   /* Stats grid */
@@ -96,7 +127,7 @@
   }
 
   .stats-history-list {
-    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
+    @apply space-y-2 pr-2;
   }
 
   .stats-match-item {

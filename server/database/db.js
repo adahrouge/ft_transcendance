@@ -113,6 +113,19 @@ export async function initDatabase() {
     )
   `);
 
+  // Blocked users table
+  await dbRun(`
+    CREATE TABLE IF NOT EXISTS blocked_users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      blocked_user_id INTEGER NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (blocked_user_id) REFERENCES users(id),
+      UNIQUE(user_id, blocked_user_id)
+    )
+  `);
+
   // Tournaments table
   await dbRun(`
     CREATE TABLE IF NOT EXISTS tournaments (
@@ -269,15 +282,30 @@ export async function getAllUsers() {
   return await dbAll('SELECT id, username, email, display_name, avatar_url FROM users');
 }
 
-export async function searchUsers(query) {
+export async function searchUsers(query, currentUserId = null) {
   const searchTerm = `%${query}%`;
-  return await dbAll(
-    `SELECT id, username, email, display_name, avatar_url 
-     FROM users 
-     WHERE username LIKE ? OR display_name LIKE ?
-     LIMIT 20`,
-    [searchTerm, searchTerm]
-  );
+  let sql = `SELECT id, username, email, display_name, avatar_url 
+             FROM users 
+             WHERE (username LIKE ? OR display_name LIKE ?)`;
+  const params = [searchTerm, searchTerm];
+
+  if (currentUserId) {
+    // Exclude users who have blocked the current user or are blocked by the current user
+    sql += ` AND id NOT IN (
+      SELECT blocked_user_id FROM blocked_users WHERE user_id = ?
+      UNION
+      SELECT user_id FROM blocked_users WHERE blocked_user_id = ?
+    )`;
+    params.push(currentUserId, currentUserId);
+    
+    // Exclude current user
+    sql += ` AND id != ?`;
+    params.push(currentUserId);
+  }
+
+  sql += ` LIMIT 20`;
+
+  return await dbAll(sql, params);
 }
 
 // Match history operations
@@ -304,6 +332,18 @@ export async function getMatchHistory(userId) {
 // Friends operations
 export async function sendFriendRequest(userId, friendId) {
   try {
+    // Check if either user has blocked the other
+    const blocked = await dbGet(
+      `SELECT * FROM blocked_users 
+       WHERE (user_id = ? AND blocked_user_id = ?) 
+          OR (user_id = ? AND blocked_user_id = ?)`,
+      [userId, friendId, friendId, userId]
+    );
+
+    if (blocked) {
+      return { success: false, error: 'Cannot send friend request to this user' };
+    }
+
     // Check if request already exists in either direction
     const existing = await dbGet(
       `SELECT * FROM friends
@@ -403,6 +443,57 @@ export async function removeFriend(userId, friendId) {
   console.log(`After removal - remaining records: ${after.length}`, after);
 
   return true;
+}
+
+export async function blockUser(userId, blockedUserId) {
+  // Check if already blocked
+  const existing = await dbGet(
+    `SELECT * FROM blocked_users WHERE user_id = ? AND blocked_user_id = ?`,
+    [userId, blockedUserId]
+  );
+
+  if (existing) {
+    return { success: false, error: 'User already blocked' };
+  }
+
+  // Remove any existing friendship or pending requests
+  await removeFriend(userId, blockedUserId);
+
+  // Add to blocked_users
+  await dbRun(
+    `INSERT INTO blocked_users (user_id, blocked_user_id) VALUES (?, ?)`,
+    [userId, blockedUserId]
+  );
+
+  return { success: true };
+}
+
+export async function unblockUser(userId, blockedUserId) {
+  await dbRun(
+    `DELETE FROM blocked_users WHERE user_id = ? AND blocked_user_id = ?`,
+    [userId, blockedUserId]
+  );
+  return { success: true };
+}
+
+export async function getBlockedUsers(userId) {
+  return await dbAll(
+    `SELECT u.id, u.username, u.display_name, u.avatar_url, b.created_at
+     FROM blocked_users b
+     JOIN users u ON b.blocked_user_id = u.id
+     WHERE b.user_id = ?`,
+    [userId]
+  );
+}
+
+export async function isBlocked(userId, otherUserId) {
+  const blocked = await dbGet(
+    `SELECT * FROM blocked_users 
+     WHERE (user_id = ? AND blocked_user_id = ?) 
+        OR (user_id = ? AND blocked_user_id = ?)`,
+    [userId, otherUserId, otherUserId, userId]
+  );
+  return !!blocked;
 }
 
 export async function getFriends(userId) {

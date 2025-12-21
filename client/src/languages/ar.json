@@ -191,5 +191,19 @@
   "tournaments_won": "البطولات",
   "tournament_champion": "بطل البطولة!",
   "tournament_victory_saved": "تم حفظ فوز البطولة! 🏆",
-  "tbd_short": "غ.م."
+  "tbd_short": "غ.م.",
+  "account_details": "تفاصيل الحساب",
+  "leave_blank_to_keep": "اتركه فارغاً للاحتفاظ بكلمة المرور الحالية",
+  "no_changes": "لا توجد تغييرات للحفظ",
+  "block": "حظر",
+  "unblock": "إلغاء الحظر",
+  "blocked_users": "المستخدمون المحظورون",
+  "block_user": "حظر المستخدم",
+  "confirm_block_user": "هل أنت متأكد أنك تريد حظر هذا المستخدم؟ لن يتمكن من مراسلتك أو إرسال طلبات صداقة.",
+  "username_invalid_chars": "يمكن أن يحتوي اسم المستخدم فقط على أحرف وأرقام وشرطة سفلية",
+  "username_too_long": "يجب أن يكون اسم المستخدم أقل من 20 حرفًا",
+  "password_too_long": "يجب أن تكون كلمة المرور أقل من 64 حرفًا",
+  "password_needs_number": "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل",
+  "password_needs_uppercase": "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل",
+  "password_needs_special": "يجب أن تحتوي كلمة المرور على حرف خاص واحد على الأقل"
 }

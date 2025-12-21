@@ -191,5 +191,19 @@
   "tournaments_won": "Tournaments",
   "tournament_champion": "Tournament Champion!",
   "tournament_victory_saved": "Tournament victory saved! 🏆",
-  "tbd_short": "TBD"
+  "tbd_short": "TBD",
+  "account_details": "Account Details",
+  "leave_blank_to_keep": "Leave blank to keep current password",
+  "no_changes": "No changes to save",
+  "block": "BLOCK",
+  "unblock": "UNBLOCK",
+  "blocked_users": "BLOCKED USERS",
+  "block_user": "Block User",
+  "confirm_block_user": "Are you sure you want to block this user? They won't be able to message you or send friend requests.",
+  "username_invalid_chars": "Username can only contain letters, numbers, and underscores",
+  "username_too_long": "Username must be less than 20 characters",
+  "password_too_long": "Password must be less than 64 characters",
+  "password_needs_number": "Password must contain at least one number",
+  "password_needs_uppercase": "Password must contain at least one uppercase letter",
+  "password_needs_special": "Password must contain at least one special character"
 }

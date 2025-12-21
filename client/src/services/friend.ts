@@ -42,5 +42,22 @@ export const friendService = {
     return apiRequest(`/api/users/me/friends/${friendId}`, {
       method: 'DELETE',
     });
+  },
+
+  async blockUser(userId: number) {
+    return apiRequest('/api/users/me/blocked', {
+      method: 'POST',
+      body: JSON.stringify({ blocked_user_id: userId }),
+    });
+  },
+
+  async unblockUser(userId: number) {
+    return apiRequest(`/api/users/me/blocked/${userId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getBlockedUsers() {
+    return apiRequest<{ blockedUsers: any[] }>('/api/users/me/blocked');
   }
 };

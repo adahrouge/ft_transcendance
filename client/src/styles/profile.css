@@ -2,65 +2,94 @@
 
 @layer components {
   .profile-container {
-    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+    @apply fixed inset-0 w-full h-full overflow-y-auto bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
   }
 
-  .profile-overlay {
-    @apply absolute inset-0 bg-black/70 pointer-events-none;
+  .profile-overlay {  
+    @apply fixed inset-0 w-full h-full bg-black/70 pointer-events-none;
   }
 
   .profile-content {
-    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    @apply relative z-10 flex flex-col items-center justify-center min-h-full w-full p-4;
   }
 
   /* Main profile box */
   .profile-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[800px];
-    padding: 2rem;
+    @apply bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[500px] mx-auto overflow-y-auto;
+    padding: 1.5rem;
     image-rendering: pixelated;
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
 
-    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
-      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
-      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+  /* Custom scrollbar for profile box */
+  .profile-box::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .profile-box::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .profile-box::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .profile-box::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
   }
 
   .profile-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6 text-center;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-2 text-center;
   }
 
-  /* Layout */
-  .profile-layout {
-    @apply flex flex-col gap-6 text-left;
+  /* Profile Header */
+  .profile-header {
+    @apply flex flex-col items-center gap-2 mb-4 pb-2;
   }
 
-  @media (min-width: 768px) {
-    .profile-layout {
-      @apply flex-row;
-    }
+  .profile-avatar-wrapper {
+    @apply relative;
   }
 
-  .profile-col {
-    @apply flex-1;
-  }
-
-  /* Avatar section */
-  .profile-avatar-section {
-    @apply mb-6 text-center;
+  .profile-avatar-container {
+    @apply relative cursor-pointer;
+    width: 6rem;
+    height: 6rem;
   }
 
   .profile-avatar {
-    width: 6rem;
-    height: 6rem;
-    @apply mx-auto mb-2 object-cover;
+    @apply w-full h-full object-cover;
     image-rendering: pixelated;
-    border-radius: 50%;
-    box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
-      3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
-      -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
+    box-shadow: 0 -4px 0 0 #5db3d1, 4px -4px 0 0 #5db3d1, 4px 0 0 0 #5db3d1,
+      4px 4px 0 0 #5db3d1, 0 4px 0 0 #5db3d1, -4px 4px 0 0 #5db3d1,
+      -4px 0 0 0 #5db3d1, -4px -4px 0 0 #5db3d1;
+  }
+
+  .profile-avatar-overlay {
+    @apply absolute inset-0 flex flex-col items-center justify-center gap-1 opacity-0 transition-opacity duration-200;
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  .profile-avatar-container:hover .profile-avatar-overlay {
+    @apply opacity-100;
+  }
+
+  .profile-avatar-overlay svg {
+    @apply text-white;
+  }
+
+  .profile-avatar-overlay span {
+    @apply text-white font-['Pixel_Game'] text-xs;
+  }
+
+  .profile-header-info {
+    @apply text-center;
   }
 
   .profile-display-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg mb-1;
   }
 
   .profile-username {
@@ -72,16 +101,28 @@
     @apply space-y-4;
   }
 
+  .profile-section {
+    @apply space-y-2;
+  }
+
+  .profile-section-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-base pb-1;
+  }
+
+  .profile-form-row {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  }
+
   .profile-form-group {
-    @apply flex flex-col gap-1;
+    @apply flex flex-col gap-2;
   }
 
   .profile-label {
-    @apply block text-[#5db3d1] font-['Pixel_Game'] text-sm mb-1;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
   }
 
   .profile-input {
-    @apply w-full bg-[#0d1a28] text-[#e0f7ff] px-3 py-2 font-['Pixel_Game'] outline-none transition-all duration-200;
+    @apply w-full bg-[#0d1a28] text-[#e0f7ff] px-3 py-1.5 font-['Pixel_Game'] outline-none transition-all duration-200;
     border: none;
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -98,19 +139,40 @@
     @apply text-[#3d6680] font-['Pixel_Game'] text-sm;
   }
 
-  /* Password section */
-  .profile-password-section {
-    @apply pt-4 mt-4;
-    border-top: 2px solid #2c6b87;
+  /* Language Buttons */
+  .profile-language-buttons {
+    @apply flex gap-3 flex-wrap;
   }
 
-  .profile-password-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] mb-2;
+  .profile-lang-btn {
+    @apply flex-1 min-w-[100px] bg-[#0d1a28] text-[#5db3d1] font-['Pixel_Game'] cursor-pointer transition-all duration-150;
+    padding: 0.6rem 1rem;
+    border: none;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .profile-lang-btn:hover {
+    @apply text-[#e0f7ff];
+    background: rgba(44, 107, 135, 0.3);
+  }
+
+  .profile-lang-btn.active {
+    @apply bg-gradient-to-b from-[#2c6b87] to-[#1a4558] text-white;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
+  /* Password hint */
+  .profile-password-hint {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs mt-2;
   }
 
   /* Message */
   .profile-message {
-    @apply text-center font-['Pixel_Game'] text-sm h-5;
+    @apply text-center font-['Pixel_Game'] text-sm min-h-[20px];
   }
 
   .profile-message-success {
@@ -121,26 +183,30 @@
     @apply text-red-400;
   }
 
-  /* Buttons */
-  .profile-btn {
-    @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
-    padding: 1rem 1.5rem;
+  /* Actions */
+  .profile-actions {
+    @apply flex flex-col md:flex-row gap-3 mt-4 pt-2;
+  }
+
+  .profile-save-btn {
+    @apply flex-1 bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8] flex items-center justify-center gap-2;
+    padding: 0.5rem 1rem;
     border: none;
     box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
       4px 4px 0 0 #1a4558, 0 4px 0 0 #1a4558, -4px 4px 0 0 #1a4558,
       -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
   }
 
-  .profile-btn:active {
+  .profile-save-btn:active {
     @apply translate-y-1;
-    box-shadow: 0 -4px 0 0 #4a9dc0, 4px -4px 0 0 #4a9dc0, 4px 0 0 0 #4a9dc0,
-      4px 4px 0 0 #4a9dc0, 0 4px 0 0 #4a9dc0, -4px 4px 0 0 #4a9dc0,
-      -4px 0 0 0 #4a9dc0, -4px -4px 0 0 #4a9dc0;
+    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
   }
-  
+
   .profile-back-btn {
-    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
-    padding: 1rem 1.5rem;
+    @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:text-[#e0f7ff] flex items-center justify-center gap-2;
+    padding: 0.5rem 1rem;
     border: none;
     box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
       3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
@@ -151,93 +217,51 @@
     @apply translate-y-1;
   }
 
-  /* Section titles */
-  .profile-section-title {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-2 pb-1;
-    border-bottom: 2px solid #2c6b87;
-  }
-
-  /* Lists */
-  .profile-list {
-    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
-  }
-
-  .profile-list-item {
-    @apply bg-[#0d1a28] p-2 flex justify-between items-center;
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
-  }
-
-  .profile-list-empty {
-    @apply text-gray-500 text-sm font-['Pixel_Game'];
-  }
-
-  .profile-opponent-name {
-    @apply text-[#e0f7ff] text-sm;
-  }
-
-  .profile-score-win {
-    @apply text-green-400 font-['Pixel_Game'];
-  }
-
-  .profile-score-loss {
-    @apply text-red-400 font-['Pixel_Game'];
-  }
-
-  /* Friend item */
-  .profile-friend-item {
-    @apply bg-[#0d1a28] p-2 flex items-center gap-2;
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
-  }
-
-  .profile-status-dot {
-    @apply w-2 h-2 rounded-full;
-  }
-
-  .profile-status-online {
-    @apply bg-green-500;
-  }
-
-  .profile-status-offline {
-    @apply bg-gray-500;
-  }
-
-  .profile-status-ingame {
-    @apply bg-yellow-500;
-  }
-
-  .profile-friend-name {
-    @apply text-[#e0f7ff] text-sm;
-  }
-
-  /* Footer actions */
-  .profile-footer {
-    @apply mt-6;
-  }
-
   .profile-logout-btn {
-    @apply text-red-400 hover:text-red-300 font-['Pixel_Game'] cursor-pointer transition-colors text-lg;
-    background: none;
+    @apply bg-gradient-to-b from-[#dc2626] to-[#991b1b] text-white font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#ef4444] hover:to-[#dc2626] flex items-center justify-center gap-2;
+    padding: 0.5rem 1rem;
     border: none;
+    box-shadow: 0 -3px 0 0 #ef4444, 3px -3px 0 0 #ef4444, 3px 0 0 0 #ef4444,
+      3px 3px 0 0 #7f1d1d, 0 3px 0 0 #7f1d1d, -3px 3px 0 0 #7f1d1d,
+      -3px 0 0 0 #ef4444, -3px -3px 0 0 #ef4444;
   }
 
-  /* Custom scrollbar */
-  .profile-list::-webkit-scrollbar {
-    width: 8px;
+  .profile-logout-btn:active {
+    @apply translate-y-1;
   }
 
-  .profile-list::-webkit-scrollbar-track {
-    background: #0d1a28;
+  /* Loading overlay */
+  .profile-loading-overlay {
+    @apply absolute inset-0 flex items-center justify-center z-50;
+    background: rgba(10, 25, 41, 0.9);
   }
 
-  .profile-list::-webkit-scrollbar-thumb {
-    background: #2c6b87;
+  .profile-spinner {
+    @apply text-[#5db3d1];
+    animation: spin 1s linear infinite;
   }
 
-  .profile-list::-webkit-scrollbar-thumb:hover {
-    background: #3d8aa8;
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .profile-box {
+      padding: 1.5rem;
+    }
+
+    .profile-actions {
+      @apply flex-col;
+    }
+
+    .profile-lang-btn {
+      @apply min-w-0;
+    }
   }
 }

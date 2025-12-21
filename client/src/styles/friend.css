@@ -3,26 +3,42 @@
 @layer components {
   /* Page layout */
   .friend-container {
-    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+    @apply fixed inset-0 w-full h-full overflow-y-auto bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
   }
 
   .friend-overlay {
-    @apply absolute inset-0 bg-black/70 pointer-events-none;
+    @apply fixed inset-0 w-full h-full bg-black/70 pointer-events-none;
   }
 
   .friend-content {
-    @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    @apply relative z-10 flex flex-col items-center justify-center min-h-full w-full p-4;
   }
 
   /* Main friend box */
   .friend-box {
-    @apply relative w-full bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm;
-    padding: 2.5rem;
-    max-width: 800px;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[500px] mx-auto overflow-y-auto;
+    padding: 1.5rem;
     image-rendering: pixelated;
-    box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
-      5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
-      -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+  }
+
+  /* Custom scrollbar for friend box */
+  .friend-box::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .friend-box::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .friend-box::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .friend-box::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
   }
 
   .friend-title {
@@ -45,7 +61,7 @@
   }
   
   .friend-list {
-    @apply max-h-[300px] overflow-y-auto space-y-2 pr-2;
+    @apply space-y-2 pr-2;
   }
   
   .friend-list::-webkit-scrollbar {
@@ -130,7 +146,7 @@
   }
   
   .friend-search-results {
-    @apply max-h-[200px] overflow-y-auto space-y-2 pr-2;
+    @apply space-y-2 pr-2;
   }
   
   .friend-search-results::-webkit-scrollbar {

@@ -15,8 +15,11 @@ export function renderStatsPage(): string {
     <div class="stats-container" style="background-image: url('${backgroundImage}')">
       <div class="stats-overlay"></div>
       <div class="stats-content">
-        <div id="stats-root" class="w-full max-w-[800px]">
-          <div class="text-center text-white font-['Pixel_Game']">${i18n.t('loading')}</div>
+        <div id="stats-root" class="w-full max-w-[800px] flex justify-center items-center min-h-[300px]">
+          <svg style="color: #5db3d1; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+          </svg>
+          <style>@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
         </div>
       </div>
     </div>
@@ -55,10 +58,15 @@ async function loadStats() {
       <div class="stats-box">
         <h2 class="stats-title">${i18n.t('statistics')}</h2>
 
-        <div class="stats-player-info">
-          <img src="${getAvatarUrl(user)}"
-               class="stats-avatar" alt="Avatar">
-          <div class="stats-player-name">${user.display_name || user.username}</div>
+        <div class="stats-header">
+          <div class="stats-avatar-wrapper">
+            <img src="${getAvatarUrl(user)}"
+                 class="stats-avatar" alt="Avatar">
+          </div>
+          <div class="stats-header-info">
+            <div class="stats-player-name">${user.display_name || user.username}</div>
+            <div class="stats-username">@${user.username}</div>
+          </div>
         </div>
 
         <div class="stats-grid">

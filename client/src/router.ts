@@ -11,7 +11,7 @@ import { renderCustomizeBoardPage } from "./pages/customizeBoard";
 import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
 import { renderTicTacToePage } from "./pages/tictactoe";
-import { renderNavbar, initializeNavbar, clearNavbarCache } from "./components/navbar";
+
 
 const router = new Navigo("/");
 
@@ -23,7 +23,7 @@ const getAppContainer = (): HTMLElement => {
   return app as HTMLElement;
 };
 
-// Helper to render page with navbar for authenticated users
+// Helper to render page for authenticated users
 function renderWithNavbar(pageContent: string, needsAuth: boolean = true): void {
   const app = getAppContainer();
   
@@ -32,21 +32,12 @@ function renderWithNavbar(pageContent: string, needsAuth: boolean = true): void 
     return;
   }
   
-  if (isAuthenticated()) {
-    document.body.classList.add('has-navbar');
-    app.innerHTML = renderNavbar() + pageContent;
-    // Initialize navbar after DOM is ready
-    setTimeout(() => initializeNavbar(), 0);
-  } else {
-    document.body.classList.remove('has-navbar');
-    app.innerHTML = pageContent;
-  }
+  app.innerHTML = pageContent;
 }
 
 // Helper to render page without navbar (landing, auth)
 function renderWithoutNavbar(pageContent: string): void {
   const app = getAppContainer();
-  document.body.classList.remove('has-navbar');
   app.innerHTML = pageContent;
 }
 
@@ -56,8 +47,6 @@ export function setupRouter() {
       renderWithoutNavbar(renderLandingPage());
     })
     .on("/auth", () => {
-      // Clear navbar cache on auth page
-      clearNavbarCache();
       renderWithoutNavbar(renderAuthPage());
     })
     .on("/home", () => {
@@ -87,9 +76,7 @@ export function setupRouter() {
         return;
       }
       const app = getAppContainer();
-      document.body.classList.add('has-navbar');
-      app.innerHTML = renderNavbar() + renderTournamentPage(match?.data ?? undefined);
-      setTimeout(() => initializeNavbar(), 0);
+      app.innerHTML = renderTournamentPage(match?.data ?? undefined);
     })
     .on("/customize-board", () => {
       renderWithNavbar(renderCustomizeBoardPage());

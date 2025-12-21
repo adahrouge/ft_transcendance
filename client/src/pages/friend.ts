@@ -22,8 +22,11 @@ export function renderFriendPage(): string {
     <div class="friend-container" style="background-image: url('${backgroundImage}')">
       <div class="friend-overlay"></div>
       <div class="friend-content">
-        <div id="friend-root" class="w-full max-w-[900px]">
-          <div class="text-center text-white font-['Pixel_Game']">${i18n.t('loading')}</div>
+        <div id="friend-root" class="w-full flex justify-center items-center min-h-[300px]">
+          <svg style="color: #5db3d1; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+          </svg>
+          <style>@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }</style>
         </div>
       </div>
     </div>
@@ -38,16 +41,18 @@ async function loadFriends() {
     // Get current user from notification manager (already loaded)
     currentUser = notificationManager.getCurrentUser();
 
-    // Load friends, pending requests, and sent requests in parallel
-    const [friendsResponse, pendingResponse, sentResponse] = await Promise.all([
+    // Load friends, pending requests, sent requests, and blocked users in parallel
+    const [friendsResponse, pendingResponse, sentResponse, blockedResponse] = await Promise.all([
       friendService.getFriends(),
       friendService.getPendingRequests(),
-      friendService.getSentRequests()
+      friendService.getSentRequests(),
+      friendService.getBlockedUsers()
     ]);
 
     const friends = friendsResponse.friends || [];
     const pendingRequests = pendingResponse.requests || [];
     const sentRequests = sentResponse.requests || [];
+    const blockedUsers = blockedResponse.blockedUsers || [];
 
     root.innerHTML = `
       <div class="friend-box">
@@ -74,6 +79,8 @@ async function loadFriends() {
                           data-accept-id="${r.id}">✓ ${i18n.t('accept')}</button>
                   <button class="friend-play-btn bg-red-600 hover:bg-red-700"
                           data-reject-id="${r.id}">✗ ${i18n.t('reject')}</button>
+                  <button class="friend-play-btn bg-gray-600 hover:bg-gray-700"
+                          data-block-id="${r.id}" title="${i18n.t('block')}">🚫</button>
                 </div>
               </div>
             `).join('')}
@@ -119,11 +126,39 @@ async function loadFriends() {
                 <div class="flex gap-2">
                   <button class="friend-play-btn bg-red-600 hover:bg-red-700 text-xs px-2"
                           data-remove-id="${f.id}">✗</button>
+                  <button class="friend-play-btn bg-gray-600 hover:bg-gray-700 text-xs px-2"
+                          data-block-id="${f.id}" title="${i18n.t('block')}">🚫</button>
                 </div>
               </div>
             `).join('')}
           </div>
         </div>
+
+        <!-- Blocked Users Section -->
+        ${blockedUsers.length > 0 ? `
+        <div class="friend-list-section" style="background: rgba(239, 68, 68, 0.1);">
+          <h3 class="friend-section-title" style="color: #ef4444;">
+            🚫 ${i18n.t('blocked_users')} (${blockedUsers.length})
+          </h3>
+          <div class="friend-list" id="blocked-users-list">
+            ${blockedUsers.map((u: any) => `
+              <div class="friend-list-item">
+                <div class="flex items-center gap-3">
+                  <div class="w-3 h-3 rounded-full bg-red-500" title="Blocked"></div>
+                  <div>
+                    <div class="friend-display-name">${u.display_name || u.username}</div>
+                    <div class="friend-username">@${u.username}</div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button class="friend-play-btn bg-gray-600 hover:bg-gray-700"
+                          data-unblock-id="${u.id}">${i18n.t('unblock')}</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        ` : ''}
 
         <!-- Add Friend Section -->
         <div class="friend-add-section">
@@ -204,6 +239,47 @@ async function loadFriends() {
       });
     });
 
+    // Block user buttons
+    root.querySelectorAll('[data-block-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const userId = parseInt((btn as HTMLElement).dataset.blockId || "0");
+        if (userId) {
+          const confirmed = await showConfirm({
+            title: i18n.t('block_user'),
+            message: i18n.t('confirm_block_user'),
+            confirmText: i18n.t('block'),
+            cancelText: i18n.t('back')
+          });
+
+          if (confirmed) {
+            try {
+              await friendService.blockUser(userId);
+              showNotification("User blocked", { type: 'success' });
+              loadFriends(); // Reload to show updated lists
+            } catch (e) {
+              showNotification("Failed to block user", { type: 'error' });
+            }
+          }
+        }
+      });
+    });
+
+    // Unblock user buttons
+    root.querySelectorAll('[data-unblock-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const userId = parseInt((btn as HTMLElement).dataset.unblockId || "0");
+        if (userId) {
+          try {
+            await friendService.unblockUser(userId);
+            showNotification("User unblocked", { type: 'success' });
+            loadFriends(); // Reload to show updated lists
+          } catch (e) {
+            showNotification("Failed to unblock user", { type: 'error' });
+          }
+        }
+      });
+    });
+
     // Search setup
     const searchInput = document.getElementById("search-input") as HTMLInputElement;
     const searchBtn = document.getElementById("search-btn");
@@ -226,7 +302,10 @@ async function loadFriends() {
         resultsDiv.innerHTML = users.map((u: any) => `
           <div class="friend-search-result-item">
             <span class="friend-search-result-name">${u.username}</span>
-            <button class="friend-add-btn" data-add-id="${u.id}">${i18n.t('add')}</button>
+            <div class="flex gap-2">
+              <button class="friend-add-btn" data-add-id="${u.id}">${i18n.t('add')}</button>
+              <button class="friend-add-btn text-red-400 hover:text-red-300" data-block-search-id="${u.id}">🚫</button>
+            </div>
           </div>
         `).join('');
 
@@ -240,6 +319,31 @@ async function loadFriends() {
                 loadFriends(); // Reload list
               } catch (e: any) {
                 showNotification(e.message || "Failed to send friend request", { type: 'error' });
+              }
+            }
+          });
+        });
+
+        resultsDiv.querySelectorAll('[data-block-search-id]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = parseInt((btn as HTMLElement).dataset.blockSearchId || "0");
+            if (id) {
+              const confirmed = await showConfirm({
+                title: i18n.t('block_user'),
+                message: i18n.t('confirm_block_user'),
+                confirmText: i18n.t('block'),
+                cancelText: i18n.t('back')
+              });
+
+              if (confirmed) {
+                try {
+                  await friendService.blockUser(id);
+                  showNotification("User blocked", { type: 'success' });
+                  loadFriends(); // Reload list
+                  doSearch(); // Refresh search results
+                } catch (e: any) {
+                  showNotification(e.message || "Failed to block user", { type: 'error' });
+                }
               }
             }
           });

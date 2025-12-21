@@ -161,7 +161,7 @@ function setupAuthInteractions() {
     const password = passwordInput.value;
     
     if (!username || !password) {
-      if (errorDiv) errorDiv.textContent = 'Please fill in all fields';
+      if (errorDiv) errorDiv.textContent = i18n.t('fill_all_fields');
       return;
     }
 
@@ -200,24 +200,55 @@ function setupAuthInteractions() {
     const password = passwordInput.value;
     
     if (!username || !email || !password) {
-      if (errorDiv) errorDiv.textContent = 'Please fill in all fields';
+      if (errorDiv) errorDiv.textContent = i18n.t('fill_all_fields');
       return;
     }
     
     if (username.length < 3) {
-      if (errorDiv) errorDiv.textContent = 'Username must be at least 3 characters';
+      if (errorDiv) errorDiv.textContent = i18n.t('username_too_short');
+      return;
+    }
+
+    if (username.length > 20) {
+      if (errorDiv) errorDiv.textContent = i18n.t('username_too_long');
+      return;
+    }
+
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    if (!usernameRegex.test(username)) {
+      if (errorDiv) errorDiv.textContent = i18n.t('username_invalid_chars');
       return;
     }
     
-    if (password.length < 6) {
-      if (errorDiv) errorDiv.textContent = 'Password must be at least 6 characters';
+    if (password.length < 8) {
+      if (errorDiv) errorDiv.textContent = i18n.t('password_too_short');
+      return;
+    }
+
+    if (password.length > 64) {
+      if (errorDiv) errorDiv.textContent = i18n.t('password_too_long');
+      return;
+    }
+
+    if (!/[0-9]/.test(password)) {
+      if (errorDiv) errorDiv.textContent = i18n.t('password_needs_number');
+      return;
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      if (errorDiv) errorDiv.textContent = i18n.t('password_needs_uppercase');
+      return;
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      if (errorDiv) errorDiv.textContent = i18n.t('password_needs_special');
       return;
     }
     
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      if (errorDiv) errorDiv.textContent = 'Please enter a valid email';
+      if (errorDiv) errorDiv.textContent = i18n.t('invalid_email');
       return;
     }
 

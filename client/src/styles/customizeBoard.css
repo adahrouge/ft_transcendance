@@ -19,13 +19,30 @@
 
   /* Main box */
   .customize-board-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-full max-w-[850px];
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[90vh] w-[90%] max-w-[850px] mx-auto overflow-y-auto;
     padding: 1.25rem;
     image-rendering: pixelated;
 
     box-shadow: 0 -5px 0 0 #3d8aa8, 5px -5px 0 0 #3d8aa8, 5px 0 0 0 #3d8aa8,
       5px 5px 0 0 #3d8aa8, 0 5px 0 0 #3d8aa8, -5px 5px 0 0 #3d8aa8,
       -5px 0 0 0 #3d8aa8, -5px -5px 0 0 #3d8aa8;
+  }
+
+  /* Custom scrollbar for customize board box */
+  .customize-board-box::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .customize-board-box::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .customize-board-box::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .customize-board-box::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
   }
 
   @media (max-width: 768px) {

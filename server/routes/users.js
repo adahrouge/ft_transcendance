@@ -19,7 +19,10 @@ import {
   getPendingFriendRequests,
   getSentFriendRequests,
   searchUsers,
-  addMatchHistory
+  addMatchHistory,
+  blockUser,
+  unblockUser,
+  getBlockedUsers
 } from '../database/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +54,23 @@ export async function userRoutes(fastify) {
       
       if (!username || !email || !password) {
         return reply.code(400).send({ error: 'Username, email, and password are required' });
+      }
+
+      // Validate input format
+      if (username.length < 3 || username.length > 20) {
+        return reply.code(400).send({ error: 'Username must be between 3 and 20 characters' });
+      }
+
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        return reply.code(400).send({ error: 'Username can only contain letters, numbers, and underscores' });
+      }
+
+      if (password.length < 6 || password.length > 64) {
+        return reply.code(400).send({ error: 'Password must be between 6 and 64 characters' });
+      }
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return reply.code(400).send({ error: 'Invalid email format' });
       }
       
       // Check if username already exists
@@ -297,6 +317,9 @@ export async function userRoutes(fastify) {
       updates.display_name = display_name;
     }
     if (email !== undefined) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return reply.code(400).send({ error: 'Invalid email format' });
+      }
       // Check if email is already taken by another user
       const existingUser = await getUserByEmail(email);
       if (existingUser && existingUser.id !== user.id) {
@@ -308,6 +331,18 @@ export async function userRoutes(fastify) {
       updates.avatar_url = avatar_url;
     }
     if (password !== undefined) {
+      if (password.length < 8 || password.length > 64) {
+        return reply.code(400).send({ error: 'Password must be between 8 and 64 characters' });
+      }
+      if (!/[0-9]/.test(password)) {
+        return reply.code(400).send({ error: 'Password must contain at least one number' });
+      }
+      if (!/[A-Z]/.test(password)) {
+        return reply.code(400).send({ error: 'Password must contain at least one uppercase letter' });
+      }
+      if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return reply.code(400).send({ error: 'Password must contain at least one special character' });
+      }
       if (!current_password) {
         return reply.code(400).send({ error: 'Current password is required to change password' });
       }
@@ -381,7 +416,7 @@ export async function userRoutes(fastify) {
       return { users: [] };
     }
 
-    const users = await searchUsers(q);
+    const users = await searchUsers(q, user.id);
     return { users };
   });
 
@@ -480,6 +515,64 @@ export async function userRoutes(fastify) {
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to remove friend' });
     }
+  });
+
+  // Block user
+  fastify.post('/api/users/me/blocked', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { blocked_user_id } = request.body;
+    if (!blocked_user_id) {
+      return reply.code(400).send({ error: 'blocked_user_id is required' });
+    }
+
+    if (blocked_user_id === user.id) {
+      return reply.code(400).send({ error: 'Cannot block yourself' });
+    }
+
+    try {
+      const result = await blockUser(user.id, blocked_user_id);
+      if (!result.success) {
+        return reply.code(400).send({ error: result.error });
+      }
+      return { success: true, message: 'User blocked' };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message || 'Failed to block user' });
+    }
+  });
+
+  // Unblock user
+  fastify.delete('/api/users/me/blocked/:blockedUserId', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const { blockedUserId } = request.params;
+    if (!blockedUserId) {
+      return reply.code(400).send({ error: 'blockedUserId is required' });
+    }
+
+    try {
+      await unblockUser(user.id, parseInt(blockedUserId));
+      return { success: true, message: 'User unblocked' };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message || 'Failed to unblock user' });
+    }
+  });
+
+  // Get blocked users
+  fastify.get('/api/users/me/blocked', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const blockedUsers = await getBlockedUsers(user.id);
+    return { blockedUsers };
   });
 
   // Upload avatar

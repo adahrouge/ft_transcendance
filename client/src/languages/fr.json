@@ -191,5 +191,19 @@
   "tournaments_won": "Tournois",
   "tournament_champion": "Champion du Tournoi !",
   "tournament_victory_saved": "Victoire du tournoi sauvegardée ! 🏆",
-  "tbd_short": "À DÉT."
+  "tbd_short": "À DÉT.",
+  "account_details": "Détails du compte",
+  "leave_blank_to_keep": "Laisser vide pour conserver le mot de passe actuel",
+  "no_changes": "Aucune modification à enregistrer",
+  "block": "BLOQUER",
+  "unblock": "DÉBLOQUER",
+  "blocked_users": "UTILISATEURS BLOQUÉS",
+  "block_user": "Bloquer l'utilisateur",
+  "confirm_block_user": "Êtes-vous sûr de vouloir bloquer cet utilisateur ? Il ne pourra plus vous envoyer de messages ou de demandes d'amis.",
+  "username_invalid_chars": "Le nom d'utilisateur ne peut contenir que des lettres, des chiffres et des traits de soulignement",
+  "username_too_long": "Le nom d'utilisateur doit comporter moins de 20 caractères",
+  "password_too_long": "Le mot de passe doit comporter moins de 64 caractères",
+  "password_needs_number": "Le mot de passe doit contenir au moins un chiffre",
+  "password_needs_uppercase": "Le mot de passe doit contenir au moins une lettre majuscule",
+  "password_needs_special": "Le mot de passe doit contenir au moins un caractère spécial"
 }
