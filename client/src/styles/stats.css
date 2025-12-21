@@ -3,7 +3,7 @@
 @layer components {
   /* Page layout */
   .stats-container {
-    @apply fixed inset-0 w-full h-full overflow-y-auto bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    @apply fixed inset-0 w-full h-full overflow-hidden bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
   }
 
   .stats-overlay {
@@ -11,12 +11,13 @@
   }
 
   .stats-content {
-    @apply relative z-10 flex flex-col items-center justify-center min-h-full w-full p-4;
+    @apply relative z-10 flex flex-col items-center justify-center h-full w-full p-4;
   }
 
   /* Main stats box */
   .stats-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[600px] mx-auto text-center overflow-y-auto;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-[90%] max-w-[600px] mx-auto text-center overflow-hidden flex flex-col;
+    max-height: 85vh;
     padding: 1.5rem;
     image-rendering: pixelated;
     box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
@@ -24,30 +25,13 @@
       -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
   }
 
-  /* Custom scrollbar for stats box */
-  .stats-box::-webkit-scrollbar {
-    width: 8px;
-  }
-
-  .stats-box::-webkit-scrollbar-track {
-    background: #0d1a28;
-  }
-
-  .stats-box::-webkit-scrollbar-thumb {
-    background: #2c6b87;
-  }
-
-  .stats-box::-webkit-scrollbar-thumb:hover {
-    background: #3d8aa8;
-  }
-
   .stats-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6 flex-shrink-0;
   }
 
   /* Stats Header */
   .stats-header {
-    @apply flex flex-col items-center gap-2 mb-6 pb-4;
+    @apply flex flex-col items-center gap-2 mb-6 pb-4 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
@@ -79,7 +63,7 @@
 
   /* Stats grid */
   .stats-grid {
-    @apply grid grid-cols-2 md:grid-cols-5 gap-4 mb-6;
+    @apply grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 flex-shrink-0;
   }
 
   .stats-card {
@@ -118,16 +102,17 @@
 
   /* History section */
   .stats-history-section {
-    @apply text-left;
+    @apply text-left flex flex-col min-h-0 flex-1;
   }
 
   .stats-section-title {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-2;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-2 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
   .stats-history-list {
-    @apply space-y-2 pr-2;
+    @apply space-y-2 pr-2 overflow-y-auto flex-1;
+    max-height: 30vh;
   }
 
   .stats-match-item {
@@ -169,7 +154,7 @@
 
   /* Footer */
   .stats-footer {
-    @apply mt-6;
+    @apply mt-6 flex-shrink-0;
   }
 
   .stats-back-btn {

@@ -1,3 +1,4 @@
+// Pong Board Customization
 export interface BoardCustomization {
   theme: 'classic' | 'neon' | 'retro' | 'ocean' | 'fire' | 'sunset' | 'custom';
   colors: {
@@ -79,6 +80,92 @@ export const THEME_PRESETS: Record<string, BoardCustomization> = {
       ball: '#ffd93d',
       border: '#ff8c42',
       centerLine: '#c96ddb'
+    }
+  }
+};
+
+// XO (TicTacToe) Board Customization
+export interface XoBoardCustomization {
+  theme: 'classic' | 'neon' | 'retro' | 'ocean' | 'fire' | 'sunset' | 'custom';
+  colors: {
+    background: string;
+    grid: string;
+    xColor: string;
+    oColor: string;
+    border: string;
+  };
+}
+
+export const DEFAULT_XO_CUSTOMIZATION: XoBoardCustomization = {
+  theme: 'classic',
+  colors: {
+    background: '#0a0a12',
+    grid: '#3d8aa8',
+    xColor: '#4ade80',
+    oColor: '#f87171',
+    border: '#3d8aa8'
+  }
+};
+
+export const XO_THEME_PRESETS: Record<string, XoBoardCustomization> = {
+  classic: {
+    theme: 'classic',
+    colors: {
+      background: '#0a0a12',
+      grid: '#3d8aa8',
+      xColor: '#4ade80',
+      oColor: '#f87171',
+      border: '#3d8aa8'
+    }
+  },
+  neon: {
+    theme: 'neon',
+    colors: {
+      background: '#0d001a',
+      grid: '#ff00ff',
+      xColor: '#00ffff',
+      oColor: '#ff00ff',
+      border: '#ff00ff'
+    }
+  },
+  retro: {
+    theme: 'retro',
+    colors: {
+      background: '#0a1e0a',
+      grid: '#00ff00',
+      xColor: '#00ff00',
+      oColor: '#ffff00',
+      border: '#00ff00'
+    }
+  },
+  ocean: {
+    theme: 'ocean',
+    colors: {
+      background: '#001a33',
+      grid: '#0080ff',
+      xColor: '#66d9ff',
+      oColor: '#ffffff',
+      border: '#0080ff'
+    }
+  },
+  fire: {
+    theme: 'fire',
+    colors: {
+      background: '#1a0000',
+      grid: '#ff3300',
+      xColor: '#ff6600',
+      oColor: '#ffcc00',
+      border: '#ff3300'
+    }
+  },
+  sunset: {
+    theme: 'sunset',
+    colors: {
+      background: '#1a0a1f',
+      grid: '#ff8c42',
+      xColor: '#ff6b9d',
+      oColor: '#ffd93d',
+      border: '#ff8c42'
     }
   }
 };

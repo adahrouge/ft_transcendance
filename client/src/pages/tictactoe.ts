@@ -3,7 +3,10 @@ import { navigateTo } from "../router";
 import { isAuthenticated } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { statsService } from "../services/stats";
+import { xoBoardCustomizationService } from "../services/boardCustomization";
 import type { Board, Player } from "../types/tictactoe";
+import type { XoBoardCustomization } from "../types/boardCustomization";
+import { DEFAULT_XO_CUSTOMIZATION } from "../types/boardCustomization";
 import "../styles/tictactoe.css";
 import backgroundImage from "../assets/images/background.jpg";
 
@@ -137,12 +140,20 @@ function showMatchSetup(root: HTMLElement) {
   document.getElementById("btn-back")?.addEventListener("click", () => showModeSelection(root));
 }
 
-function startMatch(root: HTMLElement) {
+async function startMatch(root: HTMLElement) {
   const isAI = selectedGameMode === "ai";
   let board: Board = Array(9).fill(null);
   let currentPlayer: Player = 'X';
   let gameOver = false;
   let winner: Player | 'draw' | null = null;
+
+  // Load customization
+  let customization: XoBoardCustomization = DEFAULT_XO_CUSTOMIZATION;
+  try {
+    customization = await xoBoardCustomizationService.loadCustomization();
+  } catch (e) {
+    console.error("Failed to load XO customization:", e);
+  }
 
   root.innerHTML = `
     <div class="tictactoe-box">
@@ -179,24 +190,33 @@ function startMatch(root: HTMLElement) {
 
   function drawBoard() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
+    // Draw background
+    ctx.fillStyle = customization.colors.background;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw border
+    ctx.strokeStyle = customization.colors.border;
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
+
     // Draw grid
-    ctx.strokeStyle = "#3d8aa8";
+    ctx.strokeStyle = customization.colors.grid;
     ctx.lineWidth = 4;
     ctx.beginPath();
-    
+
     // Vertical lines
     ctx.moveTo(canvas.width / 3, 20);
     ctx.lineTo(canvas.width / 3, canvas.height - 20);
     ctx.moveTo(2 * canvas.width / 3, 20);
     ctx.lineTo(2 * canvas.width / 3, canvas.height - 20);
-    
+
     // Horizontal lines
     ctx.moveTo(20, canvas.height / 3);
     ctx.lineTo(canvas.width - 20, canvas.height / 3);
     ctx.moveTo(20, 2 * canvas.height / 3);
     ctx.lineTo(canvas.width - 20, 2 * canvas.height / 3);
-    
+
     ctx.stroke();
 
     // Draw pieces
@@ -209,7 +229,7 @@ function startMatch(root: HTMLElement) {
         const size = 40;
 
         if (cell === 'X') {
-          ctx.strokeStyle = "#4ade80"; // Green
+          ctx.strokeStyle = customization.colors.xColor;
           ctx.lineWidth = 8;
           ctx.beginPath();
           ctx.moveTo(x - size, y - size);
@@ -218,7 +238,7 @@ function startMatch(root: HTMLElement) {
           ctx.lineTo(x - size, y + size);
           ctx.stroke();
         } else {
-          ctx.strokeStyle = "#f87171"; // Red
+          ctx.strokeStyle = customization.colors.oColor;
           ctx.lineWidth = 8;
           ctx.beginPath();
           ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -238,21 +258,21 @@ function startMatch(root: HTMLElement) {
       } else if (winner === 'X') {
         if (statusP1) statusP1.textContent = i18n.t('x_wins');
         if (statusP2) statusP2.textContent = "";
-        if (statusP1) statusP1.style.color = "#4ade80";
+        if (statusP1) statusP1.style.color = customization.colors.xColor;
       } else {
         if (statusP1) statusP1.textContent = "";
         if (statusP2) statusP2.textContent = i18n.t('o_wins');
-        if (statusP2) statusP2.style.color = "#f87171";
+        if (statusP2) statusP2.style.color = customization.colors.oColor;
       }
     } else {
       if (currentPlayer === 'X') {
         if (statusP1) statusP1.textContent = i18n.t('your_turn');
         if (statusP2) statusP2.textContent = "";
-        if (statusP1) statusP1.style.color = "#4ade80";
+        if (statusP1) statusP1.style.color = customization.colors.xColor;
       } else {
         if (statusP1) statusP1.textContent = "";
         if (statusP2) statusP2.textContent = isAI ? i18n.t('ai_turn') : i18n.t('your_turn');
-        if (statusP2) statusP2.style.color = "#f87171";
+        if (statusP2) statusP2.style.color = customization.colors.oColor;
       }
     }
   }

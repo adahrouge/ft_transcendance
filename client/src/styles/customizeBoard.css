@@ -59,6 +59,42 @@
     @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mb-4 text-center;
   }
 
+  /* Game Tabs */
+  .customize-board-tabs {
+    @apply flex justify-center gap-2 mb-6;
+  }
+
+  .customize-board-tab {
+    @apply px-6 py-2 bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-sm cursor-pointer transition-all duration-100;
+    border: none;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+  }
+
+  .customize-board-tab:hover {
+    @apply text-[#e0f7ff];
+    box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+      2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+      -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+  }
+
+  .customize-board-tab.active {
+    @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white;
+    box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
+      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
+      -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
+  }
+
+  /* Panels */
+  .customize-board-panel {
+    @apply w-full;
+  }
+
+  .customize-board-panel.hidden {
+    @apply hidden;
+  }
+
   /* Section titles */
   .customize-board-section-title {
     @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-1;

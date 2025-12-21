@@ -186,6 +186,13 @@ export async function initDatabase() {
       await dbRun('ALTER TABLE users ADD COLUMN board_customization TEXT');
       console.log('Added board_customization column to users table');
     }
+
+    // Add xo_board_customization column if it doesn't exist
+    const hasXoCustomizationColumn = tableInfo.some(col => col.name === 'xo_board_customization');
+    if (!hasXoCustomizationColumn) {
+      await dbRun('ALTER TABLE users ADD COLUMN xo_board_customization TEXT');
+      console.log('Added xo_board_customization column to users table');
+    }
   } catch (err) {
     console.error('Error adding board_customization column:', err);
   }
@@ -229,6 +236,13 @@ function parseUserCustomization(user) {
       user.board_customization = null;
     }
   }
+  if (user && user.xo_board_customization) {
+    try {
+      user.xo_board_customization = JSON.parse(user.xo_board_customization);
+    } catch (err) {
+      user.xo_board_customization = null;
+    }
+  }
   return user;
 }
 
@@ -265,6 +279,10 @@ export async function updateUser(id, updates) {
   if (updates.board_customization !== undefined) {
     fields.push('board_customization = ?');
     values.push(JSON.stringify(updates.board_customization));
+  }
+  if (updates.xo_board_customization !== undefined) {
+    fields.push('xo_board_customization = ?');
+    values.push(JSON.stringify(updates.xo_board_customization));
   }
 
   fields.push('updated_at = CURRENT_TIMESTAMP');
