@@ -163,12 +163,98 @@
   }
 
   /* Responsive - Auth page */
-  @media (max-width: 479px) {
+
+  /* Extra small phones (320px - 374px) */
+  @media (max-width: 374px) {
+    .auth-box {
+      @apply p-3;
+      height: auto;
+      min-height: 65%;
+      max-width: 96%;
+      box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+        2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+        -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+    }
+
+    .auth-header {
+      @apply mb-4;
+    }
+
+    .auth-header h1 {
+      @apply text-2xl;
+    }
+
+    .auth-tabs {
+      @apply gap-2 mb-4 pb-2;
+    }
+
+    .tab-btn {
+      @apply text-xs px-4 py-2;
+      font-size: 0.7rem;
+    }
+
+    .form-group {
+      @apply gap-1;
+    }
+
+    .form-group label {
+      @apply text-sm;
+    }
+
+    .pixel-input {
+      @apply px-3 py-2 text-base;
+      font-size: 0.9rem;
+    }
+
+    .pixel-input::placeholder {
+      @apply text-xs;
+    }
+
+    .pixel-btn {
+      @apply text-sm py-3;
+      min-height: 44px;
+      font-size: 0.95rem;
+    }
+
+    .google-btn {
+      @apply text-xs py-3 gap-2;
+      min-height: 44px;
+      font-size: 0.85rem;
+    }
+
+    .google-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .auth-form-container {
+      @apply p-3;
+      height: auto;
+    }
+
+    .divider {
+      @apply text-xs my-2;
+    }
+
+    .error-message {
+      @apply text-xs;
+    }
+  }
+
+  /* Small phones (375px - 479px) */
+  @media (min-width: 375px) and (max-width: 479px) {
     .auth-box {
       @apply p-4;
       height: auto;
       min-height: 70%;
       max-width: 95%;
+      box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
+        3px 3px 0 0 #3d8aa8, 0 3px 0 0 #3d8aa8, -3px 3px 0 0 #3d8aa8,
+        -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
+    }
+
+    .auth-header {
+      @apply mb-4;
     }
 
     .auth-header h1 {
@@ -176,11 +262,27 @@
     }
 
     .auth-tabs {
-      @apply gap-2 flex-wrap;
+      @apply gap-3 mb-6 pb-2;
     }
 
     .tab-btn {
-      @apply text-sm px-3 py-2;
+      @apply text-sm px-4 py-2;
+    }
+
+    .form-group {
+      @apply gap-1;
+    }
+
+    .form-group label {
+      @apply text-base;
+    }
+
+    .pixel-input {
+      @apply px-3 py-2 text-base;
+    }
+
+    .pixel-input::placeholder {
+      @apply text-xs;
     }
 
     .pixel-btn {
@@ -189,18 +291,184 @@
     }
 
     .google-btn {
-      @apply text-sm py-3;
+      @apply text-sm py-3 gap-2;
       min-height: 48px;
+    }
+
+    .google-btn svg {
+      width: 16px;
+      height: 16px;
     }
 
     .auth-form-container {
       @apply p-4;
+      height: auto;
+    }
+
+    .divider {
+      @apply text-xs my-2;
+    }
+
+    .error-message {
+      @apply text-xs;
     }
   }
 
-  @media (min-width: 480px) and (max-width: 767px) {
+  /* Medium phones (480px - 639px) */
+  @media (min-width: 480px) and (max-width: 639px) {
     .auth-box {
+      @apply p-6;
       max-width: 90%;
+      height: auto;
+      min-height: 75%;
+    }
+
+    .auth-header {
+      @apply mb-5;
+    }
+
+    .auth-header h1 {
+      @apply text-4xl;
+    }
+
+    .auth-tabs {
+      @apply gap-4 mb-6;
+    }
+
+    .tab-btn {
+      @apply text-base px-6 py-2;
+    }
+
+    .form-group label {
+      @apply text-base;
+    }
+
+    .pixel-input {
+      @apply px-3 py-2;
+    }
+
+    .pixel-btn {
+      @apply text-lg py-3;
+    }
+
+    .google-btn {
+      @apply text-base py-3;
+    }
+
+    .auth-form-container {
+      @apply p-5;
+      height: auto;
+    }
+
+    .divider {
+      @apply text-sm;
+    }
+  }
+
+  /* Large phones / Small tablets (640px - 767px) */
+  @media (min-width: 640px) and (max-width: 767px) {
+    .auth-box {
+      @apply p-8;
+      max-width: 85%;
+      height: auto;
+      min-height: 75%;
+    }
+
+    .auth-header h1 {
+      @apply text-5xl;
+    }
+
+    .auth-tabs {
+      @apply gap-6 mb-7;
+    }
+
+    .tab-btn {
+      @apply text-lg px-6 py-2;
+    }
+
+    .pixel-input {
+      @apply px-4 py-3;
+    }
+
+    .pixel-btn {
+      @apply text-xl py-4;
+    }
+
+    .google-btn {
+      @apply text-lg py-4;
+    }
+
+    .auth-form-container {
+      @apply p-6;
+      height: auto;
+    }
+  }
+
+  /* Landscape mode for small phones */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .auth-box {
+      @apply p-3;
+      height: auto;
+      min-height: auto;
+      max-height: 95vh;
+      overflow-y: auto;
+      max-width: 85%;
+    }
+
+    .auth-header {
+      @apply mb-2;
+    }
+
+    .auth-header h1 {
+      @apply text-2xl;
+    }
+
+    .auth-tabs {
+      @apply gap-2 mb-3 pb-1;
+    }
+
+    .tab-btn {
+      @apply text-xs px-3 py-1;
+    }
+
+    .form-group {
+      @apply gap-0.5;
+    }
+
+    .form-group label {
+      @apply text-sm;
+    }
+
+    .pixel-input {
+      @apply px-2 py-2 text-sm;
+    }
+
+    .pixel-btn {
+      @apply text-sm py-2;
+      min-height: 40px;
+    }
+
+    .google-btn {
+      @apply text-xs py-2 gap-2;
+      min-height: 40px;
+    }
+
+    .google-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .auth-form-container {
+      @apply p-3;
+      height: auto;
+    }
+
+    .divider {
+      @apply text-xs my-1;
+    }
+
+    .error-message {
+      @apply text-xs;
     }
   }
 }

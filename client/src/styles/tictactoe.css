@@ -246,30 +246,489 @@
     padding-top: 80px;
   }
 
-  @media (max-width: 479px) {
+  /* Extra small phones (320px - 374px) */
+  @media (max-width: 374px) {
+    .tictactoe-content {
+      @apply px-2;
+      padding-top: 60px;
+    }
+
+    .tictactoe-start-box {
+      @apply p-3;
+      min-width: auto !important;
+      width: 96%;
+      max-width: 96%;
+      box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+        2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+        -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+    }
+
+    .tictactoe-box {
+      @apply p-3;
+      box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
+        2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
+        -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
+    }
+
+    .tictactoe-title {
+      @apply text-lg mb-2;
+      font-size: 1.05rem;
+    }
+
+    .tictactoe-subtitle {
+      @apply text-xs mb-4;
+      font-size: 0.7rem;
+    }
+
+    .tictactoe-canvas-wrapper {
+      box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+        2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+        -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    }
+
+    .tictactoe-canvas {
+      width: 280px !important;
+      height: 280px !important;
+      max-width: 100%;
+    }
+
+    .tictactoe-scoreboard {
+      @apply mb-3 px-2 flex-wrap gap-2;
+    }
+
+    .tictactoe-score-label {
+      @apply text-xs;
+      font-size: 0.7rem;
+    }
+
+    .tictactoe-score-value {
+      @apply text-sm;
+      font-size: 0.85rem;
+      min-width: 30px;
+    }
+
+    .tictactoe-score-divider {
+      @apply text-base mx-2;
+    }
+
+    .tictactoe-btn {
+      @apply text-xs px-4 py-2;
+      font-size: 0.8rem;
+      min-height: 40px;
+    }
+
+    .tictactoe-controls {
+      @apply gap-2 mt-4;
+    }
+
+    .tictactoe-mode-buttons {
+      @apply gap-3 my-4;
+    }
+
+    .tictactoe-mode-btn {
+      @apply p-3;
+    }
+
+    .tictactoe-mode-title {
+      @apply text-base;
+      font-size: 0.95rem;
+    }
+
+    .tictactoe-mode-desc {
+      @apply text-xs;
+      font-size: 0.7rem;
+    }
+
+    .tictactoe-settings {
+      @apply my-4 space-y-4;
+    }
+
+    .tictactoe-setting-label {
+      @apply text-sm;
+      font-size: 0.85rem;
+    }
+
+    .tictactoe-slider {
+      max-width: 200px;
+      height: 10px;
+    }
+
+    .tictactoe-slider-label {
+      @apply text-xs;
+      font-size: 0.65rem;
+      min-width: 30px;
+    }
+
+    .tictactoe-slider::-webkit-slider-thumb {
+      width: 16px;
+      height: 16px;
+    }
+
+    .tictactoe-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+    }
+
+    .tictactoe-divider {
+      @apply my-4;
+    }
+
+    .tictactoe-over-box {
+      @apply p-4 mx-2;
+      max-width: 90%;
+    }
+
+    .tictactoe-over-title {
+      @apply text-2xl mb-3;
+    }
+
+    .tictactoe-over-actions {
+      @apply gap-2 flex-col;
+    }
+
+    .tictactoe-over-actions .tictactoe-btn {
+      @apply w-full;
+    }
+  }
+
+  /* Small phones (375px - 479px) */
+  @media (min-width: 375px) and (max-width: 479px) {
+    .tictactoe-content {
+      @apply px-3;
+      padding-top: 70px;
+    }
+
     .tictactoe-start-box {
       @apply p-4;
       min-width: auto !important;
       width: 95%;
       max-width: 95%;
+      box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
+        3px 3px 0 0 #3d8aa8, 0 3px 0 0 #3d8aa8, -3px 3px 0 0 #3d8aa8,
+        -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
+    }
+
+    .tictactoe-box {
+      @apply p-4;
+      box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
+        3px 3px 0 0 #3d8aa8, 0 3px 0 0 #3d8aa8, -3px 3px 0 0 #3d8aa8,
+        -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
     }
 
     .tictactoe-title {
-      @apply text-xl;
+      @apply text-xl mb-3;
     }
 
     .tictactoe-subtitle {
+      @apply text-xs mb-4;
+    }
+
+    .tictactoe-canvas {
+      width: 320px !important;
+      height: 320px !important;
+      max-width: 100%;
+    }
+
+    .tictactoe-scoreboard {
+      @apply mb-3 px-2;
+    }
+
+    .tictactoe-score-label {
+      @apply text-sm;
+    }
+
+    .tictactoe-score-value {
+      @apply text-base;
+    }
+
+    .tictactoe-score-divider {
+      @apply text-lg;
+    }
+
+    .tictactoe-btn {
+      @apply text-sm px-4 py-2;
+      min-height: 44px;
+    }
+
+    .tictactoe-controls {
+      @apply gap-3 mt-4;
+    }
+
+    .tictactoe-mode-buttons {
+      @apply gap-3 my-5;
+    }
+
+    .tictactoe-mode-btn {
+      @apply p-4;
+    }
+
+    .tictactoe-mode-title {
+      @apply text-lg;
+    }
+
+    .tictactoe-mode-desc {
       @apply text-xs;
     }
 
-    .tictactoe-content {
-      padding-top: 70px;
+    .tictactoe-settings {
+      @apply my-5 space-y-5;
+    }
+
+    .tictactoe-setting-label {
+      @apply text-base;
+    }
+
+    .tictactoe-slider {
+      max-width: 220px;
+    }
+
+    .tictactoe-slider-label {
+      @apply text-xs;
+      min-width: 35px;
+    }
+
+    .tictactoe-over-box {
+      @apply p-5 mx-3;
+      max-width: 92%;
+    }
+
+    .tictactoe-over-title {
+      @apply text-2xl;
+    }
+
+    .tictactoe-over-actions {
+      @apply gap-3;
     }
   }
 
-  @media (min-width: 480px) and (max-width: 767px) {
+  /* Medium phones (480px - 639px) */
+  @media (min-width: 480px) and (max-width: 639px) {
+    .tictactoe-content {
+      padding-top: 75px;
+    }
+
     .tictactoe-start-box {
+      @apply p-6;
       max-width: 90%;
+    }
+
+    .tictactoe-box {
+      @apply p-5;
+    }
+
+    .tictactoe-title {
+      @apply text-2xl mb-3;
+    }
+
+    .tictactoe-subtitle {
+      @apply text-sm mb-5;
+    }
+
+    .tictactoe-canvas {
+      width: 360px !important;
+      height: 360px !important;
+    }
+
+    .tictactoe-scoreboard {
+      @apply mb-4;
+    }
+
+    .tictactoe-score-label {
+      @apply text-base;
+    }
+
+    .tictactoe-score-value {
+      @apply text-xl;
+    }
+
+    .tictactoe-btn {
+      @apply text-base px-5 py-3;
+    }
+
+    .tictactoe-controls {
+      @apply gap-3 mt-5;
+    }
+
+    .tictactoe-mode-title {
+      @apply text-lg;
+    }
+
+    .tictactoe-mode-desc {
+      @apply text-sm;
+    }
+
+    .tictactoe-slider {
+      max-width: 250px;
+    }
+
+    .tictactoe-over-box {
+      @apply p-6;
+    }
+
+    .tictactoe-over-title {
+      @apply text-3xl;
+    }
+  }
+
+  /* Large phones / Small tablets (640px - 767px) */
+  @media (min-width: 640px) and (max-width: 767px) {
+    .tictactoe-start-box {
+      @apply p-8;
+      max-width: 85%;
+    }
+
+    .tictactoe-box {
+      @apply p-6;
+    }
+
+    .tictactoe-title {
+      @apply text-3xl;
+    }
+
+    .tictactoe-canvas {
+      width: 380px !important;
+      height: 380px !important;
+    }
+
+    .tictactoe-btn {
+      @apply text-lg px-6 py-3;
+    }
+
+    .tictactoe-over-box {
+      @apply p-7;
+    }
+
+    .tictactoe-over-title {
+      @apply text-4xl;
+    }
+  }
+
+  /* Landscape mode for small phones */
+  @media (max-height: 500px) and (orientation: landscape) {
+    .tictactoe-content {
+      @apply px-2;
+      padding-top: 20px;
+      padding-bottom: 20px;
+    }
+
+    .tictactoe-start-box {
+      @apply p-3;
+      max-width: 70%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .tictactoe-box {
+      @apply p-3;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .tictactoe-title {
+      @apply text-base mb-2;
+    }
+
+    .tictactoe-subtitle {
+      @apply text-xs mb-2;
+      font-size: 0.65rem;
+    }
+
+    .tictactoe-canvas {
+      width: 240px !important;
+      height: 240px !important;
+    }
+
+    .tictactoe-scoreboard {
+      @apply mb-2 px-2;
+    }
+
+    .tictactoe-score-label {
+      @apply text-xs;
+      font-size: 0.7rem;
+    }
+
+    .tictactoe-score-value {
+      @apply text-sm;
+      font-size: 0.8rem;
+    }
+
+    .tictactoe-score-divider {
+      @apply text-sm mx-2;
+    }
+
+    .tictactoe-btn {
+      @apply text-xs px-3 py-2;
+      font-size: 0.75rem;
+      min-height: 36px;
+    }
+
+    .tictactoe-controls {
+      @apply gap-2 mt-3;
+    }
+
+    .tictactoe-mode-buttons {
+      @apply gap-2 my-3;
+    }
+
+    .tictactoe-mode-btn {
+      @apply p-3;
+    }
+
+    .tictactoe-mode-title {
+      @apply text-sm;
+    }
+
+    .tictactoe-mode-desc {
+      @apply text-xs;
+      font-size: 0.7rem;
+    }
+
+    .tictactoe-settings {
+      @apply my-3 space-y-3;
+    }
+
+    .tictactoe-setting-label {
+      @apply text-sm;
+      font-size: 0.8rem;
+    }
+
+    .tictactoe-slider {
+      max-width: 180px;
+      height: 8px;
+    }
+
+    .tictactoe-slider-label {
+      font-size: 0.65rem;
+      min-width: 28px;
+    }
+
+    .tictactoe-slider::-webkit-slider-thumb {
+      width: 14px;
+      height: 14px;
+    }
+
+    .tictactoe-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+    }
+
+    .tictactoe-divider {
+      @apply my-3;
+    }
+
+    .tictactoe-over-box {
+      @apply p-3;
+      max-width: 80%;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .tictactoe-over-title {
+      @apply text-xl mb-2;
+    }
+
+    .tictactoe-over-actions {
+      @apply gap-2;
     }
   }
 }
