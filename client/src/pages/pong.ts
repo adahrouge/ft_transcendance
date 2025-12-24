@@ -735,8 +735,19 @@ async function startTournamentMatch(
           <span class="pong-countdown-text" id="countdown-text">3</span>
         </div>
       </div>
+      <!-- Touch controls for mobile -->
+      <div class="pong-touch-controls pong-touch-controls-single" id="tournament-touch-controls">
+        <div class="pong-touch-section pong-touch-single">
+          <span class="pong-touch-label">${i18n.t('you')}</span>
+          <div class="pong-touch-buttons">
+            <button class="pong-touch-btn" id="tournament-player-left">◄</button>
+            <button class="pong-touch-btn" id="tournament-player-right">►</button>
+          </div>
+        </div>
+      </div>
       <div class="pong-controls">
-        <button class="pong-btn pong-btn-secondary" id="btn-pause">PAUSE</button>
+        <button class="pong-btn pong-btn-secondary" id="btn-pause">${i18n.t('pause')}</button>
+        <button class="pong-btn pong-btn-secondary" id="btn-withdraw">${i18n.t('quit')}</button>
       </div>
     </div>
   `;
@@ -818,9 +829,55 @@ async function startTournamentMatch(
   window.addEventListener("keydown", keyDown, { capture: true });
   window.addEventListener("keyup", keyUp, { capture: true });
 
+  // Touch controls for mobile
+  const playerLeftBtn = document.getElementById("tournament-player-left");
+  const playerRightBtn = document.getElementById("tournament-player-right");
+
+  if (playerLeftBtn) {
+    playerLeftBtn.addEventListener("touchstart", (e) => { e.preventDefault(); keys.left = true; });
+    playerLeftBtn.addEventListener("touchend", (e) => { e.preventDefault(); keys.left = false; });
+    playerLeftBtn.addEventListener("mousedown", () => keys.left = true);
+    playerLeftBtn.addEventListener("mouseup", () => keys.left = false);
+  }
+  if (playerRightBtn) {
+    playerRightBtn.addEventListener("touchstart", (e) => { e.preventDefault(); keys.right = true; });
+    playerRightBtn.addEventListener("touchend", (e) => { e.preventDefault(); keys.right = false; });
+    playerRightBtn.addEventListener("mousedown", () => keys.right = true);
+    playerRightBtn.addEventListener("mouseup", () => keys.right = false);
+  }
+
   document.getElementById("btn-pause")?.addEventListener("click", () => {
     paused = !paused;
   });
+
+  document.getElementById("btn-withdraw")?.addEventListener("click", () => {
+    withdrawFromMatch();
+  });
+
+  function withdrawFromMatch() {
+    teardown();
+
+    if (!activeTournament) return;
+
+    const match = activeTournament.bracket[roundIndex][matchIndex];
+
+    // Player withdraws = AI wins (set score to winning score for AI)
+    if (match.p1?.isPlayer) {
+      match.p1Score = scorePlayer;
+      match.p2Score = CONFIG.scoreToWin;
+      match.winner = match.p2;
+    } else {
+      match.p1Score = CONFIG.scoreToWin;
+      match.p2Score = scorePlayer;
+      match.winner = match.p1;
+    }
+
+    // Advance winner (the AI opponent)
+    advanceWinner(roundIndex, matchIndex);
+
+    // Return to bracket view
+    showTournamentBracket(root);
+  }
 
   const dt = 1000 / 60;
   let acc = 0;

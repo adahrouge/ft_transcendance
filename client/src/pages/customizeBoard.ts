@@ -103,15 +103,15 @@ export function renderCustomizeBoardPage(): string {
                       <input type="color" id="xo-color-background" class="customize-board-color-input w-full h-8">
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="customize-board-label text-xs">${i18n.t('grid') || 'GRID'}</label>
+                      <label class="customize-board-label text-xs">${i18n.t('grid')}</label>
                       <input type="color" id="xo-color-grid" class="customize-board-color-input w-full h-8">
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="customize-board-label text-xs">${i18n.t('x_color') || 'X COLOR'}</label>
+                      <label class="customize-board-label text-xs">${i18n.t('x_color')}</label>
                       <input type="color" id="xo-color-x" class="customize-board-color-input w-full h-8">
                     </div>
                     <div class="flex flex-col gap-1">
-                      <label class="customize-board-label text-xs">${i18n.t('o_color') || 'O COLOR'}</label>
+                      <label class="customize-board-label text-xs">${i18n.t('o_color')}</label>
                       <input type="color" id="xo-color-o" class="customize-board-color-input w-full h-8">
                     </div>
                     <div class="flex flex-col gap-1">

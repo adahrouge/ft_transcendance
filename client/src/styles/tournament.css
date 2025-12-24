@@ -4,6 +4,8 @@
   /* Page layout */
   .tournament-container {
     @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .tournament-overlay {
@@ -12,6 +14,9 @@
 
   .tournament-content {
     @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   /* Main tournament box */

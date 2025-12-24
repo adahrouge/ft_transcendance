@@ -135,7 +135,7 @@
 
   /* Pre-game start screen */
   .pong-start-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[500px];
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[560px];
     image-rendering: pixelated;
 
     box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,

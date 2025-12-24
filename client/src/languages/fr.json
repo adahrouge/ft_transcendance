@@ -1,7 +1,7 @@
 {
   "welcome": "Bienvenue",
   "hello": "Bonjour",
-  "language": "Français",
+  "language_name": "Français",
   "loading": "Chargement...",
   "press_start": "APPUYEZ POUR COMMENCER",
   "login": "CONNEXION",
@@ -205,5 +205,8 @@
   "password_too_long": "Le mot de passe doit comporter moins de 64 caractères",
   "password_needs_number": "Le mot de passe doit contenir au moins un chiffre",
   "password_needs_uppercase": "Le mot de passe doit contenir au moins une lettre majuscule",
-  "password_needs_special": "Le mot de passe doit contenir au moins un caractère spécial"
+  "password_needs_special": "Le mot de passe doit contenir au moins un caractère spécial",
+  "grid": "GRILLE",
+  "x_color": "COULEUR X",
+  "o_color": "COULEUR O"
 }

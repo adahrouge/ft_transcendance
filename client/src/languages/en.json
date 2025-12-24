@@ -1,7 +1,7 @@
 {
   "welcome": "Welcome",
   "hello": "Hello",
-  "language": "English",
+  "language_name": "English",
   "loading": "Loading...",
   "press_start": "PRESS TO START",
   "login": "LOGIN",
@@ -205,5 +205,8 @@
   "password_too_long": "Password must be less than 64 characters",
   "password_needs_number": "Password must contain at least one number",
   "password_needs_uppercase": "Password must contain at least one uppercase letter",
-  "password_needs_special": "Password must contain at least one special character"
+  "password_needs_special": "Password must contain at least one special character",
+  "grid": "GRID",
+  "x_color": "X COLOR",
+  "o_color": "O COLOR"
 }

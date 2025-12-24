@@ -3,7 +3,9 @@
 @layer components {
   /* Page layout */
   .stats-container {
-    @apply fixed inset-0 w-full h-full overflow-hidden bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    @apply fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .stats-overlay {
@@ -13,6 +15,7 @@
   .stats-content {
     @apply relative z-10 flex flex-col items-center justify-center w-full p-4;
     min-height: 100vh;
+    max-width: 100vw;
     padding-top: 60px;
     padding-bottom: 20px;
     box-sizing: border-box;
@@ -21,8 +24,8 @@
   /* Main stats box - Fixed dimensions */
   .stats-box {
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm mx-auto text-center overflow-hidden flex flex-col;
-    width: 480px;
-    height: 580px;
+    width: 540px;
+    height: 600px;
     padding: 1.25rem;
     image-rendering: pixelated;
     box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,

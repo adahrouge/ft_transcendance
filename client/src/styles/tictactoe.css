@@ -3,6 +3,8 @@
 @layer components {
   .tictactoe-container {
     @apply fixed inset-0 flex flex-col bg-cover bg-center bg-no-repeat z-[9999];
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .tictactoe-overlay {
@@ -11,6 +13,9 @@
 
   .tictactoe-content {
     @apply relative z-10 flex flex-col items-center justify-center h-full px-4;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   /* Game wrapper box */
@@ -124,7 +129,7 @@
 
   /* Pre-game start screen */
   .tictactoe-start-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[500px];
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[560px];
     image-rendering: pixelated;
 
     box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,

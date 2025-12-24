@@ -2,20 +2,24 @@
 
 @layer components {
   .profile-container {
-    @apply fixed inset-0 w-full h-full overflow-y-auto bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    @apply fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
-  .profile-overlay {  
+  .profile-overlay {
     @apply fixed inset-0 w-full h-full bg-black/70 pointer-events-none;
   }
 
   .profile-content {
     @apply relative z-10 flex flex-col items-center justify-center min-h-full w-full p-4;
+    max-width: 100vw;
+    box-sizing: border-box;
   }
 
   /* Main profile box */
   .profile-box {
-    @apply bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[500px] mx-auto overflow-y-auto;
+    @apply bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm h-auto max-h-[85vh] w-[90%] max-w-[560px] mx-auto overflow-y-auto;
     padding: 1.5rem;
     image-rendering: pixelated;
     box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
