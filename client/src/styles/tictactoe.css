@@ -240,4 +240,36 @@
   .tictactoe-mode-desc {
     @apply block text-[#5db3d1] font-['Pixel_Game'] text-sm;
   }
+
+  /* Responsive - Tictactoe page */
+  .tictactoe-content {
+    padding-top: 80px;
+  }
+
+  @media (max-width: 479px) {
+    .tictactoe-start-box {
+      @apply p-4;
+      min-width: auto !important;
+      width: 95%;
+      max-width: 95%;
+    }
+
+    .tictactoe-title {
+      @apply text-xl;
+    }
+
+    .tictactoe-subtitle {
+      @apply text-xs;
+    }
+
+    .tictactoe-content {
+      padding-top: 70px;
+    }
+  }
+
+  @media (min-width: 480px) and (max-width: 767px) {
+    .tictactoe-start-box {
+      max-width: 90%;
+    }
+  }
 }

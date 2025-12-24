@@ -265,4 +265,76 @@
   .error-message {
     @apply text-[#ff6b6b] font-['Pixel_Game'] text-sm min-h-5;
   }
+
+  /* Responsive - Home page */
+  .home-content {
+    padding-top: 80px;
+  }
+
+  #home-main {
+    max-width: min(500px, 90vw);
+  }
+
+  .home-profile-bar {
+    padding: clamp(0.5rem, 2vw, 1rem);
+  }
+
+  .home-avatar {
+    width: clamp(2rem, 5vw, 3rem);
+    height: clamp(2rem, 5vw, 3rem);
+  }
+
+  .home-username {
+    font-size: clamp(12px, 2vw, 18px);
+  }
+
+  .home-btn {
+    font-size: clamp(14px, 2.5vw, 20px);
+    padding: clamp(0.5rem, 2vw, 1rem) clamp(0.75rem, 2vw, 1.5rem);
+  }
+
+  @media (max-width: 479px) {
+    .home-content {
+      padding-top: 70px;
+    }
+
+    .home-box,
+    #home-main {
+      max-width: 95%;
+    }
+
+    .home-profile-bar {
+      @apply flex-col gap-3 text-center;
+      padding: 0.75rem;
+    }
+
+    .home-profile-info {
+      @apply flex-col;
+    }
+
+    .home-quick-actions {
+      @apply flex-wrap justify-center;
+    }
+
+    .home-action-btn {
+      padding: 0.75rem;
+      min-width: 48px;
+      min-height: 48px;
+    }
+
+    .home-action-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .home-btn {
+      @apply text-base;
+      padding: 0.75rem 1rem;
+      min-height: 48px;
+    }
+
+    .home-title {
+      @apply text-2xl;
+    }
+  }
 }

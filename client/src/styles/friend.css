@@ -200,4 +200,15 @@
     @apply translate-y-1;
   }
 
+  /* Responsive - Friend page */
+  .friend-content {
+    padding-top: 80px;
+    padding-bottom: 20px;
+  }
+
+  @media (max-width: 479px) {
+    .friend-content {
+      padding-top: 70px;
+    }
+  }
 }

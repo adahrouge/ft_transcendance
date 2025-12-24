@@ -11,27 +11,32 @@
   }
 
   .stats-content {
-    @apply relative z-10 flex flex-col items-center justify-center h-full w-full p-4;
+    @apply relative z-10 flex flex-col items-center justify-center w-full p-4;
+    min-height: 100vh;
+    padding-top: 60px;
+    padding-bottom: 20px;
+    box-sizing: border-box;
   }
 
-  /* Main stats box */
+  /* Main stats box - Fixed dimensions */
   .stats-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm w-[90%] max-w-[600px] mx-auto text-center overflow-hidden flex flex-col;
-    max-height: 85vh;
-    padding: 1.5rem;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm mx-auto text-center overflow-hidden flex flex-col;
+    width: 480px;
+    height: 580px;
+    padding: 1.25rem;
     image-rendering: pixelated;
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
+      3px 3px 0 0 #3d8aa8, 0 3px 0 0 #3d8aa8, -3px 3px 0 0 #3d8aa8,
+      -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
   }
 
   .stats-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl mb-6 flex-shrink-0;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-3 flex-shrink-0;
   }
 
-  /* Stats Header */
+  /* Stats Header - Compact */
   .stats-header {
-    @apply flex flex-col items-center gap-2 mb-6 pb-4 flex-shrink-0;
+    @apply flex flex-col items-center gap-1 mb-3 pb-2 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
@@ -41,12 +46,12 @@
 
   .stats-avatar {
     @apply object-cover;
-    width: 6rem;
-    height: 6rem;
+    width: 3.5rem;
+    height: 3.5rem;
     image-rendering: pixelated;
-    box-shadow: 0 -4px 0 0 #5db3d1, 4px -4px 0 0 #5db3d1, 4px 0 0 0 #5db3d1,
-      4px 4px 0 0 #5db3d1, 0 4px 0 0 #5db3d1, -4px 4px 0 0 #5db3d1,
-      -4px 0 0 0 #5db3d1, -4px -4px 0 0 #5db3d1;
+    box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
+      3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
+      -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
   }
 
   .stats-header-info {
@@ -54,50 +59,50 @@
   }
 
   .stats-player-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-1;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-base mb-0;
   }
 
   .stats-username {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs;
   }
 
-  /* Stats grid */
+  /* Stats grid - Compact 5 columns */
   .stats-grid {
-    @apply grid grid-cols-2 md:grid-cols-5 gap-4 mb-6 flex-shrink-0;
+    @apply grid grid-cols-5 gap-2 mb-3 flex-shrink-0;
   }
 
   .stats-card {
-    padding: 1.25rem;
+    padding: 0.5rem 0.25rem;
     background: rgba(13, 26, 40, 0.8);
-    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
-      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
-      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
   }
 
   .stats-card-win {
-    box-shadow: 0 -3px 0 0 #22c55e, 3px -3px 0 0 #22c55e, 3px 0 0 0 #22c55e,
-      3px 3px 0 0 #22c55e, 0 3px 0 0 #22c55e, -3px 3px 0 0 #22c55e,
-      -3px 0 0 0 #22c55e, -3px -3px 0 0 #22c55e;
+    box-shadow: 0 -2px 0 0 #22c55e, 2px -2px 0 0 #22c55e, 2px 0 0 0 #22c55e,
+      2px 2px 0 0 #22c55e, 0 2px 0 0 #22c55e, -2px 2px 0 0 #22c55e,
+      -2px 0 0 0 #22c55e, -2px -2px 0 0 #22c55e;
   }
 
   .stats-card-loss {
-    box-shadow: 0 -3px 0 0 #ef4444, 3px -3px 0 0 #ef4444, 3px 0 0 0 #ef4444,
-      3px 3px 0 0 #ef4444, 0 3px 0 0 #ef4444, -3px 3px 0 0 #ef4444,
-      -3px 0 0 0 #ef4444, -3px -3px 0 0 #ef4444;
+    box-shadow: 0 -2px 0 0 #ef4444, 2px -2px 0 0 #ef4444, 2px 0 0 0 #ef4444,
+      2px 2px 0 0 #ef4444, 0 2px 0 0 #ef4444, -2px 2px 0 0 #ef4444,
+      -2px 0 0 0 #ef4444, -2px -2px 0 0 #ef4444;
   }
 
   .stats-card-tournament {
-    box-shadow: 0 -3px 0 0 #eab308, 3px -3px 0 0 #eab308, 3px 0 0 0 #eab308,
-      3px 3px 0 0 #eab308, 0 3px 0 0 #eab308, -3px 3px 0 0 #eab308,
-      -3px 0 0 0 #eab308, -3px -3px 0 0 #eab308;
+    box-shadow: 0 -2px 0 0 #eab308, 2px -2px 0 0 #eab308, 2px 0 0 0 #eab308,
+      2px 2px 0 0 #eab308, 0 2px 0 0 #eab308, -2px 2px 0 0 #eab308,
+      -2px 0 0 0 #eab308, -2px -2px 0 0 #eab308;
   }
 
   .stats-card-value {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-3xl;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg;
   }
 
   .stats-card-label {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-[10px] mt-0.5;
   }
 
   /* History section */
@@ -106,18 +111,17 @@
   }
 
   .stats-section-title {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-lg mb-3 pb-2 flex-shrink-0;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mb-2 pb-1 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
   .stats-history-list {
-    @apply space-y-2 pr-2 overflow-y-auto flex-1;
-    max-height: 30vh;
+    @apply space-y-1.5 pr-1 overflow-y-auto flex-1;
   }
 
   .stats-match-item {
     @apply flex justify-between items-center;
-    padding: 0.875rem;
+    padding: 0.5rem;
     background: rgba(13, 26, 40, 0.8);
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -125,19 +129,19 @@
   }
 
   .stats-match-opponent {
-    @apply flex items-center gap-2;
+    @apply flex items-center gap-1;
   }
 
   .stats-match-vs {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs;
   }
 
   .stats-match-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'];
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xs;
   }
 
   .stats-match-result {
-    @apply font-['Pixel_Game'] text-lg;
+    @apply font-['Pixel_Game'] text-sm;
   }
 
   .stats-win {
@@ -149,21 +153,21 @@
   }
 
   .stats-empty {
-    @apply text-gray-500 font-['Pixel_Game'] text-sm text-center py-4;
+    @apply text-gray-500 font-['Pixel_Game'] text-xs text-center py-3;
   }
 
   /* Footer */
   .stats-footer {
-    @apply mt-6 flex-shrink-0;
+    @apply mt-3 flex-shrink-0;
   }
 
   .stats-back-btn {
-    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-xl cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
-    padding: 1rem 1.5rem;
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-base cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    padding: 0.6rem 1rem;
     border: none;
-    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
-      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
-      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
   }
 
   .stats-back-btn:active {
@@ -172,7 +176,7 @@
 
   /* Custom scrollbar */
   .stats-history-list::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
   }
 
   .stats-history-list::-webkit-scrollbar-track {
@@ -186,4 +190,75 @@
   .stats-history-list::-webkit-scrollbar-thumb:hover {
     background: #3d8aa8;
   }
+
+  /* Responsive adjustments */
+  @media (max-width: 480px) {
+    .stats-content {
+      padding-top: 50px;
+    }
+
+    .stats-box {
+      width: 95%;
+      max-width: 380px;
+      height: auto;
+      max-height: 85vh;
+      padding: 0.75rem;
+    }
+
+    .stats-title {
+      @apply text-lg mb-2;
+    }
+
+    .stats-avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    .stats-player-name {
+      @apply text-sm;
+    }
+
+    .stats-grid {
+      @apply grid-cols-3 gap-1.5;
+    }
+
+    .stats-card {
+      padding: 0.4rem 0.2rem;
+    }
+
+    .stats-card-value {
+      @apply text-base;
+    }
+
+    .stats-card-label {
+      @apply text-[8px];
+    }
+
+    .stats-history-list {
+      max-height: 150px;
+    }
+
+    .stats-match-item {
+      padding: 0.4rem;
+    }
+
+    .stats-back-btn {
+      padding: 0.5rem 0.75rem;
+      @apply text-sm;
+    }
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    .stats-box {
+      width: 90%;
+      max-width: 400px;
+      height: auto;
+      max-height: 80vh;
+    }
+
+    .stats-grid {
+      @apply grid-cols-5;
+    }
+  }
+
 }

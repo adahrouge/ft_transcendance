@@ -3,7 +3,8 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import staticFiles from '@fastify/static';
-import { initDatabase, cleanupEmptyTournaments } from '../database/db.js';
+import { initDatabase, cleanupEmptyTournaments, updateUserActivity } from '../database/db.js';
+import jwt from 'jsonwebtoken';
 import { userRoutes, avatarRoutes } from '../routes/users.js';
 import { tournamentRoutes } from '../routes/tournaments.js';
 import { tournamentGamesRoutes } from '../routes/tournamentGames.js';
@@ -12,6 +13,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 const fastify = Fastify({
   logger: true,
@@ -31,6 +33,22 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (req, bo
 
 // Initialize database
 await initDatabase();
+
+// Middleware to update last_active
+fastify.addHook('onRequest', async (request, reply) => {
+  const authHeader = request.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.substring(7);
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      if (decoded && decoded.userId) {
+        await updateUserActivity(decoded.userId);
+      }
+    } catch (err) {
+      // Ignore invalid tokens here
+    }
+  }
+});
 
 // Register plugins
 await fastify.register(cors, {

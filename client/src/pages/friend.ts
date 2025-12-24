@@ -119,7 +119,10 @@ async function loadFriends() {
               <div class="friend-list-item">
                 <div class="flex items-center gap-3">
                   <div>
-                    <div class="friend-display-name">${f.display_name || f.username}</div>
+                    <div class="friend-display-name flex items-center gap-2">
+                      ${f.display_name || f.username}
+                      ${f.is_online ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block" title="Online"></span>' : ''}
+                    </div>
                     <div class="friend-username">@${f.username}</div>
                   </div>
                 </div>

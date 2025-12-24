@@ -91,4 +91,13 @@
   .press-start:hover {
     @apply text-[#8fd9f0] [text-shadow:0_0_15px_rgba(143,217,240,0.7),0_0_30px_rgba(143,217,240,0.4)] scale-110;
   }
+
+  /* Responsive - Landing page */
+  .main-title span {
+    font-size: clamp(40px, 8vw, 120px);
+  }
+
+  .press-start {
+    font-size: clamp(14px, 2.5vw, 24px);
+  }
 }

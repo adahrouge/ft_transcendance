@@ -656,4 +656,79 @@
       max-width: 200px;
     }
   }
+
+  /* Responsive - Pong page */
+  .pong-content {
+    padding-top: 80px;
+  }
+
+  .pong-canvas-wrapper {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .pong-canvas {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .pong-mode-btn {
+    min-height: clamp(80px, 12vh, 120px);
+  }
+
+  .pong-mode-title {
+    font-size: clamp(16px, 2.5vw, 24px);
+  }
+
+  .pong-mode-desc {
+    font-size: clamp(10px, 1.5vw, 14px);
+  }
+
+  @media (max-width: 479px) {
+    .pong-start-box {
+      @apply p-4;
+      min-width: auto !important;
+      width: 95%;
+      max-width: 95%;
+    }
+
+    .pong-box {
+      @apply p-3;
+    }
+
+    .pong-title {
+      @apply text-xl;
+    }
+
+    .pong-subtitle {
+      @apply text-xs;
+    }
+
+    .pong-content {
+      padding-top: 70px;
+    }
+  }
+
+  @media (min-width: 480px) and (max-width: 767px) {
+    .pong-start-box {
+      max-width: 90%;
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .pong-start-box {
+      min-width: 480px;
+    }
+
+    .pong-mode-btn {
+      min-height: 100px;
+    }
+  }
+
+  /* Touch controls visibility */
+  @media (hover: none) and (pointer: coarse) {
+    .pong-touch-controls {
+      display: flex !important;
+    }
+  }
 }

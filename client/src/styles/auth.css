@@ -161,4 +161,46 @@
   .hidden {
     display: none !important;
   }
+
+  /* Responsive - Auth page */
+  @media (max-width: 479px) {
+    .auth-box {
+      @apply p-4;
+      height: auto;
+      min-height: 70%;
+      max-width: 95%;
+    }
+
+    .auth-header h1 {
+      @apply text-3xl;
+    }
+
+    .auth-tabs {
+      @apply gap-2 flex-wrap;
+    }
+
+    .tab-btn {
+      @apply text-sm px-3 py-2;
+    }
+
+    .pixel-btn {
+      @apply text-base py-3;
+      min-height: 48px;
+    }
+
+    .google-btn {
+      @apply text-sm py-3;
+      min-height: 48px;
+    }
+
+    .auth-form-container {
+      @apply p-4;
+    }
+  }
+
+  @media (min-width: 480px) and (max-width: 767px) {
+    .auth-box {
+      max-width: 90%;
+    }
+  }
 }

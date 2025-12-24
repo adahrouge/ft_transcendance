@@ -1,0 +1,127 @@
+import jwt from 'jsonwebtoken';
+import { getUserById, getFriends } from '../database/db.js';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Track connected users: Map<userId, Set<WebSocket>>
+const connectedUsers = new Map();
+
+// Broadcast to specific user's connections
+function broadcastToUser(userId, message) {
+  const connections = connectedUsers.get(userId);
+  if (connections) {
+    connections.forEach(ws => {
+      if (ws.readyState === 1) { // OPEN
+        ws.send(JSON.stringify(message));
+      }
+    });
+  }
+}
+
+// Notify friends about status change
+async function notifyFriendsAboutStatus(userId, isOnline) {
+  try {
+    const friends = await getFriends(userId);
+    friends.forEach(friend => {
+      broadcastToUser(friend.id, {
+        type: 'friend_status_change',
+        friendId: userId,
+        isOnline: isOnline
+      });
+    });
+  } catch (err) {
+    console.error('Error notifying friends:', err);
+  }
+}
+
+// Send current status of all friends to a user
+async function sendFriendStatuses(userId) {
+  try {
+    const friends = await getFriends(userId);
+    const statuses = friends.map(friend => ({
+      friendId: friend.id,
+      isOnline: connectedUsers.has(friend.id)
+    }));
+    
+    broadcastToUser(userId, {
+      type: 'friend_statuses_initial',
+      statuses: statuses
+    });
+  } catch (err) {
+    console.error('Error sending friend statuses:', err);
+  }
+}
+
+export async function presenceRoutes(fastify) {
+  fastify.get('/api/presence', { websocket: true }, (connection, req) => {
+    let userId = null;
+    let user = null;
+
+    connection.socket.on('message', async (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+
+        if (data.type === 'auth') {
+          // Authenticate user
+          const token = data.token;
+          if (!token) {
+            connection.socket.send(JSON.stringify({ type: 'error', message: 'No token provided' }));
+            return;
+          }
+
+          try {
+            const decoded = jwt.verify(token, JWT_SECRET);
+            user = await getUserById(decoded.userId);
+            if (!user) {
+              connection.socket.send(JSON.stringify({ type: 'error', message: 'User not found' }));
+              return;
+            }
+
+            userId = user.id;
+
+            // Add to connected users
+            if (!connectedUsers.has(userId)) {
+              connectedUsers.set(userId, new Set());
+            }
+            connectedUsers.get(userId).add(connection.socket);
+
+            // Send confirmation
+            connection.socket.send(JSON.stringify({ type: 'authenticated', userId: userId }));
+
+            // Send initial friend statuses
+            await sendFriendStatuses(userId);
+
+            // Notify friends that user is now online
+            await notifyFriendsAboutStatus(userId, true);
+
+          } catch (err) {
+            connection.socket.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
+          }
+        }
+      } catch (err) {
+        console.error('WebSocket message error:', err);
+      }
+    });
+
+    connection.socket.on('close', async () => {
+      if (userId) {
+        // Remove from connected users
+        const connections = connectedUsers.get(userId);
+        if (connections) {
+          connections.delete(connection.socket);
+          
+          // If no more connections, user is offline
+          if (connections.size === 0) {
+            connectedUsers.delete(userId);
+            // Notify friends that user is now offline
+            await notifyFriendsAboutStatus(userId, false);
+          }
+        }
+      }
+    });
+
+    connection.socket.on('error', (err) => {
+      console.error('WebSocket error:', err);
+    });
+  });
+}

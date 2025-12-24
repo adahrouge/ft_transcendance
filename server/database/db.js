@@ -79,6 +79,7 @@ export async function initDatabase() {
       password_hash TEXT NOT NULL,
       display_name TEXT,
       avatar_url TEXT,
+      last_active DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
@@ -193,6 +194,13 @@ export async function initDatabase() {
       await dbRun('ALTER TABLE users ADD COLUMN xo_board_customization TEXT');
       console.log('Added xo_board_customization column to users table');
     }
+
+    // Add last_active column if it doesn't exist
+    const hasLastActiveColumn = tableInfo.some(col => col.name === 'last_active');
+    if (!hasLastActiveColumn) {
+      await dbRun('ALTER TABLE users ADD COLUMN last_active DATETIME');
+      console.log('Added last_active column to users table');
+    }
   } catch (err) {
     console.error('Error adding board_customization column:', err);
   }
@@ -283,6 +291,10 @@ export async function updateUser(id, updates) {
   if (updates.xo_board_customization !== undefined) {
     fields.push('xo_board_customization = ?');
     values.push(JSON.stringify(updates.xo_board_customization));
+  }
+  if (updates.last_active !== undefined) {
+    fields.push('last_active = ?');
+    values.push(updates.last_active);
   }
 
   fields.push('updated_at = CURRENT_TIMESTAMP');
@@ -516,7 +528,10 @@ export async function isBlocked(userId, otherUserId) {
 
 export async function getFriends(userId) {
   return await dbAll(
-    `SELECT u.id, u.username, u.display_name, u.avatar_url
+    `SELECT u.id, u.username, u.display_name, u.avatar_url,
+            CASE WHEN u.last_active IS NOT NULL
+                 AND datetime(u.last_active) > datetime('now', '-10 seconds')
+                 THEN 1 ELSE 0 END as is_online
      FROM friends f
      JOIN users u ON f.friend_id = u.id
      WHERE f.user_id = ? AND f.status = 'accepted'`,
@@ -542,6 +557,13 @@ export async function getSentFriendRequests(userId) {
      FROM friends f
      JOIN users u ON f.friend_id = u.id
      WHERE f.user_id = ? AND f.status = 'pending'`,
+    [userId]
+  );
+}
+
+export async function updateUserActivity(userId) {
+  await dbRun(
+    `UPDATE users SET last_active = datetime('now') WHERE id = ?`,
     [userId]
   );
 }
