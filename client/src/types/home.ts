@@ -15,5 +15,3 @@ export interface ProfileUpdateData {
   password?: string;
   current_password?: string;
 }
-
-export type GameMode = 'offline' | 'online' | 'tournament';

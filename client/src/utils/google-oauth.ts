@@ -91,8 +91,8 @@ export async function triggerGoogleSignIn(): Promise<any> {
         },
       });
 
-      // First try One Tap without FedCM
-      const unsubscribe = (window as any).google.accounts.id.renderButton(
+      // Render the sign-in button
+      (window as any).google.accounts.id.renderButton(
         document.getElementById('google-signin-button'),
         {
           type: 'standard',
@@ -110,8 +110,8 @@ export async function triggerGoogleSignIn(): Promise<any> {
               // One Tap not shown, button is already rendered above
             }
           });
-        } catch (e) {
-          console.error('One Tap prompt failed, using button instead');
+        } catch {
+          // One Tap not available, button is fallback
         }
       }, 500);
 
@@ -128,8 +128,7 @@ export function decodeGoogleToken(token: string): any {
 
     const decoded = JSON.parse(atob(parts[1]));
     return decoded;
-  } catch (error) {
-    console.error('Failed to decode token:', error);
+  } catch {
     return null;
   }
 }

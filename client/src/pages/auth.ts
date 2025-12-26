@@ -13,7 +13,7 @@ export function renderAuthPage(): string {
   const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || '';
   if (googleClientId) {
     // Pre-load the Google script immediately
-    initializeGoogleOAuth(googleClientId).catch(console.error);
+    initializeGoogleOAuth(googleClientId).catch(() => {});
   }
 
   setTimeout(() => {

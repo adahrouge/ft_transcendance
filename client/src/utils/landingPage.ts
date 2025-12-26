@@ -1,14 +1,15 @@
 import { navigateTo } from "../router";
 
-// Typing animation for "TRANSCENDENCE"
 export function startTypingAnimation() {
   const text = "TRANSCENDENCE";
   const loadingTextEl = document.querySelector("#loading-text") as HTMLElement;
   const pressStartEl = document.querySelector("#press-start") as HTMLElement;
+  const container = document.querySelector(".landing-container") as HTMLElement;
 
-  if (!loadingTextEl || !pressStartEl) return;
+  if (!loadingTextEl || !pressStartEl || !container) return;
 
   let index = 0;
+  let animationComplete = false;
 
   const typeWriter = () => {
     if (index < text.length) {
@@ -20,37 +21,19 @@ export function startTypingAnimation() {
       index++;
       setTimeout(typeWriter, 100);
     } else {
-      // Show "PRESS TO START" after typing is complete
       setTimeout(() => {
         pressStartEl.style.opacity = "1";
-        pressStartEl.style.pointerEvents = "auto";
+        animationComplete = true;
+        container.style.cursor = "pointer";
       }, 300);
     }
   };
 
-  // Start typing animation after a brief delay
   setTimeout(typeWriter, 500);
 
-  // Click handler to proceed to auth
-  const handleClick = () => {
-    // Mark that user has seen landing
-    sessionStorage.setItem("hasSeenLanding", "true");
-
-    // Navigate immediately (removed transition)
-    navigateTo("/auth");
-  };
-
-  // Add click listener to the press start button
-  setTimeout(() => {
-    pressStartEl.addEventListener("click", handleClick);
-
-    // Also allow clicking anywhere after text is loaded
-    document
-      .querySelector(".landing-container")
-      ?.addEventListener("click", () => {
-        if (index >= text.length && pressStartEl.style.opacity === "1") {
-          handleClick();
-        }
-      });
-  }, 0);
+  container.addEventListener("click", () => {
+    if (animationComplete) {
+      navigateTo("/auth");
+    }
+  });
 }

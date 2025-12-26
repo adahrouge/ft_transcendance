@@ -2,7 +2,6 @@ import { homeService } from "../services/home";
 import { getAvatarUrl, getDisplayName, DEFAULT_AVATAR } from "../utils/home";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
-import { getToken } from "../utils/auth";
 import type { UserProfile } from "../types/home";
 import "../styles/home.css";
 import backgroundImage from "../assets/images/background.jpg";
@@ -77,8 +76,7 @@ async function loadUserAndSetup() {
     currentUser = await homeService.getCurrentUser();
     updateProfileDisplay();
     setupEventListeners();
-  } catch (error) {
-    console.error("Failed to load user:", error);
+  } catch {
     navigateTo("/auth");
   }
 }

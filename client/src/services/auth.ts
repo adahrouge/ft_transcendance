@@ -1,6 +1,5 @@
 import { apiRequest } from "../api";
 import { setToken } from "../utils/auth";
-import { notificationManager } from "./notificationManager";
 import type {
   LoginCredentials,
   RegisterCredentials,
@@ -18,7 +17,6 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
-      notificationManager.initialize();
     }
 
     return data;
@@ -32,7 +30,6 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
-      notificationManager.initialize();
     }
 
     return data;
@@ -46,7 +43,6 @@ export const authService = {
 
     if (data.token) {
       setToken(data.token);
-      notificationManager.initialize();
     }
 
     return data;

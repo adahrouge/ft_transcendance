@@ -39,8 +39,7 @@ class BoardCustomizationService {
 
       this.loaded = true;
       return this.currentCustomization;
-    } catch (error) {
-      console.error("Error loading board customization:", error);
+    } catch {
       this.currentCustomization = DEFAULT_CUSTOMIZATION;
       this.loaded = true;
       return this.currentCustomization;
@@ -69,8 +68,7 @@ class BoardCustomizationService {
 
       this.currentCustomization = customization;
       return true;
-    } catch (error) {
-      console.error("Error saving board customization:", error);
+    } catch {
       return false;
     }
   }
@@ -129,8 +127,7 @@ class XoBoardCustomizationService {
 
       this.loaded = true;
       return this.currentCustomization;
-    } catch (error) {
-      console.error("Error loading XO board customization:", error);
+    } catch {
       this.currentCustomization = DEFAULT_XO_CUSTOMIZATION;
       this.loaded = true;
       return this.currentCustomization;
@@ -159,8 +156,7 @@ class XoBoardCustomizationService {
 
       this.currentCustomization = customization;
       return true;
-    } catch (error) {
-      console.error("Error saving XO board customization:", error);
+    } catch {
       return false;
     }
   }

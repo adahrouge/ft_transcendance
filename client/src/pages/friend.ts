@@ -1,17 +1,9 @@
 import { friendService } from "../services/friend";
-import { notificationManager } from "../services/notificationManager";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
 import { showNotification, showConfirm } from "../utils/notifications";
 import "../styles/friend.css";
 import backgroundImage from "../assets/images/background.jpg";
-
-import { getToken } from "../utils/auth";
-
-// Track active notification to prevent duplicates
-let currentUser: any = null;
-let loadFriendsTimeout: ReturnType<typeof setTimeout> | null = null;
-let friendUpdateUnsubscribe: (() => void) | null = null;
 
 export function renderFriendPage(): string {
   setTimeout(() => {
@@ -38,9 +30,6 @@ async function loadFriends() {
   if (!root) return;
 
   try {
-    // Get current user from notification manager (already loaded)
-    currentUser = notificationManager.getCurrentUser();
-
     // Load friends, pending requests, sent requests, and blocked users in parallel
     const [friendsResponse, pendingResponse, sentResponse, blockedResponse] = await Promise.all([
       friendService.getFriends(),
@@ -181,7 +170,6 @@ async function loadFriends() {
     `;
 
     document.getElementById("btn-back")?.addEventListener("click", () => {
-      cleanupFriendPage();
       navigateTo("/home");
     });
 
@@ -362,32 +350,7 @@ async function loadFriends() {
       if (e.key === "Enter") doSearch();
     });
 
-    // Register for friend updates from notification manager
-    friendUpdateUnsubscribe = notificationManager.onFriendUpdate(() => {
-      // Debounce friend list reload to prevent rapid successive calls
-      if (loadFriendsTimeout) {
-        clearTimeout(loadFriendsTimeout);
-      }
-      loadFriendsTimeout = setTimeout(() => {
-        loadFriends();
-      }, 300);
-    });
-
   } catch (err) {
     root.innerHTML = '<div class="text-red-500">Failed to load friends.</div>';
-  }
-}
-
-function cleanupFriendPage() {
-  // Clear timeouts
-  if (loadFriendsTimeout) {
-    clearTimeout(loadFriendsTimeout);
-    loadFriendsTimeout = null;
-  }
-
-  // Unsubscribe from callbacks
-  if (friendUpdateUnsubscribe) {
-    friendUpdateUnsubscribe();
-    friendUpdateUnsubscribe = null;
   }
 }

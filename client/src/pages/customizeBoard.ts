@@ -1,5 +1,5 @@
 import { navigateTo } from "../router";
-import { isAuthenticated, getToken } from "../utils/auth";
+import { isAuthenticated } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { boardCustomizationService, xoBoardCustomizationService } from "../services/boardCustomization";
 import { BoardCustomization, DEFAULT_CUSTOMIZATION, THEME_PRESETS, XoBoardCustomization, DEFAULT_XO_CUSTOMIZATION, XO_THEME_PRESETS } from "../types/boardCustomization";

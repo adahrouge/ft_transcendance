@@ -151,8 +151,8 @@ async function startMatch(root: HTMLElement) {
   let customization: XoBoardCustomization = DEFAULT_XO_CUSTOMIZATION;
   try {
     customization = await xoBoardCustomizationService.loadCustomization();
-  } catch (e) {
-    console.error("Failed to load XO customization:", e);
+  } catch {
+    // Use default customization
   }
 
   root.innerHTML = `
@@ -343,8 +343,8 @@ async function startMatch(root: HTMLElement) {
           difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM',
           gameType: 'tictactoe'
         });
-      } catch (e) {
-        console.error("Failed to save stats", e);
+      } catch {
+        // Failed to save stats
       }
     }
 

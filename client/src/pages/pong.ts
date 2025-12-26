@@ -111,13 +111,9 @@ function getDifficultyLabel(difficulty: number): string {
   return i18n.t('hard');
 }
 
-// Game modes
-type GameMode = "ai" | "friend";
-
 // Current settings
 let selectedBallSpeed: BallSpeedLevel = "normal";
 let selectedAIDifficulty: number = 50; // 0-100 slider
-let selectedGameMode: GameMode = "ai";
 let globalRaf: number | null = null;
 
 const CONFIG = DEFAULT_GAME_CONFIG;
@@ -211,7 +207,7 @@ function startCountdown(
 
 export function renderGamePage(): string {
   setTimeout(() => {
-    setupGame();
+    setupGame(false);
   }, 0);
 
   return `
@@ -224,7 +220,22 @@ export function renderGamePage(): string {
   `;
 }
 
-function setupGame() {
+export function renderTournamentPage(): string {
+  setTimeout(() => {
+    setupGame(true);
+  }, 0);
+
+  return `
+    <div class="pong-container" style="background-image: url('${backgroundImage}')">
+      <div class="pong-overlay"></div>
+      <div class="pong-content">
+        <div id="game-root"></div>
+      </div>
+    </div>
+  `;
+}
+
+function setupGame(startTournament: boolean = false) {
   const root = document.getElementById("game-root");
   if (!root) return;
 
@@ -247,8 +258,12 @@ function setupGame() {
     return;
   }
 
-  // Show mode selection screen
-  showModeSelection(root);
+  // Start tournament mode directly or show mode selection
+  if (startTournament) {
+    showTournamentSetup(root);
+  } else {
+    showModeSelection(root);
+  }
 }
 
 function showModeSelection(root: HTMLElement) {
@@ -266,9 +281,9 @@ function showModeSelection(root: HTMLElement) {
           <span class="pong-mode-title">${i18n.t('vs_friend')}</span>
           <span class="pong-mode-desc">${i18n.t('local_2_player')}</span>
         </button>
-        <button class="pong-mode-btn pong-mode-btn-tournament" id="btn-tournament">
-          <span class="pong-mode-title">🏆 TOURNAMENT</span>
-          <span class="pong-mode-desc">Local bracket vs AI bots</span>
+        <button class="pong-mode-btn" id="btn-tournament">
+          <span class="pong-mode-title">${i18n.t('local_tournament')}</span>
+          <span class="pong-mode-desc">${i18n.t('local_tournament_desc')}</span>
         </button>
       </div>
 
@@ -279,12 +294,10 @@ function showModeSelection(root: HTMLElement) {
   `;
 
   document.getElementById("btn-vs-ai")?.addEventListener("click", () => {
-    selectedGameMode = "ai";
     showMatchSetup(root);
   });
 
   document.getElementById("btn-vs-friend")?.addEventListener("click", () => {
-    selectedGameMode = "friend";
     showFriendMatchSetup(root);
   });
 
@@ -625,8 +638,7 @@ function showTournamentBracket(root: HTMLElement) {
       import("../utils/notifications").then(({ showNotification }) => {
         showNotification(i18n.t('tournament_victory_saved'), { type: 'success' });
       });
-    }).catch((e) => {
-      console.error("Failed to auto-save tournament win:", e);
+    }).catch(() => {
       tournamentWinSaved = false; // Allow retry
     });
   }
@@ -634,7 +646,7 @@ function showTournamentBracket(root: HTMLElement) {
   document.getElementById("btn-quit-tournament")?.addEventListener("click", () => {
     activeTournament = null;
     tournamentWinSaved = false;
-    showModeSelection(root);
+    navigateTo("/home");
   });
 }
 
@@ -1472,36 +1484,14 @@ async function startFriendMatch(root: HTMLElement) {
       try {
         // For offline games against AI, we can record it as a match against a bot
         // We'll use a special ID or flag for AI opponent
-        // Since the backend expects an opponent ID, we might need to adjust the backend
-        // or just not save offline games to the main match history if the backend doesn't support it.
-        // However, the user asked to register stats.
-        
-        // Let's assume we want to track wins/losses locally or send to a specific endpoint if available.
-        // Currently the stats service fetches from backend.
-        // If we want to save this, we need an endpoint.
-        // Since we don't have a specific "offline match" endpoint, we might skip saving to DB 
-        // OR we can implement a client-side only storage or a new endpoint.
-        
-        // Given the prompt "see if they are registreeted in the stats or ot", 
-        // and we just fixed the server for online games.
-        // Offline games are client-side. To register them in stats (which come from server),
-        // we would need to send this result to the server.
-        
-        // Let's check if we can use the existing match history endpoint.
-        // The addMatchHistory in db.js takes (userId, opponentId, ...).
-        // If opponentId is null, it might work if the DB allows it.
-        // Let's try to send it to a new endpoint we'll create, or just log it for now if we can't change server.
-        // But wait, I can change the server.
-        
-        // I will add a call to a new service method to save offline match.
         await statsService.saveOfflineMatch({
           playerScore: scoreP1,
           aiScore: scoreP2,
           result: won ? 'win' : 'loss',
           difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM'
         });
-      } catch (err) {
-        console.error("Failed to save offline match stats:", err);
+      } catch {
+        // Failed to save stats
       }
     }
 
@@ -1862,38 +1852,14 @@ async function startMatch(root: HTMLElement) {
     // Save match stats if user is authenticated
     if (isAuthenticated()) {
       try {
-        // For offline games against AI, we can record it as a match against a bot
-        // We'll use a special ID or flag for AI opponent
-        // Since the backend expects an opponent ID, we might need to adjust the backend
-        // or just not save offline games to the main match history if the backend doesn't support it.
-        // However, the user asked to register stats.
-        
-        // Let's assume we want to track wins/losses locally or send to a specific endpoint if available.
-        // Currently the stats service fetches from backend.
-        // If we want to save this, we need an endpoint.
-        // Since we don't have a specific "offline match" endpoint, we might skip saving to DB 
-        // OR we can implement a client-side only storage or a new endpoint.
-        
-        // Given the prompt "see if they are registreeted in the stats or ot", 
-        // and we just fixed the server for online games.
-        // Offline games are client-side. To register them in stats (which come from server),
-        // we would need to send this result to the server.
-        
-        // Let's check if we can use the existing match history endpoint.
-        // The addMatchHistory in db.js takes (userId, opponentId, ...).
-        // If opponentId is null, it might work if the DB allows it.
-        // Let's try to send it to a new endpoint we'll create, or just log it for now if we can't change server.
-        // But wait, I can change the server.
-        
-        // I will add a call to a new service method to save offline match.
         await statsService.saveOfflineMatch({
           playerScore: scorePlayer,
           aiScore: scoreAI,
           result: won ? 'win' : 'loss',
           difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM'
         });
-      } catch (err) {
-        console.error("Failed to save offline match stats:", err);
+      } catch {
+        // Failed to save stats
       }
     }
 
