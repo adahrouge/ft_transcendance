@@ -4,8 +4,7 @@
   /* Page layout */
   .stats-container {
     @apply fixed inset-0 w-full h-full z-[9999];
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .stats-overlay {
@@ -21,11 +20,12 @@
     box-sizing: border-box;
   }
 
-  /* Main stats box - Fixed dimensions */
+  /* Main stats box */
   .stats-box {
-    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm mx-auto text-center overflow-hidden flex flex-col;
+    @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm mx-auto text-center flex flex-col overflow-y-auto;
     width: 540px;
-    height: 600px;
+    max-width: 95vw;
+    max-height: 85vh;
     padding: 1.25rem;
     image-rendering: pixelated;
     box-shadow: 0 -3px 0 0 #3d8aa8, 3px -3px 0 0 #3d8aa8, 3px 0 0 0 #3d8aa8,
@@ -33,49 +33,66 @@
       -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
   }
 
-  .stats-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-3 flex-shrink-0;
+  /* Custom scrollbar for stats box */
+  .stats-box::-webkit-scrollbar {
+    width: 8px;
   }
 
-  /* Stats Header - Compact */
+  .stats-box::-webkit-scrollbar-track {
+    background: #0d1a28;
+  }
+
+  .stats-box::-webkit-scrollbar-thumb {
+    background: #2c6b87;
+  }
+
+  .stats-box::-webkit-scrollbar-thumb:hover {
+    background: #3d8aa8;
+  }
+
+  .stats-title {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg mb-2 flex-shrink-0;
+  }
+
+  /* Stats Header - Inline compact */
   .stats-header {
-    @apply flex flex-col items-center gap-1 mb-3 pb-2 flex-shrink-0;
+    @apply flex items-center gap-3 mb-2 pb-2 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
   .stats-avatar-wrapper {
-    @apply relative;
+    @apply relative flex-shrink-0;
   }
 
   .stats-avatar {
     @apply object-cover;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 2.5rem;
+    height: 2.5rem;
     image-rendering: pixelated;
-    box-shadow: 0 -3px 0 0 #5db3d1, 3px -3px 0 0 #5db3d1, 3px 0 0 0 #5db3d1,
-      3px 3px 0 0 #5db3d1, 0 3px 0 0 #5db3d1, -3px 3px 0 0 #5db3d1,
-      -3px 0 0 0 #5db3d1, -3px -3px 0 0 #5db3d1;
+    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
+      2px 2px 0 0 #5db3d1, 0 2px 0 0 #5db3d1, -2px 2px 0 0 #5db3d1,
+      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
   }
 
   .stats-header-info {
-    @apply text-center;
+    @apply text-left;
   }
 
   .stats-player-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-base mb-0;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-sm mb-0;
   }
 
   .stats-username {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-[10px];
   }
 
-  /* Stats grid - Compact 5 columns */
+  /* Stats grid - Compact */
   .stats-grid {
-    @apply grid grid-cols-5 gap-2 mb-3 flex-shrink-0;
+    @apply grid grid-cols-6 gap-1.5 mb-2 flex-shrink-0;
   }
 
   .stats-card {
-    padding: 0.5rem 0.25rem;
+    padding: 0.35rem 0.2rem;
     background: rgba(13, 26, 40, 0.8);
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -101,30 +118,32 @@
   }
 
   .stats-card-value {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-sm;
   }
 
   .stats-card-label {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-[10px] mt-0.5;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-[8px] mt-0.5;
   }
 
-  /* History section */
-  .stats-history-section {
-    @apply text-left flex flex-col min-h-0 flex-1;
-  }
-
+  /* Section titles */
   .stats-section-title {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mb-2 pb-1 flex-shrink-0;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs mb-1.5 pb-1 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
+  /* History section - takes remaining space */
+  .stats-history-section {
+    @apply text-left flex flex-col min-h-0 flex-1 mt-2;
+  }
+
   .stats-history-list {
-    @apply space-y-1.5 pr-1 overflow-y-auto flex-1;
+    @apply space-y-1 pr-1 overflow-y-auto flex-1;
+    min-height: 120px;
   }
 
   .stats-match-item {
     @apply flex justify-between items-center;
-    padding: 0.5rem;
+    padding: 0.4rem;
     background: rgba(13, 26, 40, 0.8);
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -161,12 +180,12 @@
 
   /* Footer */
   .stats-footer {
-    @apply mt-3 flex-shrink-0;
+    @apply mt-2 flex-shrink-0;
   }
 
   .stats-back-btn {
-    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-base cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
-    padding: 0.6rem 1rem;
+    @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-sm cursor-pointer transition-all duration-100 hover:text-[#e0f7ff];
+    padding: 0.5rem 0.75rem;
     border: none;
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -202,65 +221,100 @@
 
     .stats-box {
       width: 95%;
-      max-width: 380px;
-      height: auto;
-      max-height: 85vh;
+      max-width: 100%;
+      max-height: 90vh;
       padding: 0.75rem;
     }
 
     .stats-title {
-      @apply text-lg mb-2;
+      @apply text-base mb-1;
+    }
+
+    .stats-header {
+      @apply gap-2 mb-1.5 pb-1.5;
     }
 
     .stats-avatar {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 2rem;
+      height: 2rem;
     }
 
     .stats-player-name {
-      @apply text-sm;
+      @apply text-xs;
     }
 
-    .stats-grid {
-      @apply grid-cols-3 gap-1.5;
-    }
-
-    .stats-card {
-      padding: 0.4rem 0.2rem;
-    }
-
-    .stats-card-value {
-      @apply text-base;
-    }
-
-    .stats-card-label {
+    .stats-username {
       @apply text-[8px];
     }
 
+    .stats-grid {
+      @apply grid-cols-3 gap-1;
+    }
+
+    .stats-card {
+      padding: 0.25rem 0.15rem;
+    }
+
+    .stats-card-value {
+      @apply text-xs;
+    }
+
+    .stats-card-label {
+      @apply text-[6px];
+    }
+
+    .stats-section-title {
+      @apply text-[10px] mb-1;
+    }
+
+    .stats-history-section {
+      @apply mt-1;
+    }
+
     .stats-history-list {
-      max-height: 150px;
+      min-height: 100px;
     }
 
     .stats-match-item {
-      padding: 0.4rem;
+      padding: 0.3rem;
+    }
+
+    .stats-match-vs,
+    .stats-match-name {
+      @apply text-[10px];
+    }
+
+    .stats-match-result {
+      @apply text-xs;
+    }
+
+    .stats-footer {
+      @apply mt-1.5;
     }
 
     .stats-back-btn {
-      padding: 0.5rem 0.75rem;
-      @apply text-sm;
+      padding: 0.4rem 0.5rem;
+      @apply text-xs;
     }
   }
 
   @media (min-width: 481px) and (max-width: 768px) {
     .stats-box {
       width: 90%;
-      max-width: 400px;
-      height: auto;
-      max-height: 80vh;
+      max-width: 480px;
+      max-height: 85vh;
     }
 
     .stats-grid {
-      @apply grid-cols-5;
+      @apply grid-cols-6 gap-1;
+    }
+
+    .stats-card-value {
+      @apply text-xs;
+    }
+
+    .stats-card-label {
+      @apply text-[7px];
     }
   }
 

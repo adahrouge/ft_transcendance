@@ -2,6 +2,7 @@ import { authService } from "../services/auth";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
 import { showNotification } from "../utils/notifications";
+import type { GoogleOAuthResponse, GoogleTokenPayload } from "../types/auth";
 
 // ============ Token Management ============
 
@@ -48,13 +49,13 @@ export function isGoogleReady(): boolean {
   return googleClientId !== null && (window as any).google !== undefined;
 }
 
-export function triggerGoogleSignIn(): Promise<any> {
+export function triggerGoogleSignIn(): Promise<GoogleOAuthResponse> {
   if (!isGoogleReady()) return Promise.reject(new Error('Google OAuth not configured'));
 
   return new Promise((resolve, reject) => {
     (window as any).google.accounts.id.initialize({
       client_id: googleClientId,
-      callback: (response: any) => {
+      callback: (response: GoogleOAuthResponse) => {
         response.credential ? resolve(response) : reject(new Error('No credential'));
       },
     });
@@ -173,7 +174,7 @@ function setupGoogleLogin() {
     try {
       const response = await triggerGoogleSignIn();
       if (response?.credential) {
-        const payload = JSON.parse(atob(response.credential.split('.')[1]));
+        const payload: GoogleTokenPayload = JSON.parse(atob(response.credential.split('.')[1]));
         const result = await authService.googleAuth(
           response.credential,
           payload.email,

@@ -10,6 +10,10 @@ export function startTypingAnimation() {
   let index = 0;
   container.style.cursor = "pointer";
 
+
+  container.addEventListener("click", () => {
+    navigateTo("/auth");
+  });
   const typeWriter = () => {
     if (index < text.length) {
       const span = document.createElement("span");
@@ -23,7 +27,4 @@ export function startTypingAnimation() {
 
   setTimeout(typeWriter, 500);
 
-  container.addEventListener("click", () => {
-    navigateTo("/auth");
-  });
 }

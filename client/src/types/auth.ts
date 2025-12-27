@@ -28,3 +28,14 @@ export interface AuthResponse {
 export interface AuthError {
   error: string;
 }
+
+export interface GoogleOAuthResponse {
+  credential: string;
+}
+
+export interface GoogleTokenPayload {
+  email: string;
+  name: string;
+  sub: string;
+  picture?: string;
+}
