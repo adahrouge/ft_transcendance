@@ -21,12 +21,8 @@
       -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
   }
 
-  .auth-header {
-    @apply mb-6 text-center;
-  }
-
-  .auth-header h1 {
-    @apply font-['Pixel_Game'] text-6xl text-[#e0f7ff];
+  .auth-title {
+    @apply mb-6 text-center font-['Pixel_Game'] text-6xl text-[#e0f7ff];
   }
 
   .auth-tabs {
@@ -82,12 +78,6 @@
       -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
   }
 
-  .pixel-btn:hover {
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
-  }
-
   .pixel-btn:active {
     @apply translate-y-1;
     box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
@@ -106,12 +96,6 @@
       -2px -2px 0 0 #d0d0d0;
   }
 
-  .google-btn:hover {
-    box-shadow: 0 -2px 0 0 #d0d0d0, 2px -2px 0 0 #d0d0d0, 2px 0 0 0 #d0d0d0,
-      2px 2px 0 0 #999, 0 2px 0 0 #999, -2px 2px 0 0 #999, -2px 0 0 0 #d0d0d0,
-      -2px -2px 0 0 #d0d0d0;
-  }
-
   .google-btn:active {
     @apply translate-y-1;
   }
@@ -124,10 +108,6 @@
   .divider::after {
     @apply flex-1 h-[2px] bg-[#2c6b87];
     content: "";
-  }
-
-  .google-btn-hidden {
-    @apply hidden;
   }
 
   .tab-btn {
@@ -160,10 +140,6 @@
     @apply flex items-center justify-center;
   }
 
-  .hidden {
-    display: none !important;
-  }
-
   /* Responsive - Auth page */
 
   /* Extra small phones (320px - 374px) */
@@ -178,12 +154,8 @@
         -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
     }
 
-    .auth-header {
-      @apply mb-4;
-    }
-
-    .auth-header h1 {
-      @apply text-2xl;
+    .auth-title {
+      @apply mb-4 text-2xl;
     }
 
     .auth-tabs {
@@ -255,12 +227,8 @@
         -3px 0 0 0 #3d8aa8, -3px -3px 0 0 #3d8aa8;
     }
 
-    .auth-header {
-      @apply mb-4;
-    }
-
-    .auth-header h1 {
-      @apply text-3xl;
+    .auth-title {
+      @apply mb-4 text-3xl;
     }
 
     .auth-tabs {
@@ -325,12 +293,8 @@
       min-height: 75%;
     }
 
-    .auth-header {
-      @apply mb-5;
-    }
-
-    .auth-header h1 {
-      @apply text-4xl;
+    .auth-title {
+      @apply mb-5 text-4xl;
     }
 
     .auth-tabs {
@@ -376,7 +340,7 @@
       min-height: 75%;
     }
 
-    .auth-header h1 {
+    .auth-title {
       @apply text-5xl;
     }
 
@@ -417,12 +381,8 @@
       max-width: 85%;
     }
 
-    .auth-header {
-      @apply mb-2;
-    }
-
-    .auth-header h1 {
-      @apply text-2xl;
+    .auth-title {
+      @apply mb-2 text-2xl;
     }
 
     .auth-tabs {
