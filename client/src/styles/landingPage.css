@@ -1,19 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --animate-fade-in: fade-in 0.8s ease-out;
   --animate-letter-pop: letter-pop 0.4s ease-out forwards;
-  --animate-fade-in-out: fade-in-out 2s ease-in-out infinite;
-  --animate-pulse-scale: pulse-scale 2s ease-in-out infinite;
-
-  @keyframes fade-in {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
 
   @keyframes letter-pop {
     0% {
@@ -29,54 +17,25 @@
     }
   }
 
-  @keyframes fade-in-out {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.4;
-    }
-  }
-
-  @keyframes pulse-scale {
-    0% {
-      transform: scale(1);
-    }
-    50% {
-      transform: scale(1.05);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-}
-
-@font-face {
-  font-family: "Pixel Game";
-  src: url("../assets/fonts/pixel-game.regular.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Pixel Game Extrude";
-  src: url("../assets/fonts/pixel-game.extrude.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
 }
 
 @layer components {
-  .animate-fade-in {
-    @apply animate-fade-in;
+  .landing-container {
+    @apply fixed inset-0 flex items-center justify-center overflow-hidden z-[9999];
   }
 
-  .pixel-title {
-    @apply font-['Press_Start_2P',monospace];
+  .landing-overlay {
+    @apply absolute inset-0 bg-black/20 pointer-events-none;
+  }
+
+  .main-title {
+    @apply flex items-center justify-center gap-0 leading-none;
+    min-height: clamp(44px, 10vw, 120px);
   }
 
   .main-title span {
-    @apply inline-block text-[120px] leading-none relative z-10 text-[#70c9e8] font-['Pixel_Game'] [text-shadow:0_0_5px_rgba(112,201,232,0.5),0_0_10px_rgba(112,201,232,0.3)] animate-letter-pop;
+    @apply inline-block leading-none relative z-10 text-[#70c9e8] font-['Pixel_Game'] [text-shadow:0_0_5px_rgba(112,201,232,0.5),0_0_10px_rgba(112,201,232,0.3)] animate-letter-pop;
+    font-size: clamp(40px, 8vw, 120px);
   }
 
   .main-title span::after {
@@ -84,20 +43,21 @@
   }
 
   .press-start {
-    @apply fixed bottom-[40%] left-1/2 -translate-x-1/2 font-['Pixel_Game'] text-2xl text-[#70c9e8] [text-shadow:0_0_10px_rgba(112,201,232,0.5),0_0_20px_rgba(112,201,232,0.3)] cursor-pointer z-20 transition-all duration-300;
+    @apply fixed bottom-[40%] left-1/2 -translate-x-1/2 font-['Pixel_Game'] text-[#70c9e8] [text-shadow:0_0_10px_rgba(112,201,232,0.5),0_0_20px_rgba(112,201,232,0.3)] cursor-pointer z-20 transition-all duration-300;
+    font-size: clamp(14px, 2.5vw, 24px);
     animation: fade-in-out 2s ease-in-out infinite;
+  }
+
+  @keyframes fade-in-out {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
   }
 
   .press-start:hover {
     @apply text-[#8fd9f0] [text-shadow:0_0_15px_rgba(143,217,240,0.7),0_0_30px_rgba(143,217,240,0.4)] scale-110;
-  }
-
-  /* Responsive - Landing page */
-  .main-title span {
-    font-size: clamp(40px, 8vw, 120px);
-  }
-
-  .press-start {
-    font-size: clamp(14px, 2.5vw, 24px);
   }
 }

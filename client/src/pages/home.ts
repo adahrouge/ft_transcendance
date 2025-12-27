@@ -4,7 +4,6 @@ import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
 import type { UserProfile } from "../types/home";
 import "../styles/home.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 let currentUser: UserProfile | null = null;
 
@@ -14,7 +13,7 @@ export function renderHomePage(): string {
   }, 0);
 
   return `
-    <div class="home-container" style="background-image: url('${backgroundImage}')">
+    <div class="home-container">
       <div class="home-overlay"></div>
       <div class="home-content">
         <!-- Main Menu -->

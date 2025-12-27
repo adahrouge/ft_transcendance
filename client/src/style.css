@@ -2,6 +2,21 @@
 @import "./styles/landingPage.css";
 @import "./styles/auth.css";
 
+/* Global fonts */
+@font-face {
+  font-family: "Pixel Game";
+  src: url("./assets/fonts/pixel-game.regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Pixel Game Extrude";
+  src: url("./assets/fonts/pixel-game.extrude.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* Global layout reset */
 html {
   overflow-x: hidden;
@@ -18,6 +33,7 @@ body {
   margin: 0;
   padding: 0;
   position: relative !important;
+  background: url("./assets/images/background.jpg") center/cover no-repeat fixed;
 }
 
 #app {

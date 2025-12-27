@@ -3,7 +3,6 @@ import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
 import { showNotification, showConfirm } from "../utils/notifications";
 import "../styles/friend.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 export function renderFriendPage(): string {
   setTimeout(() => {
@@ -11,7 +10,7 @@ export function renderFriendPage(): string {
   }, 0);
 
   return `
-    <div class="friend-container" style="background-image: url('${backgroundImage}')">
+    <div class="friend-container">
       <div class="friend-overlay"></div>
       <div class="friend-content">
         <div id="friend-root" class="w-full flex justify-center items-center min-h-[300px]">

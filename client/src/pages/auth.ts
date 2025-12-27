@@ -4,12 +4,10 @@ import { initializeGoogleOAuth, triggerGoogleSignIn, decodeGoogleToken, isGoogle
 import { i18n } from "../services/i18n";
 import { showNotification } from "../utils/notifications";
 import "../styles/auth.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 let isSubmitting = false;
 
 export function renderAuthPage(): string {
-  // Initialize Google OAuth with client ID from environment
   const googleClientId = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || '';
   if (googleClientId) {
     // Pre-load the Google script immediately
@@ -21,7 +19,7 @@ export function renderAuthPage(): string {
   }, 0);
 
   return `
-    <div class="auth-container" style="background-image: url('${backgroundImage}')">
+    <div class="auth-container">
       <div class="auth-overlay"></div>
       <div class="auth-box animate-fade-in">
         <div class="auth-header">

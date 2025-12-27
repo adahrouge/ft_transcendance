@@ -2,7 +2,7 @@
 
 @layer components {
   .profile-container {
-    @apply fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat bg-fixed z-[9999];
+    @apply fixed inset-0 w-full h-full z-[9999];
     overflow-x: hidden;
     overflow-y: auto;
   }

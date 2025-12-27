@@ -8,7 +8,6 @@ import type { Board, Player } from "../types/tictactoe";
 import type { XoBoardCustomization } from "../types/boardCustomization";
 import { DEFAULT_XO_CUSTOMIZATION } from "../types/boardCustomization";
 import "../styles/tictactoe.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 // Game settings
 const AI_DIFFICULTY_LABELS = ["EASY", "MEDIUM", "HARD"];
@@ -30,7 +29,7 @@ export function renderTicTacToePage(): string {
   }, 0);
 
   return `
-    <div class="tictactoe-container" style="background-image: url('${backgroundImage}')">
+    <div class="tictactoe-container">
       <div class="tictactoe-overlay"></div>
       <div class="tictactoe-content">
         <div id="game-root"></div>

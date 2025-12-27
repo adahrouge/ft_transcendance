@@ -4,7 +4,6 @@ import { i18n } from "../services/i18n";
 import { boardCustomizationService, xoBoardCustomizationService } from "../services/boardCustomization";
 import { BoardCustomization, DEFAULT_CUSTOMIZATION, THEME_PRESETS, XoBoardCustomization, DEFAULT_XO_CUSTOMIZATION, XO_THEME_PRESETS } from "../types/boardCustomization";
 import "../styles/customizeBoard.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 export function renderCustomizeBoardPage(): string {
   setTimeout(() => {
@@ -12,7 +11,7 @@ export function renderCustomizeBoardPage(): string {
   }, 0);
 
   return `
-    <div class="customize-board-container" style="background-image: url('${backgroundImage}')">
+    <div class="customize-board-container">
       <div class="customize-board-overlay"></div>
       <div class="customize-board-content">
         <div class="customize-board-box">

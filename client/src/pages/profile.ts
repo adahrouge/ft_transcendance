@@ -7,15 +7,13 @@ import { showNotification } from "../utils/notifications";
 import type { ProfileUser } from "../types/profile";
 import "../styles/profile.css";
 
-import backgroundImage from "../assets/images/background.jpg";
-
 export function renderProfilePage(): string {
   setTimeout(() => {
     loadProfile();
   }, 0);
 
   return `
-    <div class="profile-container" style="background-image: url('${backgroundImage}')">
+    <div class="profile-container">
       <div class="profile-overlay"></div>
       <div class="profile-content">
         <div id="profile-root" class="w-full flex justify-center items-center min-h-[300px]">

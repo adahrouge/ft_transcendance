@@ -2,7 +2,7 @@
 
 @layer components {
   .auth-container {
-    @apply fixed inset-0 flex items-center justify-center bg-cover bg-center bg-no-repeat z-[9999];
+    @apply fixed inset-0 flex items-center justify-center z-[9999];
     overflow-x: hidden;
     overflow-y: auto;
   }

@@ -4,7 +4,6 @@ import { getAvatarUrl } from "../utils/home";
 import { i18n } from "../services/i18n";
 import type { MatchHistoryItem, StatsUser, PlayerStats } from "../types/stats";
 import "../styles/stats.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 export function renderStatsPage(): string {
   setTimeout(() => {
@@ -12,7 +11,7 @@ export function renderStatsPage(): string {
   }, 0);
 
   return `
-    <div class="stats-container" style="background-image: url('${backgroundImage}')">
+    <div class="stats-container">
       <div class="stats-overlay"></div>
       <div class="stats-content">
         <div id="stats-root" class="w-full max-w-[800px] flex justify-center items-center min-h-[300px]">

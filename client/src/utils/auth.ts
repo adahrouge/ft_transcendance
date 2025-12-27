@@ -13,5 +13,5 @@ export function setToken(token: string | null): void {
 }
 
 export function isAuthenticated(): boolean {
-  return !!getToken();
+  return Boolean(getToken());
 }

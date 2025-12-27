@@ -6,7 +6,6 @@ import { boardCustomizationService } from "../services/boardCustomization";
 import type { BoardCustomization } from "../types/boardCustomization";
 import { statsService } from "../services/stats";
 import "../styles/pong.css";
-import backgroundImage from "../assets/images/background.jpg";
 
 // Game settings
 type BallSpeedLevel = "slow" | "normal" | "fast";
@@ -211,7 +210,7 @@ export function renderGamePage(): string {
   }, 0);
 
   return `
-    <div class="pong-container" style="background-image: url('${backgroundImage}')">
+    <div class="pong-container">
       <div class="pong-overlay"></div>
       <div class="pong-content">
         <div id="game-root"></div>
@@ -226,7 +225,7 @@ export function renderTournamentPage(): string {
   }, 0);
 
   return `
-    <div class="pong-container" style="background-image: url('${backgroundImage}')">
+    <div class="pong-container">
       <div class="pong-overlay"></div>
       <div class="pong-content">
         <div id="game-root"></div>
