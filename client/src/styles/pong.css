@@ -370,6 +370,273 @@
     }
   }
 
+  /* Narrow screens (540px width) */
+  @media (max-width: 600px) {
+    .pong-canvas-wrapper {
+      max-width: 95vw;
+    }
+
+    .pong-canvas {
+      max-width: 95vw;
+    }
+
+    .pong-box {
+      @apply p-3;
+      max-width: 98vw;
+    }
+
+    .pong-scoreboard {
+      @apply px-2 mb-2;
+    }
+
+    .pong-score-label {
+      @apply text-sm;
+    }
+
+    .pong-score-value {
+      @apply text-lg;
+    }
+
+    .pong-controls {
+      @apply gap-2 mt-3;
+    }
+
+    .pong-btn {
+      @apply text-sm px-3 py-2;
+    }
+
+    .pong-touch-btn {
+      width: 52px;
+      height: 52px;
+      @apply text-xl;
+    }
+  }
+
+  /* Short screens (1024x600, 1280x800) */
+  @media (min-width: 768px) and (max-height: 800px) {
+    .pong-content {
+      padding-top: 50px;
+      padding-bottom: 10px;
+    }
+
+    .pong-canvas-wrapper {
+      max-height: 55vh;
+    }
+
+    .pong-canvas {
+      max-height: 55vh;
+      width: auto;
+    }
+
+    .pong-box {
+      @apply p-4;
+      max-height: 90vh;
+    }
+
+    .pong-scoreboard {
+      @apply mb-2;
+    }
+
+    .pong-score-label {
+      @apply text-sm;
+    }
+
+    .pong-score-value {
+      @apply text-xl;
+    }
+
+    .pong-controls {
+      @apply mt-3;
+    }
+
+    .pong-btn {
+      @apply py-2 text-base;
+    }
+
+    .pong-start-box {
+      @apply p-6;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .pong-title {
+      @apply text-2xl mb-2;
+    }
+
+    .pong-subtitle {
+      @apply text-xs mb-4;
+    }
+
+    .pong-mode-buttons {
+      @apply gap-2 my-4;
+    }
+
+    .pong-mode-btn {
+      @apply p-3;
+      min-height: 60px;
+    }
+
+    .pong-mode-title {
+      @apply text-base;
+    }
+
+    .pong-mode-desc {
+      @apply text-xs;
+    }
+
+    .pong-settings {
+      @apply my-4 space-y-3;
+    }
+
+    .pong-setting-label {
+      @apply text-base;
+    }
+
+    .pong-setting-btn {
+      @apply text-sm px-3 py-1;
+    }
+
+    .pong-divider {
+      @apply my-3;
+    }
+
+    .pong-info {
+      @apply text-xs mt-2;
+    }
+
+    .pong-countdown-text {
+      @apply text-6xl;
+    }
+
+    .pong-over-box {
+      @apply p-6;
+    }
+
+    .pong-over-title {
+      @apply text-2xl mb-2;
+    }
+
+    .pong-over-score {
+      @apply text-xl mb-4;
+    }
+  }
+
+  /* Very short screens (height < 650px) */
+  @media (max-height: 650px) {
+    .pong-content {
+      padding-top: 45px;
+      padding-bottom: 5px;
+    }
+
+    .pong-canvas-wrapper {
+      max-height: 50vh;
+    }
+
+    .pong-canvas {
+      max-height: 50vh;
+    }
+
+    .pong-box {
+      @apply p-3;
+    }
+
+    .pong-scoreboard {
+      @apply mb-1 px-2;
+    }
+
+    .pong-score-label {
+      @apply text-xs;
+    }
+
+    .pong-score-value {
+      @apply text-lg min-w-[30px];
+    }
+
+    .pong-score-divider {
+      @apply text-lg mx-2;
+    }
+
+    .pong-controls {
+      @apply gap-2 mt-2;
+    }
+
+    .pong-btn {
+      @apply text-sm px-3 py-1.5;
+    }
+
+    .pong-start-box {
+      @apply p-4;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .pong-title {
+      @apply text-xl mb-2;
+    }
+
+    .pong-subtitle {
+      @apply text-xs mb-3;
+    }
+
+    .pong-mode-buttons {
+      @apply gap-2 my-3;
+    }
+
+    .pong-mode-btn {
+      @apply p-2;
+      min-height: 50px;
+    }
+
+    .pong-mode-title {
+      @apply text-sm;
+    }
+
+    .pong-mode-desc {
+      @apply text-[10px];
+    }
+
+    .pong-settings {
+      @apply my-3 space-y-2;
+    }
+
+    .pong-setting-label {
+      @apply text-sm;
+    }
+
+    .pong-setting-options {
+      @apply gap-2;
+    }
+
+    .pong-setting-btn {
+      @apply text-xs px-3 py-1;
+    }
+
+    .pong-slider {
+      @apply h-2;
+      max-width: 200px;
+    }
+
+    .pong-slider::-webkit-slider-thumb,
+    .pong-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+    }
+
+    .pong-divider {
+      @apply my-2;
+    }
+
+    .pong-info {
+      @apply text-[10px] mt-1;
+    }
+
+    .pong-touch-btn {
+      width: 48px;
+      height: 48px;
+      @apply text-lg;
+    }
+  }
+
   @media (min-width: 1440px) {
     .pong-start-box {
       min-width: 480px;
