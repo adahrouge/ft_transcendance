@@ -81,3 +81,21 @@ export type CollisionResult = {
   scored: "p1" | "p2" | null;
   paddleHit: "p1" | "p2" | null;
 };
+
+// Ball speed level type
+export type BallSpeedLevel = "slow" | "normal" | "fast";
+
+// Shared game state for friend/tournament modes
+export type SharedGameState = {
+  p1X: number;
+  p2X: number;
+  ballX: number;
+  ballY: number;
+  ballVX: number;
+  ballVY: number;
+  scoreP1: number;
+  scoreP2: number;
+  paused: boolean;
+  gameStarted: boolean;
+  servePaused: boolean;
+};

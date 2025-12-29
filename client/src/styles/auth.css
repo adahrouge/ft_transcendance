@@ -370,6 +370,49 @@
     }
   }
 
+  /* Short desktop/laptop screens (1024x600, 1280x800, etc.) */
+  @media (min-width: 768px) and (max-height: 800px) {
+    .auth-box {
+      @apply p-6;
+      height: auto;
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+
+    .auth-title {
+      @apply mb-4 text-4xl;
+    }
+
+    .auth-tabs {
+      @apply gap-4 mb-4 pb-2;
+    }
+
+    .auth-form-container {
+      @apply p-4;
+      height: auto;
+    }
+
+    .form-group {
+      @apply gap-1;
+    }
+
+    .pixel-input {
+      @apply py-2;
+    }
+
+    .pixel-btn {
+      @apply py-3 text-xl;
+    }
+
+    .google-btn {
+      @apply py-3;
+    }
+
+    .divider {
+      @apply my-2;
+    }
+  }
+
   /* Landscape mode for small phones */
   @media (max-height: 500px) and (orientation: landscape) {
     .auth-box {

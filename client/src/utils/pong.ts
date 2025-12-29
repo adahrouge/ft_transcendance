@@ -1,6 +1,9 @@
-import type { AIConfig, BallState, AISnapshot, GameConfig } from "../types/pong";
+import type { AIConfig, BallState, AISnapshot, GameConfig, BallSpeedLevel, SharedGameState } from "../types/pong";
 import type { BoardCustomization } from "../types/boardCustomization";
 import { i18n } from "../services/i18n";
+
+// Re-export types for convenience
+export type { BallSpeedLevel, SharedGameState } from "../types/pong";
 
 // Default game configuration for vertical retro pong
 export const DEFAULT_GAME_CONFIG: GameConfig = {
@@ -199,8 +202,6 @@ export class PongAI {
 
 // ============ Game Settings ============
 
-export type BallSpeedLevel = "slow" | "normal" | "fast";
-
 export const BALL_SPEEDS: Record<BallSpeedLevel, number> = {
   slow: 250,
   normal: 350,
@@ -321,21 +322,7 @@ export function renderGame(
   ctx.fillRect(ballX - config.ballSize / 2, ballY - config.ballSize / 2, config.ballSize, config.ballSize);
 }
 
-export interface GameState {
-  p1X: number;
-  p2X: number;
-  ballX: number;
-  ballY: number;
-  ballVX: number;
-  ballVY: number;
-  scoreP1: number;
-  scoreP2: number;
-  paused: boolean;
-  gameStarted: boolean;
-  servePaused: boolean;
-}
-
-export function createGameState(ballSpeed: number, config: GameConfig = DEFAULT_GAME_CONFIG): GameState {
+export function createGameState(ballSpeed: number, config: GameConfig = DEFAULT_GAME_CONFIG): SharedGameState {
   return {
     p1X: config.width / 2 - config.paddleW / 2,
     p2X: config.width / 2 - config.paddleW / 2,
@@ -352,7 +339,7 @@ export function createGameState(ballSpeed: number, config: GameConfig = DEFAULT_
 }
 
 export function updateBallPhysics(
-  state: GameState,
+  state: SharedGameState,
   ballSpeed: number,
   config: GameConfig = DEFAULT_GAME_CONFIG
 ): { p1Scored: boolean; p2Scored: boolean } {

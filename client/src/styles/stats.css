@@ -51,12 +51,12 @@
   }
 
   .stats-title {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-lg mb-2 flex-shrink-0;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl mb-3 flex-shrink-0;
   }
 
   /* Stats Header - Inline compact */
   .stats-header {
-    @apply flex items-center gap-3 mb-2 pb-2 flex-shrink-0;
+    @apply flex items-center gap-3 mb-3 pb-3 flex-shrink-0;
     border-bottom: 2px solid #2c6b87;
   }
 
@@ -66,8 +66,8 @@
 
   .stats-avatar {
     @apply object-cover;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 3rem;
+    height: 3rem;
     image-rendering: pixelated;
     box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
       2px 2px 0 0 #5db3d1, 0 2px 0 0 #5db3d1, -2px 2px 0 0 #5db3d1,
@@ -79,20 +79,20 @@
   }
 
   .stats-player-name {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-sm mb-0;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-base mb-0.5;
   }
 
   .stats-username {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-[10px];
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs;
   }
 
   /* Stats grid - Compact */
   .stats-grid {
-    @apply grid grid-cols-6 gap-1.5 mb-2 flex-shrink-0;
+    @apply grid grid-cols-6 gap-2 mb-3 flex-shrink-0;
   }
 
   .stats-card {
-    padding: 0.35rem 0.2rem;
+    padding: 0.5rem 0.3rem;
     background: rgba(13, 26, 40, 0.8);
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
       2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
@@ -118,11 +118,11 @@
   }
 
   .stats-card-value {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-sm;
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-base;
   }
 
   .stats-card-label {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-[8px] mt-0.5;
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-[9px] mt-1;
   }
 
   /* Section titles */
@@ -131,14 +131,16 @@
     border-bottom: 2px solid #2c6b87;
   }
 
-  /* History section - takes remaining space */
+  /* History section - limited height */
   .stats-history-section {
-    @apply text-left flex flex-col min-h-0 flex-1 mt-2;
+    @apply text-left flex flex-col min-h-0 mt-3;
+    flex: 0 1 auto;
   }
 
   .stats-history-list {
-    @apply space-y-1 pr-1 overflow-y-auto flex-1;
-    min-height: 120px;
+    @apply space-y-1 pr-1 overflow-y-auto;
+    max-height: 150px;
+    min-height: 80px;
   }
 
   .stats-match-item {

@@ -8,12 +8,15 @@ import {
   setupTouchControls,
   startCountdown,
 } from "../utils/pong.ts";
+import { generateBots, createBracket } from "../utils/pongTournament.ts";
+import type { TournamentParticipant, LocalTournament } from "../types/pongTournament";
 import { navigateTo } from "../router";
 import { isAuthenticated } from "../utils/auth";
 import { i18n } from "../services/i18n";
 import { boardCustomizationService } from "../services/boardCustomization";
 import { statsService } from "../services/stats";
 import "../styles/pong.css";
+import "../styles/pongTournament.css";
 
 const CONFIG = DEFAULT_GAME_CONFIG;
 const BALL_SPEED = BALL_SPEEDS.normal;
@@ -64,85 +67,8 @@ function setupTournament() {
 
 // ============ LOCAL TOURNAMENT SYSTEM ============
 
-interface TournamentParticipant {
-  name: string;
-  isPlayer: boolean;
-  difficulty: number;
-}
-
-interface TournamentMatchup {
-  p1: TournamentParticipant | null;
-  p2: TournamentParticipant | null;
-  winner: TournamentParticipant | null;
-  p1Score: number;
-  p2Score: number;
-}
-
-interface LocalTournament {
-  size: 4 | 8;
-  participants: TournamentParticipant[];
-  bracket: TournamentMatchup[][];
-  currentRound: number;
-  currentMatch: number;
-  isActive: boolean;
-}
-
 let activeTournament: LocalTournament | null = null;
 let tournamentWinSaved = false;
-
-const BOT_NAMES = [
-  "RoboPong", "ByteBot", "PixelAce", "NeonKnight",
-  "CyberPaddle", "GlitchMaster", "LaserLord", "TurboTron"
-];
-
-function generateBots(count: number): TournamentParticipant[] {
-  const bots: TournamentParticipant[] = [];
-  const shuffledNames = [...BOT_NAMES].sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < count; i++) {
-    bots.push({
-      name: shuffledNames[i % shuffledNames.length],
-      isPlayer: false,
-      difficulty: 30 + Math.random() * 50
-    });
-  }
-  return bots;
-}
-
-function createBracket(participants: TournamentParticipant[]): TournamentMatchup[][] {
-  const bracket: TournamentMatchup[][] = [];
-  const numRounds = Math.log2(participants.length);
-
-  const firstRound: TournamentMatchup[] = [];
-  for (let i = 0; i < participants.length; i += 2) {
-    firstRound.push({
-      p1: participants[i],
-      p2: participants[i + 1],
-      winner: null,
-      p1Score: 0,
-      p2Score: 0
-    });
-  }
-  bracket.push(firstRound);
-
-  let matchCount = firstRound.length / 2;
-  for (let r = 1; r < numRounds; r++) {
-    const round: TournamentMatchup[] = [];
-    for (let m = 0; m < matchCount; m++) {
-      round.push({
-        p1: null,
-        p2: null,
-        winner: null,
-        p1Score: 0,
-        p2Score: 0
-      });
-    }
-    bracket.push(round);
-    matchCount /= 2;
-  }
-
-  return bracket;
-}
 
 function showTournamentSetup(root: HTMLElement) {
   if (activeTournament && activeTournament.isActive) {
