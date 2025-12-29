@@ -1,6 +1,25 @@
 @import "tailwindcss";
 
 @layer components {
+  /* Pixelated border patterns as CSS custom properties */
+  :root {
+    --pong-border-4px: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
+      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
+      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    --pong-border-3px: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
+      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
+      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+    --pong-border-2px: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
+      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
+      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    --pong-border-btn-3d: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    --pong-border-btn-flat: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
+      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
+      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+  }
+
   .pong-container {
     @apply fixed inset-0 flex flex-col z-[9999];
   }
@@ -17,11 +36,7 @@
   .pong-box {
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm;
     image-rendering: pixelated;
-
-    /* Pixelated border */
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: var(--pong-border-4px);
   }
 
   .pong-title {
@@ -53,11 +68,7 @@
   .pong-canvas-wrapper {
     @apply relative;
     image-rendering: pixelated;
-
-    /* Inner pixelated border */
-    box-shadow: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
-      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
-      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+    box-shadow: var(--pong-border-3px);
   }
 
   .pong-canvas {
@@ -74,26 +85,17 @@
   .pong-btn {
     @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-lg px-6 py-3 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
     border: none;
-
-    /* Pixelated border with 3D effect */
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    box-shadow: var(--pong-border-btn-3d);
   }
 
   .pong-btn:active {
     @apply translate-y-1;
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    box-shadow: var(--pong-border-btn-flat);
   }
 
   .pong-btn-secondary {
     @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] hover:text-[#e0f7ff];
-
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    box-shadow: var(--pong-border-2px);
   }
 
   /* Countdown overlay */
@@ -115,10 +117,7 @@
   .pong-over-box {
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-8 backdrop-blur-sm text-center;
     image-rendering: pixelated;
-
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: var(--pong-border-4px);
   }
 
   .pong-over-title {
@@ -137,10 +136,7 @@
   .pong-start-box {
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[560px];
     image-rendering: pixelated;
-
-    box-shadow: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    box-shadow: var(--pong-border-4px);
   }
 
   /* Full width button variant */
@@ -172,10 +168,7 @@
   .pong-setting-btn {
     @apply bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-[#5db3d1] font-['Pixel_Game'] text-base px-5 py-2 cursor-pointer transition-all duration-100;
     border: none;
-
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    box-shadow: var(--pong-border-2px);
   }
 
   .pong-setting-btn:hover {
@@ -184,7 +177,6 @@
 
   .pong-setting-btn.active {
     @apply bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white;
-
     box-shadow: 0 -2px 0 0 #4a9dc0, 2px -2px 0 0 #4a9dc0, 2px 0 0 0 #4a9dc0,
       2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
       -2px 0 0 0 #4a9dc0, -2px -2px 0 0 #4a9dc0;
@@ -208,24 +200,13 @@
     -webkit-appearance: none;
     appearance: none;
     background: linear-gradient(to right, #0d1a28, #0a1420);
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    box-shadow: var(--pong-border-2px);
   }
 
-  .pong-slider::-webkit-slider-thumb {
+  .pong-slider::-webkit-slider-thumb,
+  .pong-slider::-moz-range-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
-    background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
-    cursor: pointer;
-    box-shadow: 0 -2px 0 0 #5db3d1, 2px -2px 0 0 #5db3d1, 2px 0 0 0 #5db3d1,
-      2px 2px 0 0 #1a4558, 0 2px 0 0 #1a4558, -2px 2px 0 0 #1a4558,
-      -2px 0 0 0 #5db3d1, -2px -2px 0 0 #5db3d1;
-  }
-
-  .pong-slider::-moz-range-thumb {
     width: 20px;
     height: 20px;
     background: linear-gradient(to bottom, #4a9dc0, #3d8aa8);
@@ -252,15 +233,11 @@
   .pong-mode-btn {
     @apply w-full bg-gradient-to-b from-[#0d1a28] to-[#0a1420] text-left p-5 cursor-pointer transition-all duration-100;
     border: none;
-
-    box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    box-shadow: var(--pong-border-2px);
   }
 
   .pong-mode-btn:hover {
     @apply bg-gradient-to-b from-[#1a2d40] to-[#0d1a28];
-
     box-shadow: 0 -2px 0 0 #3d8aa8, 2px -2px 0 0 #3d8aa8, 2px 0 0 0 #3d8aa8,
       2px 2px 0 0 #3d8aa8, 0 2px 0 0 #3d8aa8, -2px 2px 0 0 #3d8aa8,
       -2px 0 0 0 #3d8aa8, -2px -2px 0 0 #3d8aa8;
@@ -308,9 +285,7 @@
     width: 64px;
     height: 64px;
     border: none;
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    box-shadow: var(--pong-border-btn-3d);
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -318,9 +293,7 @@
 
   .pong-touch-btn:active {
     @apply translate-y-1 from-[#4a9dc0] to-[#3d8aa8];
-    box-shadow: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    box-shadow: var(--pong-border-btn-flat);
   }
 
   /* Hide touch controls on desktop with keyboard */
@@ -328,92 +301,6 @@
     .pong-touch-controls {
       @apply hidden;
     }
-  }
-
-  /* ============ TOURNAMENT STYLES ============ */
-  
-  .pong-mode-btn-tournament {
-    @apply border-2 border-yellow-500/50;
-    background: linear-gradient(135deg, #1a4558 0%, #0d2137 100%);
-  }
-
-  .pong-mode-btn-tournament:hover {
-    @apply border-yellow-400;
-    background: linear-gradient(135deg, #2c6b87 0%, #1a4558 100%);
-  }
-
-  .pong-bracket {
-    @apply flex gap-4 justify-center overflow-x-auto py-4 px-2;
-  }
-
-  .pong-bracket-round {
-    @apply flex flex-col gap-4 min-w-[180px];
-  }
-
-  .pong-bracket-round-title {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs text-center mb-2 uppercase;
-  }
-
-  .pong-bracket-match {
-    @apply bg-[#0d1a28] border-2 border-[#2c6b87] p-3 flex flex-col gap-1 relative;
-  }
-
-  .pong-bracket-match-next {
-    @apply border-yellow-500 animate-pulse;
-  }
-
-  .pong-bracket-match-done {
-    @apply opacity-70;
-  }
-
-  .pong-bracket-player {
-    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xs truncate;
-  }
-
-  .pong-bracket-winner {
-    @apply text-green-400;
-  }
-
-  .pong-bracket-you {
-    @apply text-yellow-400 font-bold;
-  }
-
-  .pong-bracket-vs {
-    @apply text-[#5db3d1] text-[10px] text-center;
-  }
-
-  .pong-bracket-play-btn {
-    @apply absolute -bottom-3 left-1/2 -translate-x-1/2 bg-green-600 text-white text-[10px] font-['Pixel_Game'] px-3 py-1 hover:bg-green-500 cursor-pointer;
-    border: none;
-  }
-
-  .pong-tournament-winner {
-    @apply text-center py-6 mb-4;
-  }
-
-  .pong-winner-crown {
-    @apply text-5xl mb-2;
-    animation: bounce 1s ease-in-out infinite;
-  }
-
-  .pong-winner-text {
-    @apply text-yellow-400 font-['Pixel_Game'] text-2xl;
-  }
-
-  .pong-winner-subtitle {
-    @apply text-green-400 font-['Pixel_Game'] text-lg mt-2;
-  }
-
-  .pong-eliminated {
-    @apply text-center py-4 mb-4 bg-red-900/30 border border-red-600/50;
-  }
-
-  .pong-eliminated-text {
-    @apply text-red-400 font-['Pixel_Game'] text-xl;
-  }
-
-  .pong-eliminated-subtitle {
-    @apply text-[#5db3d1] font-['Pixel_Game'] text-sm mt-1;
   }
 
   .pong-tournament-header {

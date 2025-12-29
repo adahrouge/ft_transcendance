@@ -2,7 +2,9 @@ import Navigo from "navigo";
 import { renderAuthPage } from "./pages/auth";
 import { renderLandingPage } from "./pages/landingPage";
 import { renderHomePage } from "./pages/home";
-import { renderGamePage, renderTournamentPage } from "./pages/pong";
+import { renderGamePage } from "./pages/pong";
+import { renderTournamentPage } from "./pages/pongTournament";
+import { renderFriendGamePage } from "./pages/pongFriendGame";
 import { renderProfilePage } from "./pages/profile";
 import { renderFriendPage } from "./pages/friend";
 import { renderStatsPage } from "./pages/stats";
@@ -58,6 +60,9 @@ export function setupRouter() {
     })
     .on("/tournament", () => {
       renderPage(renderTournamentPage());
+    })
+    .on("/pong-friend", () => {
+      renderPage(renderFriendGamePage());
     })
     .on("/customize-board", () => {
       renderPage(renderCustomizeBoardPage());
