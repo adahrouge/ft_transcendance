@@ -192,25 +192,40 @@ async function showFindGame(root: HTMLElement) {
   let inQueue = false;
   let searching = false;
 
+  // Fetch initial queue count via REST API
+  async function fetchInitialQueueCount() {
+    try {
+      const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+      const response = await fetch(`${apiUrl}/api/tictactoe/queue-count`);
+      if (response.ok) {
+        const data = await response.json();
+        queueCount = data.count || 0;
+        updateQueueUI();
+      }
+    } catch (err) {
+      console.error('Failed to fetch queue count:', err);
+    }
+  }
+
   root.innerHTML = `
     <div class="tictactoe-start-box">
-      <h1 class="tictactoe-title">${i18n.t('find_game') || 'FIND GAME'}</h1>
-      <p class="tictactoe-subtitle">${i18n.t('matchmaking_desc') || 'Find an opponent to play against online'}</p>
+      <h1 class="tictactoe-title">${i18n.t('find_game')}</h1>
+      <p class="tictactoe-subtitle">${i18n.t('matchmaking_desc')}</p>
 
       <div class="tictactoe-queue-info">
         <div class="tictactoe-queue-count">
-          <span id="queue-count">0</span>
-          <span class="tictactoe-queue-label">${i18n.t('players_waiting') || 'players waiting'}</span>
+          <span id="queue-count">-</span>
+          <span class="tictactoe-queue-label">${i18n.t('players_waiting')}</span>
         </div>
       </div>
 
       <div class="tictactoe-controls">
         <button class="tictactoe-btn tictactoe-btn-fullwidth" id="btn-join-queue">
-          ${i18n.t('join_queue') || 'JOIN QUEUE'}
+          ${i18n.t('join_queue')}
         </button>
       </div>
       <div class="tictactoe-controls">
-        <button class="tictactoe-btn tictactoe-btn-secondary tictactoe-btn-fullwidth" id="btn-back">BACK</button>
+        <button class="tictactoe-btn tictactoe-btn-secondary tictactoe-btn-fullwidth" id="btn-back">${i18n.t('back')}</button>
       </div>
     </div>
   `;
@@ -225,14 +240,17 @@ async function showFindGame(root: HTMLElement) {
         joinQueueBtn.textContent = i18n.t('searching') || 'SEARCHING...';
         joinQueueBtn.disabled = true;
       } else if (inQueue) {
-        joinQueueBtn.textContent = i18n.t('leave_queue') || 'LEAVE QUEUE';
+        joinQueueBtn.textContent = i18n.t('leave_queue');
         joinQueueBtn.disabled = false;
       } else {
-        joinQueueBtn.textContent = i18n.t('join_queue') || 'JOIN QUEUE';
+        joinQueueBtn.textContent = i18n.t('join_queue');
         joinQueueBtn.disabled = false;
       }
     }
   }
+
+  // Fetch initial count immediately
+  await fetchInitialQueueCount();
 
   // Connect to WebSocket
   try {
@@ -251,7 +269,10 @@ async function showFindGame(root: HTMLElement) {
 
         switch (data.type) {
           case 'authenticated':
-            // Successfully authenticated
+            // Successfully authenticated - request current queue count
+            if (matchmakingSocket) {
+              matchmakingSocket.send(JSON.stringify({ type: 'get_queue_count' }));
+            }
             break;
 
           case 'queue_update':

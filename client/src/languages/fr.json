@@ -208,5 +208,15 @@
   "password_needs_special": "Le mot de passe doit contenir au moins un caractère spécial",
   "grid": "GRILLE",
   "x_color": "COULEUR X",
-  "o_color": "COULEUR O"
+  "o_color": "COULEUR O",
+  "find_game": "TROUVER UNE PARTIE",
+  "matchmaking_desc": "Trouver un adversaire en ligne",
+  "players_waiting": "joueurs en attente",
+  "join_queue": "REJOINDRE LA FILE",
+  "leave_queue": "QUITTER LA FILE",
+  "play_online": "Jouer contre un autre joueur en ligne",
+  "their_turn": "SON TOUR",
+  "they_win": "IL GAGNE !",
+  "opponent_disconnected": "Adversaire déconnecté - Vous gagnez !",
+  "find_another": "TROUVER UNE AUTRE PARTIE"
 }

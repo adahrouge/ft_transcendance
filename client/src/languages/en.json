@@ -208,5 +208,15 @@
   "password_needs_special": "Password must contain at least one special character",
   "grid": "GRID",
   "x_color": "X COLOR",
-  "o_color": "O COLOR"
+  "o_color": "O COLOR",
+  "find_game": "FIND GAME",
+  "matchmaking_desc": "Find an opponent to play against online",
+  "players_waiting": "players waiting",
+  "join_queue": "JOIN QUEUE",
+  "leave_queue": "LEAVE QUEUE",
+  "play_online": "Play against another player online",
+  "their_turn": "THEIR TURN",
+  "they_win": "THEY WIN!",
+  "opponent_disconnected": "Opponent disconnected - You win!",
+  "find_another": "FIND ANOTHER GAME"
 }

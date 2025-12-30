@@ -208,5 +208,15 @@
   "password_needs_special": "يجب أن تحتوي كلمة المرور على حرف خاص واحد على الأقل",
   "grid": "الشبكة",
   "x_color": "لون X",
-  "o_color": "لون O"
+  "o_color": "لون O",
+  "find_game": "ابحث عن لعبة",
+  "matchmaking_desc": "ابحث عن خصم للعب معه عبر الإنترنت",
+  "players_waiting": "لاعبين في الانتظار",
+  "join_queue": "انضم للقائمة",
+  "leave_queue": "غادر القائمة",
+  "play_online": "العب ضد لاعب آخر عبر الإنترنت",
+  "their_turn": "دورهم",
+  "they_win": "هم فازوا!",
+  "opponent_disconnected": "انقطع اتصال الخصم - أنت الفائز!",
+  "find_another": "ابحث عن لعبة أخرى"
 }

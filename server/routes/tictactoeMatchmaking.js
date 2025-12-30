@@ -251,6 +251,11 @@ export async function tictactoeMatchmakingRoutes(fastify) {
           }
         }
 
+        else if (data.type === 'get_queue_count') {
+          // Send current queue count to the requesting socket
+          socket.send(JSON.stringify({ type: 'queue_update', count: matchmakingQueue.length }));
+        }
+
         else if (data.type === 'join_queue') {
           if (!userId) {
             socket.send(JSON.stringify({ type: 'error', message: 'Not authenticated' }));
