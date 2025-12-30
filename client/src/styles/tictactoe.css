@@ -737,3 +737,27 @@
     }
   }
 }
+
+/* Queue info for matchmaking */
+.tictactoe-queue-info {
+  @apply flex flex-col items-center justify-center py-8 my-4;
+  background: rgba(10, 25, 41, 0.6);
+  border-radius: 8px;
+  border: 2px solid #3d8aa8;
+}
+
+.tictactoe-queue-count {
+  @apply flex flex-col items-center;
+}
+
+.tictactoe-queue-count span:first-child {
+  @apply text-[#4ade80] font-['Pixel_Game'] text-5xl mb-2;
+}
+
+.tictactoe-queue-label {
+  @apply text-[#5db3d1] font-['Pixel_Game'] text-sm;
+}
+
+.tictactoe-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
