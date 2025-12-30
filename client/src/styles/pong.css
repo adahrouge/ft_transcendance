@@ -3,21 +3,21 @@
 @layer components {
   /* Pixelated border patterns as CSS custom properties */
   :root {
-    --pong-border-4px: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8, 4px 0 0 0 #3d8aa8,
-      4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8, -4px 4px 0 0 #3d8aa8,
-      -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
-    --pong-border-3px: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87, 3px 0 0 0 #2c6b87,
-      3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87, -3px 3px 0 0 #2c6b87,
-      -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
-    --pong-border-2px: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
-      2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87, -2px 2px 0 0 #2c6b87,
-      -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
-    --pong-border-btn-3d: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558, -3px 3px 0 0 #1a4558,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
-    --pong-border-btn-flat: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0, 3px 0 0 0 #4a9dc0,
-      3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0, -3px 3px 0 0 #4a9dc0,
-      -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    --pong-border-4px: 0 -4px 0 0 #3d8aa8, 4px -4px 0 0 #3d8aa8,
+      4px 0 0 0 #3d8aa8, 4px 4px 0 0 #3d8aa8, 0 4px 0 0 #3d8aa8,
+      -4px 4px 0 0 #3d8aa8, -4px 0 0 0 #3d8aa8, -4px -4px 0 0 #3d8aa8;
+    --pong-border-3px: 0 -3px 0 0 #2c6b87, 3px -3px 0 0 #2c6b87,
+      3px 0 0 0 #2c6b87, 3px 3px 0 0 #2c6b87, 0 3px 0 0 #2c6b87,
+      -3px 3px 0 0 #2c6b87, -3px 0 0 0 #2c6b87, -3px -3px 0 0 #2c6b87;
+    --pong-border-2px: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87,
+      2px 0 0 0 #2c6b87, 2px 2px 0 0 #2c6b87, 0 2px 0 0 #2c6b87,
+      -2px 2px 0 0 #2c6b87, -2px 0 0 0 #2c6b87, -2px -2px 0 0 #2c6b87;
+    --pong-border-btn-3d: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0,
+      3px 0 0 0 #4a9dc0, 3px 3px 0 0 #1a4558, 0 3px 0 0 #1a4558,
+      -3px 3px 0 0 #1a4558, -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
+    --pong-border-btn-flat: 0 -3px 0 0 #4a9dc0, 3px -3px 0 0 #4a9dc0,
+      3px 0 0 0 #4a9dc0, 3px 3px 0 0 #4a9dc0, 0 3px 0 0 #4a9dc0,
+      -3px 3px 0 0 #4a9dc0, -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
   }
 
   .pong-container {
@@ -37,6 +37,8 @@
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-6 backdrop-blur-sm;
     image-rendering: pixelated;
     box-shadow: var(--pong-border-4px);
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .pong-title {
@@ -118,6 +120,8 @@
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-8 backdrop-blur-sm text-center;
     image-rendering: pixelated;
     box-shadow: var(--pong-border-4px);
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .pong-over-title {
@@ -137,6 +141,8 @@
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 backdrop-blur-sm text-center w-full max-w-[560px];
     image-rendering: pixelated;
     box-shadow: var(--pong-border-4px);
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   /* Full width button variant */
@@ -304,7 +310,8 @@
   }
 
   @keyframes bounce {
-    0%, 100% {
+    0%,
+    100% {
       transform: translateY(0);
     }
     50% {
@@ -651,6 +658,61 @@
   @media (hover: none) and (pointer: coarse) {
     .pong-touch-controls {
       display: flex !important;
+    }
+  }
+
+  /* Portrait mode for narrow screens (e.g., 540x720) */
+  @media (max-width: 600px) and (orientation: portrait) {
+    .pong-content {
+      padding-top: 40px;
+      padding-bottom: 10px;
+    }
+
+    .pong-canvas-wrapper {
+      max-width: 85vw;
+    }
+
+    .pong-canvas {
+      max-width: 85vw;
+    }
+
+    .pong-box {
+      @apply p-2;
+      max-width: 95vw;
+    }
+
+    .pong-start-box {
+      @apply p-4;
+      max-width: 95vw;
+    }
+
+    .pong-title {
+      @apply text-lg;
+    }
+
+    .pong-subtitle {
+      @apply text-xs;
+    }
+
+    .pong-controls {
+      @apply mt-4;
+    }
+
+    .pong-btn {
+      @apply text-sm py-2 px-4;
+    }
+
+    .pong-mode-btn {
+      @apply p-3;
+      min-height: 60px;
+    }
+
+    .pong-mode-title {
+      @apply text-base;
+    }
+
+    .pong-mode-desc {
+      @apply text-xs;
     }
   }
 }

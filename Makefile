@@ -1,15 +1,7 @@
 APP=ft_pong
 PORT=8443
 
-DOCKER_COMPOSE := $(shell if docker compose version >/dev/null 2>&1; then echo "docker compose"; \
-                      elif command -v docker-compose >/dev/null 2>&1; then echo "docker-compose"; \
-                      else echo "MISSING"; fi)
-
-ifeq ($(DOCKER_COMPOSE),MISSING)
-$(error Docker Compose not found. Install Docker Desktop (with WSL integration) or \
-       'sudo apt-get install docker-compose-plugin' on Ubuntu to get 'docker compose')
-endif
-
+DOCKER_COMPOSE := docker compose
 
 HOST_LAN_IP := $(shell hostname -I 2>/dev/null | awk '{print $$1}')
 

@@ -14,6 +14,8 @@
   .fifa-tournament-box {
     max-width: 900px !important;
     padding: 2rem;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .fifa-bracket {
@@ -150,7 +152,11 @@
 
   .fifa-winner-banner {
     @apply text-center py-6 mb-6;
-    background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(161, 98, 7, 0.2) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(234, 179, 8, 0.2) 0%,
+      rgba(161, 98, 7, 0.2) 100%
+    );
     border: 2px solid #eab308;
     animation: glow 2s ease-in-out infinite alternate;
   }
@@ -179,7 +185,11 @@
 
   .fifa-eliminated-banner {
     @apply text-center py-4 mb-4;
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(127, 29, 29, 0.2) 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(239, 68, 68, 0.2) 0%,
+      rgba(127, 29, 29, 0.2) 100%
+    );
     border: 2px solid #ef4444;
   }
 
@@ -196,7 +206,8 @@
   }
 
   @keyframes pulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 15px rgba(234, 179, 8, 0.4);
     }
     50% {
@@ -230,6 +241,148 @@
     .fifa-match {
       width: 100%;
       max-width: 200px;
+    }
+  }
+
+  /* Phone screens */
+  @media (max-width: 640px) {
+    .fifa-tournament-box {
+      max-width: 95vw !important;
+      padding: 1rem !important;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .fifa-bracket {
+      padding: 5px 0;
+      gap: 10px;
+    }
+
+    .fifa-round {
+      gap: 8px;
+    }
+
+    .fifa-round-quarters {
+      gap: 6px;
+    }
+
+    .fifa-round-semis {
+      gap: 15px;
+    }
+
+    .fifa-round-final {
+      gap: 8px;
+    }
+
+    .fifa-round-title {
+      font-size: 8px;
+      min-width: 70px;
+      margin-bottom: 4px;
+    }
+
+    .fifa-match {
+      min-width: 110px;
+      max-width: 130px;
+    }
+
+    .fifa-player {
+      padding: 0.2rem 0.4rem;
+      font-size: 9px;
+    }
+
+    .fifa-player-name {
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .fifa-play-btn {
+      font-size: 9px;
+      padding: 0.2rem 0.4rem;
+      min-height: 24px;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 480px) {
+    .fifa-tournament-box {
+      padding: 0.5rem !important;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .fifa-bracket {
+      padding: 5px 0;
+      gap: 8px;
+    }
+
+    .fifa-round {
+      gap: 6px;
+    }
+
+    .fifa-round-quarters {
+      gap: 4px;
+    }
+
+    .fifa-round-semis {
+      gap: 10px;
+    }
+
+    .fifa-round-final {
+      gap: 6px;
+    }
+
+    .fifa-round-title {
+      font-size: 7px;
+      min-width: 60px;
+    }
+
+    .fifa-match {
+      min-width: 100px;
+      max-width: 120px;
+    }
+
+    .fifa-player {
+      padding: 0.15rem 0.3rem;
+      font-size: 8px;
+    }
+
+    .fifa-player-name {
+      max-width: 50px;
+    }
+
+    .fifa-play-btn {
+      font-size: 8px;
+      padding: 0.15rem 0.3rem;
+      min-height: 20px;
+    }
+  }
+
+  /* Very small screens */
+  @media (max-width: 360px) {
+    .fifa-match {
+      min-width: 90px;
+    }
+
+    .fifa-round-title {
+      font-size: 6px;
+      min-width: 50px;
+    }
+
+    .fifa-player {
+      font-size: 7px;
+      padding: 0.1rem 0.2rem;
+    }
+
+    .fifa-player-name {
+      max-width: 40px;
+    }
+
+    .fifa-play-btn {
+      font-size: 7px;
+      padding: 0.1rem 0.2rem;
+      min-height: 18px;
     }
   }
 }
