@@ -1,11 +1,9 @@
 # Environment variables - NEVER COMMIT THESE
 .env
-.env.local
 .env.development
 .env.production
 *.env
 client/.env
-client/.env.local
 server/.env
 
 # Database files

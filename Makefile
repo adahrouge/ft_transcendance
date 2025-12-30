@@ -1,7 +1,7 @@
 APP=ft_pong
 PORT=8443
 
-DOCKER_COMPOSE := docker compose
+DOCKER_COMPOSE := docker-compose
 
 HOST_LAN_IP := $(shell hostname -I 2>/dev/null | awk '{print $$1}')
 

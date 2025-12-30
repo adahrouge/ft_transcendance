@@ -421,15 +421,33 @@ async function startTournamentMatch(
   const countdownEl = document.getElementById("countdown") as HTMLDivElement;
   const countdownText = document.getElementById("countdown-text") as HTMLSpanElement;
 
-  const ballSpeed = BALL_SPEED;
+  const baseBallSpeed = BALL_SPEED;
   const aiConfig = getAIConfigFromDifficulty(aiDifficulty);
+
+  // Tournament speed increase settings
+  const SPEED_INCREASE_INTERVAL = 10000; // 10 seconds in ms
+  const SPEED_INCREASE_RATE = 0.15; // 15% increase per interval
+  const MAX_SPEED_MULTIPLIER = 3.0; // Cap at 3x speed
+  let gameStartTime = 0;
+
+  function getSpeedMultiplier(): number {
+    if (!gameStarted || gameStartTime === 0) return 1.0;
+    const elapsed = performance.now() - gameStartTime;
+    const intervals = Math.floor(elapsed / SPEED_INCREASE_INTERVAL);
+    const multiplier = 1.0 + (intervals * SPEED_INCREASE_RATE);
+    return Math.min(multiplier, MAX_SPEED_MULTIPLIER);
+  }
+
+  function getCurrentBallSpeed(): number {
+    return baseBallSpeed * getSpeedMultiplier();
+  }
 
   let playerX = CONFIG.width / 2 - CONFIG.paddleW / 2;
   let aiX = CONFIG.width / 2 - CONFIG.paddleW / 2;
   let ballX = CONFIG.width / 2;
   let ballY = CONFIG.height / 2;
-  let ballVX = (Math.random() < 0.5 ? 1 : -1) * ballSpeed * 0.5;
-  let ballVY = -ballSpeed;
+  let ballVX = (Math.random() < 0.5 ? 1 : -1) * baseBallSpeed * 0.5;
+  let ballVY = -baseBallSpeed;
   let scorePlayer = 0;
   let scoreAI = 0;
   let paused = false;
@@ -449,7 +467,7 @@ async function startTournamentMatch(
     paddleH: CONFIG.paddleH,
     paddleY: 10,
     ballSize: CONFIG.ballSize,
-    baseBallSpeed: ballSpeed,
+    baseBallSpeed: baseBallSpeed,
     maxSpeed: aiConfig.maxSpeed,
     maxAccel: aiConfig.maxAccel,
     reactionMs: 180,
@@ -588,6 +606,14 @@ async function startTournamentMatch(
     if (aiKeysLocal.right) aiX += CONFIG.paddleSpeed * dtSec;
     aiX = clamp(aiX, 0, CONFIG.width - CONFIG.paddleW);
 
+    // Continuously update ball speed based on elapsed time
+    const currentSpeed = getCurrentBallSpeed();
+    const currentBallSpeed = Math.sqrt(ballVX * ballVX + ballVY * ballVY);
+    if (currentBallSpeed > 0 && Math.abs(currentBallSpeed - currentSpeed) > 0.1) {
+      ballVX = (ballVX / currentBallSpeed) * currentSpeed;
+      ballVY = (ballVY / currentBallSpeed) * currentSpeed;
+    }
+
     ballX += ballVX * dtSec;
     ballY += ballVY * dtSec;
 
@@ -607,7 +633,13 @@ async function startTournamentMatch(
       if (ballX >= aiX && ballX <= aiX + CONFIG.paddleW) {
         ballVY *= -1;
         const rel = (ballX - (aiX + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
-        ballVX = rel * ballSpeed;
+        ballVX = rel * currentSpeed;
+        // Normalize velocity to maintain current speed
+        const speed = Math.sqrt(ballVX * ballVX + ballVY * ballVY);
+        if (speed > 0) {
+          ballVX = (ballVX / speed) * currentSpeed;
+          ballVY = (ballVY / speed) * currentSpeed;
+        }
         ballY = aiPaddleY + CONFIG.paddleH + halfBall;
       }
     }
@@ -622,7 +654,13 @@ async function startTournamentMatch(
       if (ballX >= playerX && ballX <= playerX + CONFIG.paddleW) {
         ballVY *= -1;
         const rel = (ballX - (playerX + CONFIG.paddleW / 2)) / (CONFIG.paddleW / 2);
-        ballVX = rel * ballSpeed;
+        ballVX = rel * currentSpeed;
+        // Normalize velocity to maintain current speed
+        const speed = Math.sqrt(ballVX * ballVX + ballVY * ballVY);
+        if (speed > 0) {
+          ballVX = (ballVX / speed) * currentSpeed;
+          ballVY = (ballVY / speed) * currentSpeed;
+        }
         ballY = playerPaddleY - halfBall;
       }
     }
@@ -651,8 +689,15 @@ async function startTournamentMatch(
 
     setTimeout(() => {
       countdownEl.style.display = "none";
-      ballVX = (Math.random() * 2 - 1) * ballSpeed * 0.5;
-      ballVY = dir * ballSpeed;
+      const serveSpeed = getCurrentBallSpeed();
+      ballVX = (Math.random() * 2 - 1) * serveSpeed * 0.5;
+      ballVY = dir * serveSpeed;
+      // Normalize to maintain serve speed
+      const speed = Math.sqrt(ballVX * ballVX + ballVY * ballVY);
+      if (speed > 0) {
+        ballVX = (ballVX / speed) * serveSpeed;
+        ballVY = (ballVY / speed) * serveSpeed;
+      }
       servePaused = false;
     }, 1000);
   }
@@ -709,6 +754,7 @@ async function startTournamentMatch(
 
   startCountdown(countdownEl, countdownText, 3, () => paused, () => {
     gameStarted = true;
+    gameStartTime = performance.now();
     last = performance.now();
     globalRaf = requestAnimationFrame(frame);
   });
