@@ -1,36 +1,34 @@
 import { Board, Player, AIConfig } from "../types/tictactoe";
 
+/**
+ * Check if the game has ended and return the result
+ * Returns:
+ * - 'X' or 'O' if that player won
+ * - 'draw' if the board is full with no winner
+ * - null if the game is still ongoing
+ */
 export function checkWinner(board: Board): Player | 'draw' | null {
+  // All possible winning lines (rows, columns, diagonals)
   const lines = [
     [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
     [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
     [0, 4, 8], [2, 4, 6]             // Diagonals
   ];
 
+  // Check if someone won
   for (const [a, b, c] of lines) {
     if (board[a] && board[a] === board[b] && board[a] === board[c]) {
-      return board[a];
+      return board[a]; // Return the winner ('X' or 'O')
     }
   }
 
-  if (board.every(cell => cell !== null)) {
-    return 'draw';
+  // Check if board is full (no empty cells left)
+  const isFull = board.every(cell => cell !== null);
+  if (isFull) {
+    return 'draw'; // No winner and board is full = draw
   }
 
-  // Check if draw is inevitable (all lines blocked)
-  const isDraw = lines.every(([a, b, c]) => {
-    const cellA = board[a];
-    const cellB = board[b];
-    const cellC = board[c];
-    const hasX = cellA === 'X' || cellB === 'X' || cellC === 'X';
-    const hasO = cellA === 'O' || cellB === 'O' || cellC === 'O';
-    return hasX && hasO;
-  });
-
-  if (isDraw) {
-    return 'draw';
-  }
-
+  // Game is still ongoing
   return null;
 }
 
@@ -38,76 +36,114 @@ export function getAvailableMoves(board: Board): number[] {
   return board.map((cell, index) => cell === null ? index : -1).filter(index => index !== -1);
 }
 
-export function minimax(board: Board, depth: number, isMaximizing: boolean, alpha: number, beta: number, aiPlayer: Player): number {
-  const winner = checkWinner(board);
-  if (winner === aiPlayer) return 10 - depth;
-  if (winner === 'draw') return 0;
-  if (winner && winner !== aiPlayer) return depth - 10;
+/**
+ * Check if a player can win in one move on a given line
+ * Returns the winning position or -1 if no winning move
+ */
+function canWinOnLine(board: Board, line: number[], player: Player): number {
+  const values = line.map(i => board[i]);
+  const playerCount = values.filter(v => v === player).length;
+  const emptyCount = values.filter(v => v === null).length;
 
-  if (isMaximizing) {
-    let maxEval = -Infinity;
-    for (const move of getAvailableMoves(board)) {
-      board[move] = aiPlayer;
-      const evalScore = minimax(board, depth + 1, false, alpha, beta, aiPlayer);
-      board[move] = null;
-      maxEval = Math.max(maxEval, evalScore);
-      alpha = Math.max(alpha, evalScore);
-      if (beta <= alpha) break;
-    }
-    return maxEval;
-  } else {
-    let minEval = Infinity;
-    const opponent = aiPlayer === 'X' ? 'O' : 'X';
-    for (const move of getAvailableMoves(board)) {
-      board[move] = opponent;
-      const evalScore = minimax(board, depth + 1, true, alpha, beta, aiPlayer);
-      board[move] = null;
-      minEval = Math.min(minEval, evalScore);
-      beta = Math.min(beta, evalScore);
-      if (beta <= alpha) break;
-    }
-    return minEval;
+  // If 2 of our pieces and 1 empty, we can win
+  if (playerCount === 2 && emptyCount === 1) {
+    const emptyIndex = values.findIndex(v => v === null);
+    return line[emptyIndex];
   }
+
+  return -1;
 }
 
+/**
+ * Find a winning move for the given player
+ */
+function findWinningMove(board: Board, player: Player): number {
+  const lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // Cols
+    [0, 4, 8], [2, 4, 6]             // Diagonals
+  ];
+
+  for (const line of lines) {
+    const move = canWinOnLine(board, line, player);
+    if (move !== -1) return move;
+  }
+
+  return -1;
+}
+
+/**
+ * Simple, human-like AI that follows basic tic-tac-toe strategy:
+ * 1. Win if possible
+ * 2. Block opponent from winning
+ * 3. Take center if available
+ * 4. Take a corner if available
+ * 5. Take any side
+ */
 export function getAIMove(board: Board, aiPlayer: Player, config: AIConfig): number {
-  // Randomness check
+  const opponent: Player = aiPlayer === 'X' ? 'O' : 'X';
+  const availableMoves = getAvailableMoves(board);
+
+  // For easy/medium difficulty: sometimes make random moves
   if (Math.random() < config.randomness) {
-    const moves = getAvailableMoves(board);
-    return moves[Math.floor(Math.random() * moves.length)];
+    return availableMoves[Math.floor(Math.random() * availableMoves.length)];
   }
 
-  let bestScore = -Infinity;
-  let bestMove = -1;
-  const moves = getAvailableMoves(board);
-
-  // If first move and center is available, take it (optimization)
-  if (moves.length >= 8 && board[4] === null) {
-      return 4;
+  // Strategy 1: Win if we can
+  const winningMove = findWinningMove(board, aiPlayer);
+  if (winningMove !== -1) {
+    return winningMove;
   }
 
-  for (const move of moves) {
-    board[move] = aiPlayer;
-    const score = minimax(board, 0, false, -Infinity, Infinity, aiPlayer);
-    board[move] = null;
-    if (score > bestScore) {
-      bestScore = score;
-      bestMove = move;
-    }
+  // Strategy 2: Block opponent from winning
+  const blockingMove = findWinningMove(board, opponent);
+  if (blockingMove !== -1) {
+    return blockingMove;
   }
 
-  return bestMove;
+  // Strategy 3: Take center if available (position 4)
+  if (board[4] === null) {
+    return 4;
+  }
+
+  // Strategy 4: Take a corner if available (positions 0, 2, 6, 8)
+  const corners = [0, 2, 6, 8];
+  const availableCorners = corners.filter(pos => board[pos] === null);
+  if (availableCorners.length > 0) {
+    // Pick a random corner from available ones
+    return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+  }
+
+  // Strategy 5: Take any available side (positions 1, 3, 5, 7)
+  const sides = [1, 3, 5, 7];
+  const availableSides = sides.filter(pos => board[pos] === null);
+  if (availableSides.length > 0) {
+    return availableSides[Math.floor(Math.random() * availableSides.length)];
+  }
+
+  // Fallback: take first available move (should never happen)
+  return availableMoves[0];
 }
 
 export function getAIConfigFromDifficulty(difficulty: number): AIConfig {
   // difficulty 0-100
-  // Easy: High randomness
-  // Hard: 0 randomness
-  
+  // Easy (0-33): 60% chance of random moves - makes lots of mistakes
+  // Medium (34-66): 30% chance of random moves - occasionally makes mistakes
+  // Hard (67-100): 0% random moves - always plays optimally
+
   const t = difficulty / 100;
-  
+
+  let randomness = 0;
+  if (difficulty <= 33) {
+    randomness = 0.6; // Easy: 60% random
+  } else if (difficulty <= 66) {
+    randomness = 0.3; // Medium: 30% random
+  } else {
+    randomness = 0; // Hard: 0% random (perfect play)
+  }
+
   return {
-    depth: 9, 
-    randomness: 0.4 * (1 - t) // 40% random at easy, 0% at hard
+    depth: 9, // Not used anymore, kept for compatibility
+    randomness: randomness
   };
 }

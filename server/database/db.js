@@ -107,6 +107,7 @@ export async function initDatabase() {
       user_id INTEGER NOT NULL,
       friend_id INTEGER NOT NULL,
       status TEXT DEFAULT 'pending',
+      blocked_by_user INTEGER DEFAULT 0,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
       FOREIGN KEY (friend_id) REFERENCES users(id),
@@ -486,8 +487,13 @@ export async function blockUser(userId, blockedUserId) {
     return { success: false, error: 'User already blocked' };
   }
 
-  // Remove any existing friendship or pending requests
-  await removeFriend(userId, blockedUserId);
+  // Remove any PENDING friend requests (but keep accepted friendships)
+  await dbRun(
+    `DELETE FROM friends
+     WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
+     AND status = 'pending'`,
+    [userId, blockedUserId, blockedUserId, userId]
+  );
 
   // Add to blocked_users
   await dbRun(
@@ -534,8 +540,10 @@ export async function getFriends(userId) {
                  THEN 1 ELSE 0 END as is_online
      FROM friends f
      JOIN users u ON f.friend_id = u.id
-     WHERE f.user_id = ? AND f.status = 'accepted'`,
-    [userId]
+     LEFT JOIN blocked_users b1 ON (b1.user_id = ? AND b1.blocked_user_id = u.id)
+     LEFT JOIN blocked_users b2 ON (b2.user_id = u.id AND b2.blocked_user_id = ?)
+     WHERE f.user_id = ? AND f.status = 'accepted' AND b1.id IS NULL AND b2.id IS NULL`,
+    [userId, userId, userId]
   );
 }
 

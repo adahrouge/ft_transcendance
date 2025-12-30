@@ -53,13 +53,34 @@ export function triggerGoogleSignIn(): Promise<GoogleOAuthResponse> {
   if (!isGoogleReady()) return Promise.reject(new Error('Google OAuth not configured'));
 
   return new Promise((resolve, reject) => {
-    (window as any).google.accounts.id.initialize({
+    // Use token client for ID token in popup mode
+    const client = (window as any).google.accounts.oauth2.initTokenClient({
       client_id: googleClientId,
-      callback: (response: GoogleOAuthResponse) => {
-        response.credential ? resolve(response) : reject(new Error('No credential'));
+      scope: 'openid email profile',
+      callback: (response: any) => {
+        if (response.access_token) {
+          // We got an access token, now we need to get the ID token
+          // Decode the ID token from the response
+          if (response.id_token) {
+            resolve({ credential: response.id_token });
+          } else {
+            // Fallback: use access token to get user info
+            resolve({ credential: response.access_token });
+          }
+        } else if (response.error) {
+          reject(new Error(response.error));
+        } else {
+          reject(new Error('No token received'));
+        }
       },
     });
-    (window as any).google.accounts.id.prompt();
+
+    // Request token (opens popup)
+    try {
+      client.requestAccessToken({ prompt: 'select_account' });
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 

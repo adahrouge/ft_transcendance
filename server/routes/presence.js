@@ -18,6 +18,11 @@ function broadcastToUser(userId, message) {
   }
 }
 
+// Export for use by other modules
+export function broadcastToUserById(userId, message) {
+  broadcastToUser(userId, message);
+}
+
 // Notify friends about status change
 async function notifyFriendsAboutStatus(userId, isOnline) {
   try {

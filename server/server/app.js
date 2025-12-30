@@ -9,6 +9,7 @@ import { userRoutes, avatarRoutes } from '../routes/users.js';
 import { tournamentRoutes } from '../routes/tournaments.js';
 import { tournamentGamesRoutes } from '../routes/tournamentGames.js';
 import { tictactoeMatchmakingRoutes } from '../routes/tictactoeMatchmaking.js';
+import { presenceRoutes } from '../routes/presence.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -66,6 +67,7 @@ await fastify.register(avatarRoutes);
 await fastify.register(tournamentRoutes);
 await fastify.register(tournamentGamesRoutes);
 await fastify.register(tictactoeMatchmakingRoutes);
+await fastify.register(presenceRoutes);
 
 // Serve uploaded avatars
 await fastify.register(staticFiles, {

@@ -1,14 +1,23 @@
 import { friendService } from "../services/friend";
+import { presenceService } from "../services/presence";
 import { navigateTo } from "../router";
 import { i18n } from "../services/i18n";
 import { showNotification, showConfirm } from "../utils/notifications";
 import type { Friend, FriendRequest, BlockedUser, SearchUser } from "../types/friend";
+
+// ============ State ============
+let friendsData: Friend[] = [];
+let cleanupPresenceListeners: (() => void)[] = [];
 
 // ============ Main Setup ============
 
 export async function setupFriendPage() {
   const root = document.getElementById("friend-root");
   if (!root) return;
+
+  // Cleanup previous listeners
+  cleanupPresenceListeners.forEach(cleanup => cleanup());
+  cleanupPresenceListeners = [];
 
   try {
     const [friendsRes, pendingRes, sentRes, blockedRes] = await Promise.all([
@@ -18,15 +27,58 @@ export async function setupFriendPage() {
       friendService.getBlockedUsers()
     ]);
 
-    const friends = friendsRes.friends || [];
+    friendsData = friendsRes.friends || [];
     const pending = pendingRes.requests || [];
     const sent = sentRes.requests || [];
     const blocked = blockedRes.blockedUsers || [];
 
-    root.innerHTML = renderFriendBox(friends, pending, sent, blocked);
+    root.innerHTML = renderFriendBox(friendsData, pending, sent, blocked);
     setupEventListeners(root);
+    setupPresenceListeners();
   } catch {
     root.innerHTML = '<div class="text-red-500">Failed to load friends.</div>';
+  }
+}
+
+// ============ Presence Setup ============
+
+function setupPresenceListeners() {
+  // Listen for initial friend statuses
+  const cleanupInitial = presenceService.onInitialStatuses((statuses) => {
+    statuses.forEach(({ friendId, isOnline }) => {
+      updateFriendOnlineStatus(friendId, isOnline);
+    });
+  });
+  cleanupPresenceListeners.push(cleanupInitial);
+
+  // Listen for real-time status changes
+  const cleanupChanges = presenceService.onFriendStatusChange((friendId, isOnline) => {
+    updateFriendOnlineStatus(friendId, isOnline);
+  });
+  cleanupPresenceListeners.push(cleanupChanges);
+}
+
+function updateFriendOnlineStatus(friendId: number, isOnline: boolean) {
+  // Update in-memory data
+  const friend = friendsData.find(f => f.id === friendId);
+  if (friend) {
+    friend.is_online = isOnline;
+  }
+
+  // Update UI for this specific friend
+  const friendElement = document.querySelector(`[data-friend-id="${friendId}"]`);
+  if (friendElement) {
+    const statusDot = friendElement.querySelector('.friend-status-dot');
+    const onlineIndicator = friendElement.querySelector('.friend-online-indicator');
+
+    if (statusDot) {
+      statusDot.className = `friend-status-dot w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-gray-400'}`;
+    }
+
+    if (onlineIndicator) {
+      onlineIndicator.className = `friend-online-indicator w-2 h-2 rounded-full inline-block ${isOnline ? 'bg-green-500' : 'hidden'}`;
+      onlineIndicator.setAttribute('title', isOnline ? 'Online' : 'Offline');
+    }
   }
 }
 
@@ -59,10 +111,10 @@ function renderFriendBox(friends: Friend[], pending: FriendRequest[], sent: Frie
         title: `${i18n.t('your_friends')} (${friends.length})`,
         items: friends.length === 0
           ? [`<p class="friend-list-empty">${i18n.t('no_friends')}</p>`]
-          : friends.map(f => renderUserItem(f, f.is_online ? 'bg-green-500' : '', [
+          : friends.map(f => renderUserItem(f, f.is_online ? 'bg-green-500' : 'bg-gray-400', [
               { action: 'remove', label: '✗', class: 'bg-red-600 hover:bg-red-700 text-xs px-2' },
               { action: 'block', label: '🚫', class: 'bg-gray-600 hover:bg-gray-700 text-xs px-2' }
-            ], '', f.is_online))
+            ]))
       })}
 
       ${blocked.length > 0 ? renderSection({
@@ -100,14 +152,17 @@ function renderSection(opts: { title: string; style?: string; titleColor?: strin
 }
 
 function renderUserItem(user: Friend | FriendRequest | BlockedUser, dotColor: string, actions: { action: string; label: string; class: string }[], extra = '', showOnline = false): string {
+  const isFriend = 'is_online' in user;
+  const isOnline = isFriend && user.is_online;
+
   return `
-    <div class="friend-list-item">
+    <div class="friend-list-item" ${isFriend ? `data-friend-id="${user.id}"` : ''}>
       <div class="flex items-center gap-3">
-        ${dotColor ? `<div class="w-3 h-3 rounded-full ${dotColor}"></div>` : ''}
+        ${dotColor ? `<div class="friend-status-dot w-3 h-3 rounded-full ${dotColor}"></div>` : ''}
         <div>
           <div class="friend-display-name flex items-center gap-2">
             ${user.display_name || user.username}
-            ${showOnline ? '<span class="w-2 h-2 rounded-full bg-green-500 inline-block" title="Online"></span>' : ''}
+            ${isFriend ? `<span class="friend-online-indicator w-2 h-2 rounded-full inline-block ${isOnline ? 'bg-green-500' : 'hidden'}" title="${isOnline ? 'Online' : 'Offline'}"></span>` : ''}
           </div>
           <div class="friend-username">@${user.username}</div>
         </div>

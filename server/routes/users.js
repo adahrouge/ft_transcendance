@@ -24,6 +24,7 @@ import {
   unblockUser,
   getBlockedUsers
 } from '../database/db.js';
+import { broadcastToUserById } from './presence.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -448,6 +449,17 @@ export async function userRoutes(fastify) {
         return reply.code(409).send({ error: result.error });
       }
 
+      // Notify the recipient about the new friend request
+      broadcastToUserById(friend_id, {
+        type: 'friend_request_received',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
+
       return { success: true, message: 'Friend request sent' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to send friend request' });
@@ -468,6 +480,17 @@ export async function userRoutes(fastify) {
 
     try {
       await acceptFriendRequest(user.id, friend_id);
+
+      // Notify the requester that their request was accepted
+      broadcastToUserById(friend_id, {
+        type: 'friend_request_accepted',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
 
       return { success: true, message: 'Friend request accepted' };
     } catch (err) {
@@ -490,6 +513,17 @@ export async function userRoutes(fastify) {
     try {
       await rejectFriendRequest(user.id, friend_id);
 
+      // Notify the requester that their request was rejected
+      broadcastToUserById(friend_id, {
+        type: 'friend_request_rejected',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
+
       return { success: true, message: 'Friend request rejected' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to reject friend request' });
@@ -510,6 +544,17 @@ export async function userRoutes(fastify) {
 
     try {
       await removeFriend(user.id, parseInt(friendId));
+
+      // Notify the removed friend
+      broadcastToUserById(parseInt(friendId), {
+        type: 'friend_removed',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
 
       return { success: true, message: 'Friend removed' };
     } catch (err) {
@@ -538,6 +583,18 @@ export async function userRoutes(fastify) {
       if (!result.success) {
         return reply.code(400).send({ error: result.error });
       }
+
+      // Notify the blocked user
+      broadcastToUserById(blocked_user_id, {
+        type: 'user_blocked',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
+
       return { success: true, message: 'User blocked' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to block user' });
@@ -558,6 +615,18 @@ export async function userRoutes(fastify) {
 
     try {
       await unblockUser(user.id, parseInt(blockedUserId));
+
+      // Notify the unblocked user (optional - they might want to know)
+      broadcastToUserById(parseInt(blockedUserId), {
+        type: 'user_unblocked',
+        from: {
+          id: user.id,
+          username: user.username,
+          display_name: user.display_name,
+          avatar_url: user.avatar_url
+        }
+      });
+
       return { success: true, message: 'User unblocked' };
     } catch (err) {
       return reply.code(500).send({ error: err.message || 'Failed to unblock user' });
