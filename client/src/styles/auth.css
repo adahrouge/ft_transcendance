@@ -12,7 +12,7 @@
   }
 
   .auth-box {
-    @apply relative h-[80%] z-10 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 w-[520px] max-w-[90%] backdrop-blur-sm;
+    @apply relative z-10 bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 p-10 w-[520px] max-w-[90%] backdrop-blur-sm;
     image-rendering: pixelated;
 
     /* Pixelated border using box-shadow */
