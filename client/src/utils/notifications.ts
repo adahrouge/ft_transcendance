@@ -38,6 +38,7 @@ export function showNotification(message: string, options: NotificationOptions =
     position: fixed;
     top: 20px;
     right: 20px;
+    left: 20px;
     background: ${color.bg};
     color: white;
     padding: 16px 24px;
@@ -45,12 +46,28 @@ export function showNotification(message: string, options: NotificationOptions =
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2);
     z-index: 100000;
     min-width: 280px;
+    max-width: 500px;
+    margin-left: auto;
     font-family: 'Pixel Game', monospace;
     font-size: 14px;
     animation: slideInRight 0.3s ease-out;
     image-rendering: pixelated;
     ${onClick ? 'cursor: pointer;' : ''}
   `;
+
+  // Mobile responsive adjustments
+  const updateNotificationSize = () => {
+    if (window.innerWidth <= 479) {
+      notification.style.minWidth = '0';
+      notification.style.maxWidth = 'calc(100% - 40px)';
+      notification.style.padding = '12px 16px';
+      notification.style.fontSize = '12px';
+      notification.style.top = '10px';
+      notification.style.right = '10px';
+      notification.style.left = '10px';
+    }
+  };
+  updateNotificationSize();
 
   // Add border shadow (pixelated style)
   notification.style.boxShadow = `
@@ -186,6 +203,32 @@ export function showConfirm(options: ConfirmOptions): Promise<boolean> {
             -3px 0 0 0 #3d8aa8,
             -3px -3px 0 0 #3d8aa8,
             0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+        @media (max-width: 479px) {
+          .confirm-box {
+            min-width: 0;
+            max-width: calc(100% - 40px);
+            width: 90%;
+            padding: 16px;
+            margin: 0 20px;
+          }
+          .confirm-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+          }
+          .confirm-message {
+            font-size: 12px;
+            margin-bottom: 16px;
+          }
+          .confirm-buttons {
+            flex-direction: column;
+            gap: 8px;
+          }
+          .confirm-btn {
+            padding: 10px 12px;
+            font-size: 12px;
+            width: 100%;
+          }
         }
         .confirm-title {
           color: #e0f7ff;

@@ -69,6 +69,7 @@ function setupTournament() {
 
 let activeTournament: LocalTournament | null = null;
 let tournamentWinSaved = false;
+let tournamentLossSaved = false;
 
 function showTournamentSetup(root: HTMLElement) {
   if (activeTournament && activeTournament.isActive) {
@@ -105,6 +106,7 @@ function showTournamentSetup(root: HTMLElement) {
 
 function startLocalTournament(root: HTMLElement, size: 4 | 8) {
   tournamentWinSaved = false;
+  tournamentLossSaved = false;
 
   const player: TournamentParticipant = {
     name: i18n.t('you').toUpperCase(),
@@ -162,6 +164,20 @@ function showTournamentBracket(root: HTMLElement) {
   const finalMatch = t.bracket[t.bracket.length - 1][0];
   const tournamentComplete = finalMatch.winner !== null;
   const playerEliminated = !playerInTournament && !tournamentComplete;
+
+  // Save tournament loss when player is eliminated
+  if (playerEliminated && !tournamentLossSaved && isAuthenticated()) {
+    tournamentLossSaved = true;
+    statsService.saveOfflineMatch({
+      playerScore: t.size,
+      aiScore: 0,
+      result: 'loss',
+      difficulty: 'TOURNAMENT',
+      gameType: 'tournament'
+    }).catch(() => {
+      tournamentLossSaved = false;
+    });
+  }
 
   const buildFifaBracket = () => {
     if (t.size === 4) {
@@ -306,6 +322,7 @@ function showTournamentBracket(root: HTMLElement) {
   document.getElementById("btn-quit-tournament")?.addEventListener("click", () => {
     activeTournament = null;
     tournamentWinSaved = false;
+    tournamentLossSaved = false;
     navigateTo("/home");
   });
 }

@@ -10,6 +10,7 @@ import {
   getUserByUsername,
   getUserByEmail,
   updateUser,
+  deleteUser,
   getMatchHistory,
   getFriends,
   sendFriendRequest,
@@ -342,12 +343,14 @@ export async function userRoutes(fastify) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return reply.code(400).send({ error: 'Invalid email format' });
       }
+      // Normalize email to lowercase
+      const normalizedEmail = email.toLowerCase();
       // Check if email is already taken by another user
-      const existingUser = await getUserByEmail(email);
+      const existingUser = await getUserByEmail(normalizedEmail);
       if (existingUser && existingUser.id !== user.id) {
         return reply.code(409).send({ error: 'Email already in use' });
       }
-      updates.email = email;
+      updates.email = normalizedEmail;
     }
     if (avatar_url !== undefined) {
       updates.avatar_url = avatar_url;
@@ -382,13 +385,106 @@ export async function userRoutes(fastify) {
     return { user: userData };
   });
 
+  // Delete user account
+  fastify.delete('/api/users/me', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    try {
+      console.log(`Deleting account for user ID: ${user.id}, username: ${user.username}`);
+
+      // Delete user's avatar file if it exists
+      if (user.avatar_url && user.avatar_url.startsWith('/uploads/')) {
+        const filename = user.avatar_url.split('/').pop();
+        const filePath = path.join(AVATAR_DIR, filename);
+        try {
+          await fs.unlink(filePath);
+          console.log(`Deleted avatar file: ${filePath}`);
+        } catch (err) {
+          console.log(`Avatar file not found or already deleted: ${filePath}`);
+        }
+      }
+
+      // Delete user from database
+      console.log(`Calling deleteUser for user ID: ${user.id}`);
+      await deleteUser(user.id);
+      console.log(`Successfully deleted user ID: ${user.id}`);
+
+      return { success: true, message: 'Account deleted successfully' };
+    } catch (err) {
+      console.error('Error deleting user account:', err);
+      console.error('Error stack:', err.stack);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        errno: err.errno
+      });
+      return reply.code(500).send({
+        error: 'Failed to delete account',
+        details: err.message || 'Unknown error'
+      });
+    }
+  });
+
+  // Get user stats
+  fastify.get('/api/users/me/stats', async (request, reply) => {
+    const user = await getUserFromToken(request);
+    if (!user) {
+      return reply.code(401).send({ error: 'Unauthorized' });
+    }
+
+    const history = await getMatchHistory(user.id);
+
+    // Compute stats from match history
+    const totalGames = history.length;
+    const wins = history.filter(m => m.result === 'win').length;
+    const losses = history.filter(m => m.result === 'loss').length;
+    const draws = history.filter(m => m.result === 'draw').length;
+    const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+    const tournamentsWon = history.filter(m => m.game_type === 'tournament' && m.result === 'win').length;
+
+    // Calculate current win streak
+    let currentWinStreak = 0;
+    for (const match of history) {
+      if (match.result === 'win') currentWinStreak++;
+      else break;
+    }
+
+    // Calculate longest win streak
+    let longestWinStreak = 0;
+    let tempStreak = 0;
+    for (const match of history) {
+      if (match.result === 'win') {
+        tempStreak++;
+        longestWinStreak = Math.max(longestWinStreak, tempStreak);
+      } else {
+        tempStreak = 0;
+      }
+    }
+
+    return {
+      stats: {
+        total_games: totalGames,
+        wins,
+        losses,
+        draws,
+        win_rate: winRate,
+        tournaments_won: tournamentsWon,
+        current_win_streak: currentWinStreak,
+        longest_win_streak: longestWinStreak
+      }
+    };
+  });
+
   // Get user match history
   fastify.get('/api/users/me/match-history', async (request, reply) => {
     const user = await getUserFromToken(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
-    
+
     const history = await getMatchHistory(user.id);
     return { matches: history };
   });

@@ -221,10 +221,12 @@ function renderMatchItem(m: MatchHistoryItem): string {
         </span>
         ${m.game_type !== 'tournament'
           ? `<span class="stats-match-vs">${i18n.t('vs')}</span><span class="stats-match-name">${m.opponent_username || 'AI Bot'}</span>`
-          : `<span class="stats-match-name" style="color: #eab308;">${i18n.t('tournament_champion')}</span>`}
+          : m.result === 'win'
+            ? `<span class="stats-match-name" style="color: #eab308;">${i18n.t('tournament_champion')}</span>`
+            : `<span class="stats-match-name" style="color: #ef4444;">ELIMINATED</span>`}
       </div>
       <div class="stats-match-result ${resultClass}">
-        ${m.game_type === 'tournament' ? `${m.user_score}-man` : `${m.user_score} - ${m.opponent_score}`}
+        ${m.game_type === 'tournament' ? `${m.user_score}-MAN` : `${m.user_score} - ${m.opponent_score}`}
       </div>
     </div>
   `;

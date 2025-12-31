@@ -31,7 +31,8 @@
 
   /* Static form container with pixelated border */
   .auth-form-container {
-    @apply h-[70%] p-6 bg-[#0d1a28]/40 backdrop-blur-sm;
+    @apply p-6 bg-[#0d1a28]/40 backdrop-blur-sm;
+    height: auto;
 
     /* Pixelated inner border */
     box-shadow: 0 -2px 0 0 #2c6b87, 2px -2px 0 0 #2c6b87, 2px 0 0 0 #2c6b87,
@@ -68,6 +69,25 @@
     @apply text-lg text-[#e0f7ff] font-['Pixel_Game'] tracking-wider;
   }
 
+  /* Password wrapper and toggle */
+  .password-wrapper {
+    @apply relative;
+  }
+
+  .password-wrapper .pixel-input {
+    @apply pr-12;
+  }
+
+  .password-toggle {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 p-1 cursor-pointer text-[#5db3d1] hover:text-[#e0f7ff] transition-colors;
+    background: none;
+    border: none;
+  }
+
+  .password-toggle .hidden {
+    @apply hidden;
+  }
+
   .pixel-btn {
     @apply w-full bg-gradient-to-b from-[#3d8aa8] to-[#2c6b87] text-white font-['Pixel_Game'] text-2xl py-4 mt-2 cursor-pointer transition-all duration-100 hover:from-[#4a9dc0] hover:to-[#3d8aa8];
     border: none;
@@ -101,7 +121,7 @@
   }
 
   .divider {
-    @apply flex items-center gap-3 my-2 text-[#5db3d1] font-['Pixel_Game'] text-sm;
+    @apply flex items-center gap-3 my-1 text-[#5db3d1] font-['Pixel_Game'] text-sm;
   }
 
   .divider::before,
@@ -201,6 +221,11 @@
       height: 16px;
     }
 
+    .password-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .auth-form-container {
       @apply p-3;
       height: auto;
@@ -266,6 +291,11 @@
     }
 
     .google-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .password-toggle svg {
       width: 16px;
       height: 16px;
     }
@@ -459,6 +489,11 @@
     }
 
     .google-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .password-toggle svg {
       width: 14px;
       height: 14px;
     }

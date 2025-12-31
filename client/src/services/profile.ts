@@ -51,6 +51,12 @@ export const profileService = {
 
     return response.json();
   },
+
+  async deleteAccount(): Promise<void> {
+    return apiRequest<void>("/api/users/me", {
+      method: "DELETE",
+    });
+  },
 };
 
 export type { ProfileUser, ProfileUpdateData };

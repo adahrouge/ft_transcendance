@@ -169,6 +169,25 @@
       -3px 0 0 0 #4a9dc0, -3px -3px 0 0 #4a9dc0;
   }
 
+  /* Password wrapper and toggle */
+  .profile-password-wrapper {
+    @apply relative;
+  }
+
+  .profile-password-wrapper .profile-input {
+    @apply pr-12;
+  }
+
+  .profile-password-toggle {
+    @apply absolute right-2 top-1/2 -translate-y-1/2 p-1 cursor-pointer text-[#5db3d1] hover:text-[#e0f7ff] transition-colors;
+    background: none;
+    border: none;
+  }
+
+  .profile-password-toggle .hidden {
+    @apply hidden;
+  }
+
   /* Password hint */
   .profile-password-hint {
     @apply text-[#5db3d1] font-['Pixel_Game'] text-xs mt-2;
@@ -234,6 +253,35 @@
     @apply translate-y-1;
   }
 
+  /* Danger Zone */
+  .profile-danger-zone {
+    @apply mt-8 p-6 bg-red-900/20 border-2 border-red-500/30 rounded-lg;
+  }
+
+  .profile-danger-title {
+    @apply text-red-400 font-['Pixel_Game'] text-lg mb-2;
+  }
+
+  .profile-danger-description {
+    @apply text-red-300/80 text-sm mb-4 font-['Pixel_Game'];
+  }
+
+  .profile-delete-btn {
+    @apply w-full bg-gradient-to-b from-[#7f1d1d] to-[#450a0a] text-red-200 font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#991b1b] hover:to-[#7f1d1d] hover:text-white flex items-center justify-center gap-2;
+    padding: 0.5rem 1rem;
+    border: none;
+    box-shadow: 0 -3px 0 0 #991b1b, 3px -3px 0 0 #991b1b, 3px 0 0 0 #991b1b,
+      3px 3px 0 0 #450a0a, 0 3px 0 0 #450a0a, -3px 3px 0 0 #450a0a,
+      -3px 0 0 0 #991b1b, -3px -3px 0 0 #991b1b;
+  }
+
+  .profile-delete-btn:active {
+    @apply translate-y-1;
+    box-shadow: 0 -2px 0 0 #991b1b, 2px -2px 0 0 #991b1b, 2px 0 0 0 #991b1b,
+      2px 2px 0 0 #991b1b, 0 2px 0 0 #991b1b, -2px 2px 0 0 #991b1b,
+      -2px 0 0 0 #991b1b, -2px -2px 0 0 #991b1b;
+  }
+
   /* Loading overlay */
   .profile-loading-overlay {
     @apply absolute inset-0 flex items-center justify-center z-50;
@@ -254,6 +302,58 @@
     }
   }
 
+  /* Disabled input */
+  .profile-input-disabled {
+    @apply opacity-60 cursor-not-allowed bg-[#0a1420];
+  }
+
+  /* Field hints */
+  .profile-field-hint {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs opacity-70 mt-0.5;
+  }
+
+  /* Field errors */
+  .profile-field-error {
+    @apply text-red-400 font-['Pixel_Game'] text-xs mt-0.5 min-h-[16px];
+  }
+
+  /* Password info */
+  .profile-password-info {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs mb-3 p-2 bg-[#0a1420] rounded;
+    border-left: 2px solid #2c6b87;
+  }
+
+  /* Password requirements */
+  .profile-password-requirements {
+    @apply mt-2 p-2 bg-[#0a1420] rounded;
+    border-left: 2px solid #2c6b87;
+    display: none; /* Hidden by default, shown when user types */
+  }
+
+  .profile-requirement-title {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-xs mb-1.5;
+  }
+
+  .profile-requirement-list {
+    @apply space-y-1;
+  }
+
+  .profile-requirement {
+    @apply text-[#3d6680] font-['Pixel_Game'] text-xs flex items-center gap-2 transition-colors duration-200;
+  }
+
+  .profile-requirement.met {
+    @apply text-green-400;
+  }
+
+  .profile-requirement .requirement-icon {
+    @apply inline-block;
+  }
+
+  .profile-requirement.met .requirement-icon::before {
+    content: "✓";
+  }
+
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .profile-box {
@@ -266,6 +366,56 @@
 
     .profile-lang-btn {
       @apply min-w-0;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .profile-box {
+      padding: 1rem;
+    }
+
+    .profile-title {
+      font-size: 1.5rem;
+    }
+
+    .profile-section-title {
+      font-size: 0.875rem;
+    }
+
+    .profile-field-hint,
+    .profile-field-error,
+    .profile-password-info {
+      font-size: 0.625rem;
+    }
+
+    .profile-requirement {
+      font-size: 0.625rem;
+    }
+
+    .profile-requirement-title {
+      font-size: 0.625rem;
+    }
+
+    .profile-input {
+      font-size: 0.875rem;
+      padding: 0.5rem;
+    }
+
+    .profile-password-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .profile-save-btn,
+    .profile-back-btn,
+    .profile-logout-btn,
+    .profile-delete-btn {
+      font-size: 0.875rem;
+      padding: 0.625rem 0.875rem;
+    }
+
+    .profile-danger-title {
+      font-size: 0.875rem;
     }
   }
 }

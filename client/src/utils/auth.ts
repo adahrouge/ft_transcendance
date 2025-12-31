@@ -132,6 +132,7 @@ export function setupAuthPage() {
   setupLoginForm();
   setupRegisterForm();
   setupGoogleLogin();
+  setupPasswordToggles();
 }
 
 function setupTabs() {
@@ -297,6 +298,29 @@ function setupGoogleLogin() {
     } finally {
       btn.disabled = false;
     }
+  });
+}
+
+function setupPasswordToggles() {
+  document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-target');
+      const input = document.getElementById(targetId!) as HTMLInputElement;
+      const eyeIcon = button.querySelector('.eye-icon');
+      const eyeOffIcon = button.querySelector('.eye-off-icon');
+
+      if (input && eyeIcon && eyeOffIcon) {
+        if (input.type === 'password') {
+          input.type = 'text';
+          eyeIcon.classList.add('hidden');
+          eyeOffIcon.classList.remove('hidden');
+        } else {
+          input.type = 'password';
+          eyeIcon.classList.remove('hidden');
+          eyeOffIcon.classList.add('hidden');
+        }
+      }
+    });
   });
 }
 

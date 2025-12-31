@@ -224,10 +224,12 @@ export async function initDatabase() {
 
 // User operations
 export async function createUser(username, email, passwordHash, displayName = null) {
+  // Normalize email to lowercase to prevent case-sensitivity issues
+  const normalizedEmail = email.toLowerCase();
   await dbRun(
     `INSERT INTO users (username, email, password_hash, display_name)
      VALUES (?, ?, ?, ?)`,
-    [username, email, passwordHash, displayName || username]
+    [username, normalizedEmail, passwordHash, displayName || username]
   );
   return getUserByUsername(username);
 }
@@ -261,7 +263,8 @@ export async function getUserById(id) {
 }
 
 export async function getUserByEmail(email) {
-  const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+  // Case-insensitive email lookup to prevent duplicate emails with different casing
+  const user = await dbGet('SELECT * FROM users WHERE LOWER(email) = LOWER(?)', [email]);
   return parseUserCustomization(user);
 }
 
@@ -307,6 +310,39 @@ export async function updateUser(id, updates) {
   );
   
   return getUserById(id);
+}
+
+export async function deleteUser(id) {
+  // Delete user and cascade delete related data
+  // The database schema should have ON DELETE CASCADE for foreign keys
+  // But we'll also manually delete to be safe
+
+  try {
+    console.log(`[deleteUser] Starting deletion for user ID: ${id}`);
+
+    // Delete friend relationships
+    console.log(`[deleteUser] Deleting friend relationships...`);
+    await dbRun('DELETE FROM friends WHERE user_id = ? OR friend_id = ?', [id, id]);
+    console.log(`[deleteUser] Friend relationships deleted`);
+
+    // Delete match history (where user is either the player or opponent)
+    console.log(`[deleteUser] Deleting match history...`);
+    await dbRun('DELETE FROM match_history WHERE user_id = ? OR opponent_id = ?', [id, id]);
+    console.log(`[deleteUser] Match history deleted`);
+
+    // Delete blocked users
+    console.log(`[deleteUser] Deleting blocked users...`);
+    await dbRun('DELETE FROM blocked_users WHERE user_id = ? OR blocked_user_id = ?', [id, id]);
+    console.log(`[deleteUser] Blocked users deleted`);
+
+    // Finally delete the user
+    console.log(`[deleteUser] Deleting user record...`);
+    await dbRun('DELETE FROM users WHERE id = ?', [id]);
+    console.log(`[deleteUser] User record deleted successfully`);
+  } catch (err) {
+    console.error(`[deleteUser] Error during deletion:`, err);
+    throw err;
+  }
 }
 
 export async function getAllUsers() {
