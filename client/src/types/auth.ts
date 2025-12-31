@@ -31,6 +31,13 @@ export interface AuthError {
 
 export interface GoogleOAuthResponse {
   credential: string;
+  userInfo?: {
+    email: string;
+    name: string;
+    sub: string;
+    given_name?: string;
+    picture?: string;
+  };
 }
 
 export interface GoogleTokenPayload {

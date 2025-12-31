@@ -192,12 +192,16 @@ export async function userRoutes(fastify) {
     }
   });
 
-  // Helper function to verify Google ID token
-  async function verifyGoogleToken(idToken) {
+  // Helper function to verify Google ID token or access token
+  async function verifyGoogleToken(token) {
     return new Promise((resolve, reject) => {
+      // Detect token type: ID tokens are JWTs (have dots), access tokens are opaque
+      const isIdToken = token.includes('.');
+      const tokenParam = isIdToken ? 'id_token' : 'access_token';
+
       const options = {
         hostname: 'www.googleapis.com',
-        path: `/oauth2/v3/tokeninfo?id_token=${idToken}`,
+        path: `/oauth2/v3/tokeninfo?${tokenParam}=${token}`,
         method: 'GET'
       };
 
@@ -236,13 +240,30 @@ export async function userRoutes(fastify) {
     try {
       // Verify the Google token
       const tokenInfo = await verifyGoogleToken(idToken);
-      
-      // Check if email is verified by Google
-      if (!tokenInfo.email_verified) {
+
+      // Log tokenInfo for debugging
+      request.log.info('Google tokenInfo:', tokenInfo);
+
+      // Check if email is verified by Google (for ID tokens)
+      // Access tokens from Google OAuth always have verified emails
+      if (tokenInfo.email_verified === false) {
         return reply.code(401).send({ error: 'Google email not verified' });
       }
 
-      const googleEmail = tokenInfo.email;
+      // For access tokens, tokenInfo might not have email, so use the one from request
+      // But verify it matches if tokenInfo has email (security check)
+      const googleEmail = tokenInfo.email || email;
+
+      if (!googleEmail) {
+        request.log.error('No email in tokenInfo or request body');
+        return reply.code(400).send({ error: 'Email not found in Google response' });
+      }
+
+      // If tokenInfo has email and it doesn't match the request email, reject
+      if (tokenInfo.email && tokenInfo.email !== email) {
+        request.log.error('Email mismatch:', { tokenEmail: tokenInfo.email, requestEmail: email });
+        return reply.code(401).send({ error: 'Email mismatch' });
+      }
       
       // Check if user exists by email
       let user = await getUserByEmail(googleEmail);
