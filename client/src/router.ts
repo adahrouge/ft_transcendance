@@ -1,22 +1,5 @@
 import Navigo from "navigo";
-import { renderAuthPage } from "./pages/auth";
-import { renderLandingPage } from "./pages/landingPage";
-import { renderHomePage } from "./pages/home";
-import { renderGamePage } from "./pages/pong";
-import { renderPongAiPage } from "./pages/pongAi";
-import { renderTournamentPage } from "./pages/pongTournament";
-import { renderFriendGamePage } from "./pages/pongFriendGame";
-import { renderProfilePage } from "./pages/profile";
-import { renderFriendPage } from "./pages/friend";
-import { renderStatsPage } from "./pages/stats";
-import { renderCustomizeBoardPage } from "./pages/customizeBoard";
-import { renderNotFoundPage } from "./pages/notFound";
 import { isAuthenticated } from "./utils/auth";
-import { renderTicTacToePage } from "./pages/tictactoe";
-import { renderTicTacToeAiPage } from "./pages/tictactoeAi";
-import { renderTicTacToeFriendPage } from "./pages/tictactoeFriend";
-import { renderTicTacToeOnlinePage } from "./pages/tictactoeOnline";
-
 
 const router = new Navigo("/");
 
@@ -38,52 +21,68 @@ function renderPage(pageContent: string, needsAuth: boolean = true): void {
 
 export function setupRouter() {
   router
-    .on("/", () => {
+    .on("/", async () => {
+      const { renderLandingPage } = await import("./pages/landingPage");
       renderPage(renderLandingPage(), false);
     })
-    .on("/auth", () => {
+    .on("/auth", async () => {
+      const { renderAuthPage } = await import("./pages/auth");
       renderPage(renderAuthPage(), false);
     })
-    .on("/home", () => {
+    .on("/home", async () => {
+      const { renderHomePage } = await import("./pages/home");
       renderPage(renderHomePage());
     })
-    .on("/pong", () => {
+    .on("/pong", async () => {
+      const { renderGamePage } = await import("./pages/pong");
       renderPage(renderGamePage());
     })
-    .on("/pong-ai", () => {
+    .on("/pong-ai", async () => {
+      const { renderPongAiPage } = await import("./pages/pongAi");
       renderPage(renderPongAiPage());
     })
-    .on("/pong-friend", () => {
+    .on("/pong-friend", async () => {
+      const { renderFriendGamePage } = await import("./pages/pongFriendGame");
       renderPage(renderFriendGamePage());
     })
-    .on("/tournament", () => {
+    .on("/tournament", async () => {
+      const { renderTournamentPage } = await import("./pages/pongTournament");
       renderPage(renderTournamentPage());
     })
-    .on("/tictactoe", () => {
+    .on("/tictactoe", async () => {
+      const { renderTicTacToePage } = await import("./pages/tictactoe");
       renderPage(renderTicTacToePage());
     })
-    .on("/tictactoe-ai", () => {
+    .on("/tictactoe-ai", async () => {
+      const { renderTicTacToeAiPage } = await import("./pages/tictactoeAi");
       renderPage(renderTicTacToeAiPage());
     })
-    .on("/tictactoe-friend", () => {
+    .on("/tictactoe-friend", async () => {
+      const { renderTicTacToeFriendPage } = await import("./pages/tictactoeFriend");
       renderPage(renderTicTacToeFriendPage());
     })
-    .on("/tictactoe-online", () => {
+    .on("/tictactoe-online", async () => {
+      const { renderTicTacToeOnlinePage } = await import("./pages/tictactoeOnline");
       renderPage(renderTicTacToeOnlinePage());
     })
-    .on("/profile", () => {
+    .on("/profile", async () => {
+      const { renderProfilePage } = await import("./pages/profile");
       renderPage(renderProfilePage());
     })
-    .on("/friend", () => {
+    .on("/friend", async () => {
+      const { renderFriendPage } = await import("./pages/friend");
       renderPage(renderFriendPage());
     })
-    .on("/stats", () => {
+    .on("/stats", async () => {
+      const { renderStatsPage } = await import("./pages/stats");
       renderPage(renderStatsPage());
     })
-    .on("/customize-board", () => {
+    .on("/customize-board", async () => {
+      const { renderCustomizeBoardPage } = await import("./pages/customizeBoard");
       renderPage(renderCustomizeBoardPage());
     })
-    .notFound(() => {
+    .notFound(async () => {
+      const { renderNotFoundPage } = await import("./pages/notFound");
       renderPage(renderNotFoundPage(), false);
     });
 

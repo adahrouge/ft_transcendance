@@ -1,0 +1,1 @@
+export { setupTicTacToeFriend } from "./setup";

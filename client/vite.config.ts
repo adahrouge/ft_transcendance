@@ -1,5 +1,3 @@
-
-
 import { defineConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
 import { readFileSync } from 'node:fs'

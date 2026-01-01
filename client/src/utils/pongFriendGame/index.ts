@@ -1,0 +1,1 @@
+export { setupPongFriendGame } from "./setup";

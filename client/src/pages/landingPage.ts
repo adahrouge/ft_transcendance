@@ -1,10 +1,8 @@
-import { startTypingAnimation } from "../utils/landingPage";
+import { setupLandingPage } from "../utils/landingPage";
 import "../styles/landingPage.css";
 
 export function renderLandingPage(): string {
-  setTimeout(() => {
-    startTypingAnimation();
-  }, 100);
+  setTimeout(setupLandingPage, 100);
 
   return `
     <div class="landing-container">

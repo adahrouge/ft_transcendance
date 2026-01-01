@@ -1,6 +1,5 @@
 {
-  "name": "package",
-  "private": true,
+  "name": "transcendence",
   "version": "0.0.0",
   "type": "module",
   "scripts": {

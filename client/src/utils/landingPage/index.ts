@@ -1,0 +1,1 @@
+export { setupLandingPage } from "./setup";

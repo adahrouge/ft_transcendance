@@ -1,0 +1,1 @@
+export { setupPongAi } from "./setup";
