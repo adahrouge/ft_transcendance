@@ -1197,23 +1197,6 @@
         }
       }
     }
-      "get": {
-        "summary": "Get Tic-tac-toe queue count",
-        "description": "Get the number of players currently waiting in the matchmaking queue",
-        "responses": {
-          "200": {
-            "description": "Queue count retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/QueueCount"
-                }
-              }
-            }
-          }
-        }
-      }
-    }
   },
   "components": {
     "securitySchemes": {
@@ -1623,14 +1606,6 @@
         "required": ["customization"]
       },
       "QueueCount": {
-        "type": "object",
-        "properties": {
-          "count": {
-            "type": "integer"
-          }
-        },
-        "required": ["count"]
-      }
         "type": "object",
         "properties": {
           "count": {
