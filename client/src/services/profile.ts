@@ -1,5 +1,4 @@
 import { apiRequest } from "../api";
-import { getToken } from "../utils/auth";
 import type {
   ProfileUser,
   ProfileUpdateData,
@@ -32,16 +31,10 @@ export const profileService = {
     const formData = new FormData();
     formData.append("avatar", file);
 
-    const token = getToken();
-    const headers: Record<string, string> = {};
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-
     const response = await fetch("/api/users/me/avatar", {
       method: "POST",
-      headers,
       body: formData,
+      credentials: 'include',
     });
 
     if (!response.ok) {

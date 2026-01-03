@@ -158,7 +158,7 @@ function setupGoogleLogin() {
           googleId
         );
 
-        if (result?.token) {
+        if (result?.user) {
           showNotification('Login successful!', { type: 'success', duration: 2000 });
           navigateTo("/home");
         } else {

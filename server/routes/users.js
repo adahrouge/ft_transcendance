@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -30,22 +29,13 @@ import { broadcastToUserById } from './presence.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const AVATAR_DIR = path.join(__dirname, '..', 'database', 'uploads');
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
-// Helper to get user from JWT token
-async function getUserFromToken(request) {
-  const authHeader = request.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+// Helper to get user from session
+async function getUserFromSession(request) {
+  if (!request.session.userId) {
     return null;
   }
-  
-  const token = authHeader.substring(7);
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    return await getUserById(decoded.userId);
-  } catch (err) {
-    return null;
-  }
+  return await getUserById(request.session.userId);
 }
 
 export async function userRoutes(fastify) {
@@ -93,16 +83,13 @@ export async function userRoutes(fastify) {
       // Create user
       const user = await createUser(username, email, passwordHash, display_name);
       
-      // Generate JWT token
-      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-        expiresIn: '7d'
-      });
+      // Set session
+      request.session.userId = user.id;
       
       // Return user data (without password)
       const { password_hash, ...userData } = user;
       return {
-        user: userData,
-        token
+        user: userData
       };
     } catch (err) {
       request.log.error('Registration error:', err);
@@ -128,22 +115,28 @@ export async function userRoutes(fastify) {
       return reply.code(401).send({ error: 'Invalid credentials' });
     }
     
-    // Generate JWT token
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-      expiresIn: '7d'
-    });
+    // Set session
+    request.session.userId = user.id;
     
     // Return user data (without password)
     const { password_hash, ...userData } = user;
     return {
-      user: userData,
-      token
+      user: userData
     };
+  });
+
+  // Logout
+  fastify.post('/api/users/logout', async (request, reply) => {
+    if (request.session.userId) {
+      await request.session.destroy();
+      return { success: true };
+    }
+    return { success: false, error: 'Not logged in' };
   });
 
   // Save offline match result
   fastify.post('/api/users/me/offline-match', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -172,7 +165,7 @@ export async function userRoutes(fastify) {
 
   // Save tournament win
   fastify.post('/api/users/me/tournament-win', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -270,14 +263,11 @@ export async function userRoutes(fastify) {
       let user = await getUserByEmail(googleEmail);
 
       if (user) {
-        // User exists, generate token and return
-        const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, {
-          expiresIn: '7d'
-        });
+        // User exists, set session and return
+        request.session.userId = user.id;
         const { password_hash, ...userData } = user;
         return {
-          user: userData,
-          token
+          user: userData
         };
       } else {
         // Create new user from Google data
@@ -298,15 +288,12 @@ export async function userRoutes(fastify) {
 
         const newUser = await createUser(username, googleEmail, passwordHash, name || username);
 
-        // Generate JWT token
-        const token = jwt.sign({ userId: newUser.id, username: newUser.username }, JWT_SECRET, {
-          expiresIn: '7d'
-        });
+        // Set session
+        request.session.userId = newUser.id;
 
         const { password_hash, ...userData } = newUser;
         return {
-          user: userData,
-          token
+          user: userData
         };
       }
     } catch (error) {
@@ -317,7 +304,7 @@ export async function userRoutes(fastify) {
 
   // Get current user profile
   fastify.get('/api/users/me', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -328,7 +315,7 @@ export async function userRoutes(fastify) {
 
   // Update user profile
   fastify.put('/api/users/me', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -387,7 +374,7 @@ export async function userRoutes(fastify) {
 
   // Delete user account
   fastify.delete('/api/users/me', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -430,7 +417,7 @@ export async function userRoutes(fastify) {
 
   // Get user stats
   fastify.get('/api/users/me/stats', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -480,7 +467,7 @@ export async function userRoutes(fastify) {
 
   // Get user match history
   fastify.get('/api/users/me/match-history', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -491,7 +478,7 @@ export async function userRoutes(fastify) {
 
   // Get user friends (accepted only)
   fastify.get('/api/users/me/friends', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -502,7 +489,7 @@ export async function userRoutes(fastify) {
 
   // Get pending friend requests (received by user)
   fastify.get('/api/users/me/friend-requests', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -513,7 +500,7 @@ export async function userRoutes(fastify) {
 
   // Get sent friend requests (sent by user)
   fastify.get('/api/users/me/friend-requests/sent', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -524,7 +511,7 @@ export async function userRoutes(fastify) {
 
   // Search users
   fastify.get('/api/users/search', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -540,7 +527,7 @@ export async function userRoutes(fastify) {
 
   // Send friend request
   fastify.post('/api/users/me/friends/request', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -585,7 +572,7 @@ export async function userRoutes(fastify) {
 
   // Accept friend request
   fastify.post('/api/users/me/friends/accept', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -617,7 +604,7 @@ export async function userRoutes(fastify) {
 
   // Reject friend request
   fastify.post('/api/users/me/friends/reject', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -649,7 +636,7 @@ export async function userRoutes(fastify) {
 
   // Remove friend
   fastify.delete('/api/users/me/friends/:friendId', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -681,7 +668,7 @@ export async function userRoutes(fastify) {
 
   // Block user
   fastify.post('/api/users/me/blocked', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -720,7 +707,7 @@ export async function userRoutes(fastify) {
 
   // Unblock user
   fastify.delete('/api/users/me/blocked/:blockedUserId', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -752,7 +739,7 @@ export async function userRoutes(fastify) {
 
   // Get blocked users
   fastify.get('/api/users/me/blocked', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -763,7 +750,7 @@ export async function userRoutes(fastify) {
 
   // Upload avatar
   fastify.post('/api/users/me/avatar', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -813,7 +800,7 @@ export async function userRoutes(fastify) {
 
   // Get user's board customization
   fastify.get('/api/board-customization', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -825,7 +812,7 @@ export async function userRoutes(fastify) {
 
   // Update user's board customization
   fastify.put('/api/board-customization', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -857,7 +844,7 @@ export async function userRoutes(fastify) {
 
   // Get user's XO board customization
   fastify.get('/api/xo-board-customization', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }
@@ -869,7 +856,7 @@ export async function userRoutes(fastify) {
 
   // Update user's XO board customization
   fastify.put('/api/xo-board-customization', async (request, reply) => {
-    const user = await getUserFromToken(request);
+    const user = await getUserFromSession(request);
     if (!user) {
       return reply.code(401).send({ error: 'Unauthorized' });
     }

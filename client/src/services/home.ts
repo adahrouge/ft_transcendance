@@ -1,6 +1,5 @@
 import { apiRequest } from "../api";
 import type { UserProfile, ProfileUpdateData } from "../types/home";
-import { getToken } from "../utils/auth";
 
 export const homeService = {
   async getCurrentUser(): Promise<UserProfile> {
@@ -22,10 +21,8 @@ export const homeService = {
 
     const response = await fetch("/api/users/me/avatar", {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${getToken()}`,
-      },
       body: formData,
+      credentials: 'include',
     });
 
     if (!response.ok) {

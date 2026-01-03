@@ -1,5 +1,5 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated, getToken } from "../auth";
+import { isAuthenticated } from "../auth";
 import { checkWinner } from "../tictactoe";
 import { xoBoardCustomizationService } from "../../services/boardCustomization";
 import { DEFAULT_XO_CUSTOMIZATION } from "../../types/boardCustomization";
@@ -82,10 +82,7 @@ async function showFindGame(root: HTMLElement) {
     setMatchmakingSocket(socket);
 
     socket.onopen = () => {
-      const token = getToken();
-      if (token && matchmakingSocket) {
-        matchmakingSocket.send(JSON.stringify({ type: 'auth', token }));
-      }
+      // Connection established, waiting for authentication confirmation
     };
 
     socket.onmessage = async (event) => {

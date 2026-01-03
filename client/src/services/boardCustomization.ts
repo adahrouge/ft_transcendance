@@ -1,5 +1,5 @@
 import { BoardCustomization, DEFAULT_CUSTOMIZATION, XoBoardCustomization, DEFAULT_XO_CUSTOMIZATION } from "../types/boardCustomization";
-import { getToken } from "../utils/auth";
+import { apiRequest } from "../api";
 
 class BoardCustomizationService {
   private currentCustomization: BoardCustomization = DEFAULT_CUSTOMIZATION;
@@ -10,26 +10,8 @@ class BoardCustomizationService {
       return this.currentCustomization;
     }
 
-    const token = getToken();
-    if (!token) {
-      this.currentCustomization = DEFAULT_CUSTOMIZATION;
-      this.loaded = true;
-      return this.currentCustomization;
-    }
-
     try {
-      const response = await fetch("/api/board-customization", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to load customization");
-      }
-
-      const data = await response.json();
+      const data = await apiRequest<{ customization: BoardCustomization | null }>("/api/board-customization");
 
       if (data.customization) {
         this.currentCustomization = data.customization;
@@ -47,24 +29,11 @@ class BoardCustomizationService {
   }
 
   async saveCustomization(customization: BoardCustomization): Promise<boolean> {
-    const token = getToken();
-    if (!token) {
-      return false;
-    }
-
     try {
-      const response = await fetch("/api/board-customization", {
+      await apiRequest("/api/board-customization", {
         method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({ customization })
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save customization");
-      }
 
       this.currentCustomization = customization;
       return true;
@@ -98,26 +67,8 @@ class XoBoardCustomizationService {
       return this.currentCustomization;
     }
 
-    const token = getToken();
-    if (!token) {
-      this.currentCustomization = DEFAULT_XO_CUSTOMIZATION;
-      this.loaded = true;
-      return this.currentCustomization;
-    }
-
     try {
-      const response = await fetch("/api/xo-board-customization", {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to load XO customization");
-      }
-
-      const data = await response.json();
+      const data = await apiRequest<{ customization: XoBoardCustomization | null }>("/api/xo-board-customization");
 
       if (data.customization) {
         this.currentCustomization = data.customization;
@@ -135,24 +86,11 @@ class XoBoardCustomizationService {
   }
 
   async saveCustomization(customization: XoBoardCustomization): Promise<boolean> {
-    const token = getToken();
-    if (!token) {
-      return false;
-    }
-
     try {
-      const response = await fetch("/api/xo-board-customization", {
+      await apiRequest("/api/xo-board-customization", {
         method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
         body: JSON.stringify({ customization })
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to save XO customization");
-      }
 
       this.currentCustomization = customization;
       return true;

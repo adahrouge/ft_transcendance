@@ -1,17 +1,25 @@
-const STORAGE_KEY_TOKEN = "auth_token";
+const STORAGE_KEY_LOGGED_IN = "is_logged_in";
 
 export function getToken(): string | null {
-  return sessionStorage.getItem(STORAGE_KEY_TOKEN);
+  return null;
 }
 
 export function setToken(token: string | null): void {
   if (token) {
-    sessionStorage.setItem(STORAGE_KEY_TOKEN, token);
+    localStorage.setItem(STORAGE_KEY_LOGGED_IN, "true");
   } else {
-    sessionStorage.removeItem(STORAGE_KEY_TOKEN);
+    localStorage.removeItem(STORAGE_KEY_LOGGED_IN);
+  }
+}
+
+export function setAuthenticated(isAuthenticated: boolean): void {
+  if (isAuthenticated) {
+    localStorage.setItem(STORAGE_KEY_LOGGED_IN, "true");
+  } else {
+    localStorage.removeItem(STORAGE_KEY_LOGGED_IN);
   }
 }
 
 export function isAuthenticated(): boolean {
-  return Boolean(getToken());
+  return localStorage.getItem(STORAGE_KEY_LOGGED_IN) === "true";
 }

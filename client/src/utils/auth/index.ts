@@ -1,5 +1,5 @@
 // Token management
-export { getToken, setToken, isAuthenticated } from "./token";
+export { getToken, setToken, isAuthenticated, setAuthenticated } from "./token";
 
 // Google OAuth
 export { initGoogleOAuth, isGoogleReady, triggerGoogleSignIn } from "./googleOAuth";

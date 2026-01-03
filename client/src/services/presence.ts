@@ -1,5 +1,3 @@
-import { getToken } from "../utils/auth";
-
 type PresenceListener = (friendId: number, isOnline: boolean) => void;
 type InitialStatusesListener = (statuses: { friendId: number; isOnline: boolean }[]) => void;
 type FriendEventListener = (event: FriendEvent) => void;
@@ -57,12 +55,6 @@ class PresenceService {
       this.socket.onopen = () => {
         console.log('Presence WebSocket connected');
         this.isConnecting = false;
-
-        // Authenticate
-        const token = getToken();
-        if (token && this.socket) {
-          this.socket.send(JSON.stringify({ type: 'auth', token }));
-        }
       };
 
       this.socket.onmessage = (event) => {

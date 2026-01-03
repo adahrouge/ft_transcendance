@@ -3,8 +3,9 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import staticFiles from '@fastify/static';
+import cookie from '@fastify/cookie';
+import session from '@fastify/session';
 import { initDatabase, updateUserActivity } from '../database/db.js';
-import jwt from 'jsonwebtoken';
 import { userRoutes, avatarRoutes } from '../routes/users.js';
 import { tictactoeMatchmakingRoutes } from '../routes/tictactoeMatchmaking.js';
 import { presenceRoutes } from '../routes/presence.js';
@@ -13,7 +14,7 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const SESSION_SECRET = process.env.SESSION_SECRET || 'a-very-long-secret-key-for-session-encryption-must-be-32-bytes';
 
 const fastify = Fastify({
   logger: true,
@@ -34,26 +35,28 @@ fastify.addContentTypeParser('application/json', { parseAs: 'string' }, (req, bo
 // Initialize database
 await initDatabase();
 
-// Middleware to update last_active
-fastify.addHook('onRequest', async (request, reply) => {
-  const authHeader = request.headers.authorization;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.substring(7);
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET);
-      if (decoded && decoded.userId) {
-        await updateUserActivity(decoded.userId);
-      }
-    } catch (err) {
-      // Ignore invalid tokens here
-    }
-  }
-});
-
 // Register plugins
 await fastify.register(cors, {
-  origin: true,
-  credentials: true
+  origin: true, // Allow all origins for development, restrict in production
+  credentials: true // Allow cookies
+});
+
+await fastify.register(cookie);
+await fastify.register(session, {
+  secret: SESSION_SECRET,
+  cookie: {
+    secure: false, // Set to true in production with HTTPS
+    httpOnly: true,
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  },
+  saveUninitialized: false
+});
+
+// Middleware to update last_active
+fastify.addHook('onRequest', async (request, reply) => {
+  if (request.session.userId) {
+    await updateUserActivity(request.session.userId);
+  }
 });
 
 await fastify.register(websocket);
@@ -64,6 +67,7 @@ await fastify.register(userRoutes);
 await fastify.register(avatarRoutes);
 await fastify.register(tictactoeMatchmakingRoutes);
 await fastify.register(presenceRoutes);
+
 
 // Serve uploaded avatars
 await fastify.register(staticFiles, {

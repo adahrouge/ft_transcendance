@@ -1,7 +1,4 @@
-import jwt from 'jsonwebtoken';
 import { getUserById, getFriends } from '../database/db.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Track connected users: Map<userId, Set<WebSocket>>
 const connectedUsers = new Map();
@@ -58,69 +55,58 @@ async function sendFriendStatuses(userId) {
 }
 
 export async function presenceRoutes(fastify) {
-  fastify.get('/api/presence', { websocket: true }, (connection, req) => {
-    let userId = null;
-    let user = null;
+  fastify.get('/api/presence', { websocket: true }, async (connection, req) => {
+    // Authenticate via session
+    if (!req.session.userId) {
+      connection.socket.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+      connection.socket.close();
+      return;
+    }
+
+    const userId = req.session.userId;
+    const user = await getUserById(userId);
+    
+    if (!user) {
+      connection.socket.send(JSON.stringify({ type: 'error', message: 'User not found' }));
+      connection.socket.close();
+      return;
+    }
+
+    // Add to connected users
+    if (!connectedUsers.has(userId)) {
+      connectedUsers.set(userId, new Set());
+    }
+    connectedUsers.get(userId).add(connection.socket);
+
+    // Send confirmation
+    connection.socket.send(JSON.stringify({ type: 'authenticated', userId: userId }));
+
+    // Send initial friend statuses
+    await sendFriendStatuses(userId);
+
+    // Notify friends that user is now online
+    await notifyFriendsAboutStatus(userId, true);
 
     connection.socket.on('message', async (message) => {
       try {
-        const data = JSON.parse(message.toString());
-
-        if (data.type === 'auth') {
-          // Authenticate user
-          const token = data.token;
-          if (!token) {
-            connection.socket.send(JSON.stringify({ type: 'error', message: 'No token provided' }));
-            return;
-          }
-
-          try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            user = await getUserById(decoded.userId);
-            if (!user) {
-              connection.socket.send(JSON.stringify({ type: 'error', message: 'User not found' }));
-              return;
-            }
-
-            userId = user.id;
-
-            // Add to connected users
-            if (!connectedUsers.has(userId)) {
-              connectedUsers.set(userId, new Set());
-            }
-            connectedUsers.get(userId).add(connection.socket);
-
-            // Send confirmation
-            connection.socket.send(JSON.stringify({ type: 'authenticated', userId: userId }));
-
-            // Send initial friend statuses
-            await sendFriendStatuses(userId);
-
-            // Notify friends that user is now online
-            await notifyFriendsAboutStatus(userId, true);
-
-          } catch (err) {
-            connection.socket.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
-          }
-        }
+        // Handle other messages if needed
+        // Previously we only handled 'auth'
       } catch (err) {
         console.error('WebSocket message error:', err);
       }
     });
 
     connection.socket.on('close', async () => {
-      if (userId) {
-        // Remove from connected users
-        const connections = connectedUsers.get(userId);
-        if (connections) {
-          connections.delete(connection.socket);
-          
-          // If no more connections, user is offline
-          if (connections.size === 0) {
-            connectedUsers.delete(userId);
-            // Notify friends that user is now offline
-            await notifyFriendsAboutStatus(userId, false);
-          }
+      // Remove from connected users
+      const connections = connectedUsers.get(userId);
+      if (connections) {
+        connections.delete(connection.socket);
+        
+        // If no more connections, user is offline
+        if (connections.size === 0) {
+          connectedUsers.delete(userId);
+          // Notify friends that user is now offline
+          await notifyFriendsAboutStatus(userId, false);
         }
       }
     });

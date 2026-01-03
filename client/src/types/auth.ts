@@ -22,7 +22,7 @@ export interface RegisterCredentials {
 
 export interface AuthResponse {
   user: User;
-  token: string;
+  token?: string; // Optional or deprecated
 }
 
 export interface AuthError {

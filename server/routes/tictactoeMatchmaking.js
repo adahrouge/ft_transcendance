@@ -1,7 +1,4 @@
-import jwt from 'jsonwebtoken';
 import { getUserById } from '../database/db.js';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // Queue of players waiting for a match: Array<{ socket, userId, username }>
 const matchmakingQueue = [];
@@ -216,52 +213,39 @@ export async function tictactoeMatchmakingRoutes(fastify) {
   });
 
   // WebSocket endpoint for matchmaking
-  fastify.get('/api/tictactoe/matchmaking', { websocket: true }, (connection, req) => {
+  fastify.get('/api/tictactoe/matchmaking', { websocket: true }, async (connection, req) => {
     const socket = connection.socket;
-    let userId = null;
-    let username = null;
+    
+    // Authenticate via session
+    if (!req.session.userId) {
+      socket.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
+      socket.close();
+      return;
+    }
+
+    const userId = req.session.userId;
+    const user = await getUserById(userId);
+    
+    if (!user) {
+      socket.send(JSON.stringify({ type: 'error', message: 'User not found' }));
+      socket.close();
+      return;
+    }
+    
+    const username = user.username;
+    socketToUser.set(socket, { userId, username });
+    socket.send(JSON.stringify({ type: 'authenticated', userId, username }));
 
     socket.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
 
-        if (data.type === 'auth') {
-          // Authenticate user
-          const token = data.token;
-          if (!token) {
-            socket.send(JSON.stringify({ type: 'error', message: 'No token provided' }));
-            return;
-          }
-
-          try {
-            const decoded = jwt.verify(token, JWT_SECRET);
-            const user = await getUserById(decoded.userId);
-            if (!user) {
-              socket.send(JSON.stringify({ type: 'error', message: 'User not found' }));
-              return;
-            }
-
-            userId = user.id;
-            username = user.username;
-            socketToUser.set(socket, { userId, username });
-
-            socket.send(JSON.stringify({ type: 'authenticated', userId, username }));
-          } catch (err) {
-            socket.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
-          }
-        }
-
-        else if (data.type === 'get_queue_count') {
+        if (data.type === 'get_queue_count') {
           // Send current queue count to the requesting socket
           socket.send(JSON.stringify({ type: 'queue_update', count: matchmakingQueue.length }));
         }
 
         else if (data.type === 'join_queue') {
-          if (!userId) {
-            socket.send(JSON.stringify({ type: 'error', message: 'Not authenticated' }));
-            return;
-          }
-
           // Check if already in queue
           const alreadyInQueue = matchmakingQueue.some(p => p.userId === userId);
           if (alreadyInQueue) {

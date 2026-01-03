@@ -1,5 +1,5 @@
 import { apiRequest } from "../api";
-import { setToken } from "../utils/auth";
+import { setAuthenticated } from "../utils/auth";
 import type {
   LoginCredentials,
   RegisterCredentials,
@@ -14,11 +14,7 @@ export const authService = {
       method: "POST",
       body: JSON.stringify(credentials),
     });
-
-    if (data.token) {
-      setToken(data.token);
-    }
-
+    setAuthenticated(true);
     return data;
   },
 
@@ -27,11 +23,7 @@ export const authService = {
       method: "POST",
       body: JSON.stringify(credentials),
     });
-
-    if (data.token) {
-      setToken(data.token);
-    }
-
+    setAuthenticated(true);
     return data;
   },
 
@@ -40,17 +32,17 @@ export const authService = {
       method: "POST",
       body: JSON.stringify({ idToken, email, name, googleId }),
     });
-
-    if (data.token) {
-      setToken(data.token);
-    }
-
+    setAuthenticated(true);
     return data;
   },
 
-  logout(): void {
-    setToken(null);
-    // Optional: Redirect to login page or clear other state
+  async logout(): Promise<void> {
+    try {
+      await apiRequest("/api/users/logout", { method: "POST" });
+    } catch (err) {
+      console.error("Logout failed", err);
+    }
+    setAuthenticated(false);
     navigateTo('/auth');
   },
 
