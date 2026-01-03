@@ -11,16 +11,51 @@
       "description": "Development server"
     }
   ],
-  "security": [
+  "tags": [
     {
-      "bearerAuth": []
+      "name": "Health",
+      "description": "Server health check endpoints"
+    },
+    {
+      "name": "Authentication",
+      "description": "User authentication and session management"
+    },
+    {
+      "name": "User Profile",
+      "description": "User profile management"
+    },
+    {
+      "name": "Friends",
+      "description": "Friend management and friend requests"
+    },
+    {
+      "name": "Blocking",
+      "description": "User blocking functionality"
+    },
+    {
+      "name": "Game Stats",
+      "description": "Game statistics and match history"
+    },
+    {
+      "name": "Customization",
+      "description": "Board customization settings"
+    },
+    {
+      "name": "Matchmaking",
+      "description": "Game matchmaking endpoints"
+    },
+    {
+      "name": "Files",
+      "description": "File upload and retrieval"
     }
   ],
   "paths": {
     "/health": {
       "get": {
+        "tags": ["Health"],
         "summary": "Health check",
         "description": "Check if the server is running",
+        "security": [],
         "responses": {
           "200": {
             "description": "Server is running",
@@ -45,10 +80,13 @@
         }
       }
     },
+
     "/api/users/register": {
       "post": {
+        "tags": ["Authentication"],
         "summary": "Register a new user",
-        "description": "Create a new user account",
+        "description": "Create a new user account with email and password. On success, a session cookie is set.",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -95,8 +133,10 @@
     },
     "/api/users/login": {
       "post": {
+        "tags": ["Authentication"],
         "summary": "User login",
-        "description": "Authenticate a user and return a JWT token",
+        "description": "Authenticate a user with username and password. On success, a session cookie is set.",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -131,10 +171,36 @@
         }
       }
     },
+    "/api/users/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "User logout",
+        "description": "Destroy the user session and clear the session cookie",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Logout successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/google-auth": {
       "post": {
+        "tags": ["Authentication"],
         "summary": "Google OAuth authentication",
-        "description": "Authenticate using Google OAuth token",
+        "description": "Authenticate using Google OAuth token. On success, a session cookie is set.",
+        "security": [],
         "requestBody": {
           "required": true,
           "content": {
@@ -169,13 +235,15 @@
         }
       }
     },
+
     "/api/users/me": {
       "get": {
+        "tags": ["User Profile"],
         "summary": "Get current user profile",
         "description": "Retrieve the authenticated user's profile information",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "responses": {
@@ -202,11 +270,12 @@
         }
       },
       "put": {
+        "tags": ["User Profile"],
         "summary": "Update user profile",
         "description": "Update the authenticated user's profile information",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -253,11 +322,12 @@
         }
       },
       "delete": {
+        "tags": ["User Profile"],
         "summary": "Delete user account",
         "description": "Delete the authenticated user's account",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "responses": {
@@ -284,154 +354,50 @@
         }
       }
     },
-    "/api/users/me/stats": {
-      "get": {
-        "summary": "Get user statistics",
-        "description": "Retrieve the authenticated user's game statistics",
+    "/api/users/me/avatar": {
+      "post": {
+        "tags": ["User Profile"],
+        "summary": "Upload avatar",
+        "description": "Upload a new avatar image for the user",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Avatar image file (max 2MB, image formats only)"
+                  }
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
-            "description": "Statistics retrieved",
+            "description": "Avatar uploaded successfully",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserStats"
+                  "$ref": "#/components/schemas/UserProfile"
                 }
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
+          "400": {
+            "description": "Invalid file",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/me/match-history": {
-      "get": {
-        "summary": "Get user match history",
-        "description": "Retrieve the authenticated user's match history",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Match history retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MatchHistory"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/me/friends": {
-      "get": {
-        "summary": "Get user friends",
-        "description": "Retrieve the authenticated user's friends list",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Friends list retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendsList"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/me/friend-requests": {
-      "get": {
-        "summary": "Get pending friend requests",
-        "description": "Retrieve friend requests received by the authenticated user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Friend requests retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendRequests"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/users/me/friend-requests/sent": {
-      "get": {
-        "summary": "Get sent friend requests",
-        "description": "Retrieve friend requests sent by the authenticated user",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Sent friend requests retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FriendRequests"
                 }
               }
             }
@@ -451,11 +417,12 @@
     },
     "/api/users/search": {
       "get": {
+        "tags": ["User Profile"],
         "summary": "Search users",
         "description": "Search for users by username or display name",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "parameters": [
@@ -494,13 +461,162 @@
         }
       }
     },
+
+    "/api/users/me/friends": {
+      "get": {
+        "tags": ["Friends"],
+        "summary": "Get user friends",
+        "description": "Retrieve the authenticated user's friends list",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friends list retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendsList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/friends/{friendId}": {
+      "delete": {
+        "tags": ["Friends"],
+        "summary": "Remove friend",
+        "description": "Remove a user from friends list",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "friendId",
+            "in": "path",
+            "description": "ID of the friend to remove",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/friend-requests": {
+      "get": {
+        "tags": ["Friends"],
+        "summary": "Get pending friend requests",
+        "description": "Retrieve friend requests received by the authenticated user",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Friend requests retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendRequests"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/friend-requests/sent": {
+      "get": {
+        "tags": ["Friends"],
+        "summary": "Get sent friend requests",
+        "description": "Retrieve friend requests sent by the authenticated user",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sent friend requests retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FriendRequests"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/users/me/friends/request": {
       "post": {
+        "tags": ["Friends"],
         "summary": "Send friend request",
         "description": "Send a friend request to another user",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -559,11 +675,12 @@
     },
     "/api/users/me/friends/accept": {
       "post": {
+        "tags": ["Friends"],
         "summary": "Accept friend request",
         "description": "Accept a pending friend request",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -612,11 +729,12 @@
     },
     "/api/users/me/friends/reject": {
       "post": {
+        "tags": ["Friends"],
         "summary": "Reject friend request",
         "description": "Reject a pending friend request",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -653,33 +771,24 @@
         }
       }
     },
-    "/api/users/me/friends/{friendId}": {
-      "delete": {
-        "summary": "Remove friend",
-        "description": "Remove a user from friends list",
+
+    "/api/users/me/blocked": {
+      "get": {
+        "tags": ["Blocking"],
+        "summary": "Get blocked users",
+        "description": "Retrieve the list of blocked users",
         "security": [
           {
-            "bearerAuth": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "friendId",
-            "in": "path",
-            "description": "ID of the friend to remove",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
+            "cookieAuth": []
           }
         ],
         "responses": {
           "200": {
-            "description": "Friend removed",
+            "description": "Blocked users retrieved",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SuccessResponse"
+                  "$ref": "#/components/schemas/BlockedUsers"
                 }
               }
             }
@@ -695,15 +804,14 @@
             }
           }
         }
-      }
-    },
-    "/api/users/me/blocked": {
+      },
       "post": {
+        "tags": ["Blocking"],
         "summary": "Block user",
         "description": "Block a user",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -748,46 +856,16 @@
             }
           }
         }
-      },
-      "get": {
-        "summary": "Get blocked users",
-        "description": "Retrieve the list of blocked users",
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Blocked users retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/BlockedUsers"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
-                }
-              }
-            }
-          }
-        }
       }
     },
     "/api/users/me/blocked/{blockedUserId}": {
       "delete": {
+        "tags": ["Blocking"],
         "summary": "Unblock user",
         "description": "Unblock a previously blocked user",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "parameters": [
@@ -825,49 +903,58 @@
         }
       }
     },
-    "/api/users/me/avatar": {
-      "post": {
-        "summary": "Upload avatar",
-        "description": "Upload a new avatar image for the user",
+
+    "/api/users/me/stats": {
+      "get": {
+        "tags": ["Game Stats"],
+        "summary": "Get user statistics",
+        "description": "Retrieve the authenticated user's game statistics",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "multipart/form-data": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "avatar": {
-                    "type": "string",
-                    "format": "binary",
-                    "description": "Avatar image file (max 2MB, image formats only)"
-                  }
-                }
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
-            "description": "Avatar uploaded successfully",
+            "description": "Statistics retrieved",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/UserProfile"
+                  "$ref": "#/components/schemas/UserStats"
                 }
               }
             }
           },
-          "400": {
-            "description": "Invalid file",
+          "401": {
+            "description": "Unauthorized",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/me/match-history": {
+      "get": {
+        "tags": ["Game Stats"],
+        "summary": "Get user match history",
+        "description": "Retrieve the authenticated user's match history",
+        "security": [
+          {
+            "cookieAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Match history retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchHistory"
                 }
               }
             }
@@ -887,11 +974,12 @@
     },
     "/api/users/me/offline-match": {
       "post": {
+        "tags": ["Game Stats"],
         "summary": "Save offline match result",
         "description": "Save the result of an offline match against AI",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -930,11 +1018,12 @@
     },
     "/api/users/me/tournament-win": {
       "post": {
+        "tags": ["Game Stats"],
         "summary": "Record tournament win",
         "description": "Record a tournament victory",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -971,13 +1060,15 @@
         }
       }
     },
+
     "/api/board-customization": {
       "get": {
-        "summary": "Get board customization",
+        "tags": ["Customization"],
+        "summary": "Get Pong board customization",
         "description": "Retrieve the user's Pong board customization settings",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "responses": {
@@ -1004,11 +1095,12 @@
         }
       },
       "put": {
-        "summary": "Update board customization",
+        "tags": ["Customization"],
+        "summary": "Update Pong board customization",
         "description": "Update the user's Pong board customization settings",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1057,11 +1149,12 @@
     },
     "/api/xo-board-customization": {
       "get": {
-        "summary": "Get XO board customization",
+        "tags": ["Customization"],
+        "summary": "Get Tic-tac-toe board customization",
         "description": "Retrieve the user's Tic-tac-toe board customization settings",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "responses": {
@@ -1088,11 +1181,12 @@
         }
       },
       "put": {
-        "summary": "Update XO board customization",
+        "tags": ["Customization"],
+        "summary": "Update Tic-tac-toe board customization",
         "description": "Update the user's Tic-tac-toe board customization settings",
         "security": [
           {
-            "bearerAuth": []
+            "cookieAuth": []
           }
         ],
         "requestBody": {
@@ -1139,10 +1233,34 @@
         }
       }
     },
+
+    "/api/tictactoe/queue-count": {
+      "get": {
+        "tags": ["Matchmaking"],
+        "summary": "Get Tic-tac-toe queue count",
+        "description": "Get the number of players currently waiting in the matchmaking queue",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Queue count retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueueCount"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
     "/uploads/{filename}": {
       "get": {
+        "tags": ["Files"],
         "summary": "Get uploaded file",
         "description": "Retrieve an uploaded file (typically user avatars)",
+        "security": [],
         "parameters": [
           {
             "name": "filename",
@@ -1178,32 +1296,15 @@
           }
         }
       }
-    },
-    "/api/tictactoe/queue-count": {
-      "get": {
-        "summary": "Get Tic-tac-toe queue count",
-        "description": "Get the number of players currently waiting in the matchmaking queue",
-        "responses": {
-          "200": {
-            "description": "Queue count retrieved",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/QueueCount"
-                }
-              }
-            }
-          }
-        }
-      }
     }
   },
   "components": {
     "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT"
+      "cookieAuth": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "sessionId",
+        "description": "Session-based authentication using httpOnly cookies. Login to obtain a session."
       }
     },
     "schemas": {
@@ -1286,15 +1387,13 @@
       },
       "AuthResponse": {
         "type": "object",
+        "description": "Authentication response. A session cookie is set automatically on successful login/registration.",
         "properties": {
           "user": {
             "$ref": "#/components/schemas/User"
-          },
-          "token": {
-            "type": "string"
           }
         },
-        "required": ["user", "token"]
+        "required": ["user"]
       },
       "User": {
         "type": "object",
@@ -1310,27 +1409,38 @@
             "format": "email"
           },
           "display_name": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
           },
           "avatar_url": {
-            "type": "string"
+            "type": "string",
+            "nullable": true
+          },
+          "last_active": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           },
           "created_at": {
             "type": "string",
             "format": "date-time"
           },
-          "last_active": {
+          "updated_at": {
             "type": "string",
             "format": "date-time"
           },
           "board_customization": {
-            "type": "object"
+            "type": "object",
+            "nullable": true,
+            "description": "Pong board customization settings, null if not set"
           },
           "xo_board_customization": {
-            "type": "object"
+            "type": "object",
+            "nullable": true,
+            "description": "Tic-tac-toe board customization settings, null if not set"
           }
         },
-        "required": ["id", "username", "email"]
+        "required": ["id", "username", "email", "created_at", "updated_at"]
       },
       "UserProfile": {
         "type": "object",
@@ -1361,6 +1471,172 @@
           },
           "current_password": {
             "type": "string"
+          }
+        }
+      },
+      "UserSearchResults": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UserSearchResult"
+            }
+          }
+        },
+        "required": ["users"]
+      },
+      "UserSearchResult": {
+        "type": "object",
+        "description": "User search result - subset of user fields",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "display_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "FriendsList": {
+        "type": "object",
+        "properties": {
+          "friends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Friend"
+            }
+          }
+        },
+        "required": ["friends"]
+      },
+      "Friend": {
+        "type": "object",
+        "description": "Friend object returned from getFriends - subset of User with online status",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "is_online": {
+            "type": "integer",
+            "enum": [0, 1],
+            "description": "1 if user was active in last 10 seconds, 0 otherwise"
+          }
+        }
+      },
+      "FriendRequests": {
+        "type": "object",
+        "properties": {
+          "requests": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FriendRequestItem"
+            }
+          }
+        },
+        "required": ["requests"]
+      },
+      "FriendRequestItem": {
+        "type": "object",
+        "description": "Friend request item - contains basic user info of the requester/recipient",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "User ID of the person who sent/received the request"
+          },
+          "username": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the friend request was created"
+          }
+        }
+      },
+      "FriendRequest": {
+        "type": "object",
+        "properties": {
+          "friend_id": {
+            "type": "integer"
+          }
+        },
+        "required": ["friend_id"]
+      },
+      "BlockUser": {
+        "type": "object",
+        "properties": {
+          "blocked_user_id": {
+            "type": "integer"
+          }
+        },
+        "required": ["blocked_user_id"]
+      },
+      "BlockedUsers": {
+        "type": "object",
+        "properties": {
+          "blockedUsers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlockedUser"
+            }
+          }
+        },
+        "required": ["blockedUsers"]
+      },
+      "BlockedUser": {
+        "type": "object",
+        "description": "Blocked user info",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "username": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the user was blocked"
           }
         }
       },
@@ -1424,7 +1700,7 @@
             "type": "integer",
             "nullable": true
           },
-          "player_score": {
+          "user_score": {
             "type": "integer"
           },
           "opponent_score": {
@@ -1441,99 +1717,18 @@
           "played_at": {
             "type": "string",
             "format": "date-time"
+          },
+          "opponent_username": {
+            "type": "string",
+            "nullable": true,
+            "description": "Username of the opponent (from JOIN)"
+          },
+          "opponent_display_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Display name of the opponent (from JOIN)"
           }
         }
-      },
-      "FriendsList": {
-        "type": "object",
-        "properties": {
-          "friends": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/User"
-            }
-          }
-        },
-        "required": ["friends"]
-      },
-      "FriendRequests": {
-        "type": "object",
-        "properties": {
-          "requests": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/FriendRequestItem"
-            }
-          }
-        },
-        "required": ["requests"]
-      },
-      "FriendRequestItem": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "from_user_id": {
-            "type": "integer"
-          },
-          "to_user_id": {
-            "type": "integer"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["pending", "accepted", "rejected"]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "from_user": {
-            "$ref": "#/components/schemas/User"
-          }
-        }
-      },
-      "UserSearchResults": {
-        "type": "object",
-        "properties": {
-          "users": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/User"
-            }
-          }
-        },
-        "required": ["users"]
-      },
-      "FriendRequest": {
-        "type": "object",
-        "properties": {
-          "friend_id": {
-            "type": "integer"
-          }
-        },
-        "required": ["friend_id"]
-      },
-      "BlockUser": {
-        "type": "object",
-        "properties": {
-          "blocked_user_id": {
-            "type": "integer"
-          }
-        },
-        "required": ["blocked_user_id"]
-      },
-      "BlockedUsers": {
-        "type": "object",
-        "properties": {
-          "blockedUsers": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/User"
-            }
-          }
-        },
-        "required": ["blockedUsers"]
       },
       "OfflineMatch": {
         "type": "object",
