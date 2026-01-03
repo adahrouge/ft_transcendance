@@ -3,11 +3,9 @@ import websocket from '@fastify/websocket';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import staticFiles from '@fastify/static';
-import { initDatabase, cleanupEmptyTournaments, updateUserActivity } from '../database/db.js';
+import { initDatabase, updateUserActivity } from '../database/db.js';
 import jwt from 'jsonwebtoken';
 import { userRoutes, avatarRoutes } from '../routes/users.js';
-import { tournamentRoutes } from '../routes/tournaments.js';
-import { tournamentGamesRoutes } from '../routes/tournamentGames.js';
 import { tictactoeMatchmakingRoutes } from '../routes/tictactoeMatchmaking.js';
 import { presenceRoutes } from '../routes/presence.js';
 import path from 'path';
@@ -64,8 +62,6 @@ await fastify.register(multipart);
 // Register routes
 await fastify.register(userRoutes);
 await fastify.register(avatarRoutes);
-await fastify.register(tournamentRoutes);
-await fastify.register(tournamentGamesRoutes);
 await fastify.register(tictactoeMatchmakingRoutes);
 await fastify.register(presenceRoutes);
 
@@ -79,18 +75,6 @@ await fastify.register(staticFiles, {
 fastify.get('/health', async (request, reply) => {
   return { status: 'OK', message: 'Pong server running' };
 });
-
-// Auto-cleanup empty tournaments every minute
-setInterval(async () => {
-  try {
-    const deletedCount = await cleanupEmptyTournaments();
-    if (deletedCount > 0) {
-      fastify.log.info(`Cleaned up ${deletedCount} empty tournament(s)`);
-    }
-  } catch (err) {
-    fastify.log.error('Error cleaning up tournaments:', err);
-  }
-}, 60000); // Run every 60 seconds
 
 // Start server
 const start = async () => {
