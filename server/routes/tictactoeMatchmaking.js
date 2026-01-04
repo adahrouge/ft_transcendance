@@ -217,7 +217,7 @@ export async function tictactoeMatchmakingRoutes(fastify) {
     const socket = connection.socket;
     
     // Authenticate via session
-    if (!req.session.userId) {
+    if (!req.session?.userId) {
       socket.send(JSON.stringify({ type: 'error', message: 'Unauthorized' }));
       socket.close();
       return;

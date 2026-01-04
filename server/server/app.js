@@ -45,8 +45,10 @@ await fastify.register(cookie);
 await fastify.register(session, {
   secret: SESSION_SECRET,
   cookie: {
+    path: '/',
     secure: false, // Set to true in production with HTTPS
     httpOnly: true,
+    sameSite: 'lax', // Allow cross-site for WebSocket
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   },
   saveUninitialized: false
@@ -56,6 +58,18 @@ await fastify.register(session, {
 fastify.addHook('onRequest', async (request, reply) => {
   if (request.session.userId) {
     await updateUserActivity(request.session.userId);
+  }
+});
+
+// Hook to ensure WebSocket connections have session loaded
+fastify.addHook('preValidation', async (request, reply) => {
+  // This runs before websocket upgrade, ensuring session is available
+  // Fastify's session plugin should have already deserialized it
+  if (request.url.includes('/api/tictactoe/matchmaking') || request.url.includes('/api/presence')) {
+    // Force session to be initialized if not already
+    if (!request.session) {
+      request.session = {};
+    }
   }
 });
 

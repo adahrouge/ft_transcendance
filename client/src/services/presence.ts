@@ -30,9 +30,11 @@ class PresenceService {
     const apiUrl = (import.meta as any).env?.VITE_API_URL || '';
 
     if (apiUrl) {
-      // Convert http(s):// to ws(s)://
-      const wsUrl = apiUrl.replace(/^http/, 'ws');
-      return `${wsUrl}/api/presence`;
+      // Use relative URL to go through Vite proxy (which preserves cookies)
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const host = window.location.hostname;
+      const port = window.location.port ? `:${window.location.port}` : '';
+      return `${protocol}//${host}${port}/api/presence`;
     }
 
     // Fallback: use current host
