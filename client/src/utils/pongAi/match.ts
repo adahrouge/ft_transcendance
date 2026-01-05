@@ -158,17 +158,22 @@ export async function startAiMatch(root: HTMLElement, CONFIG: any) {
     if (keys.right) playerX += CONFIG.paddleSpeed * dtSec;
     playerX = clamp(playerX, 0, CONFIG.width - CONFIG.paddleW);
 
-    ai.update(dtSec, nowMs, aiX, sampledBall, scoreAI, scorePlayer);
+    const newAiX = ai.update(dtSec, nowMs, aiX, sampledBall, scoreAI, scorePlayer);
 
-    const snap = ai.getSnapshot();
-    const aiDesiredCenter = (snap.targetX ?? aiX) + CONFIG.paddleW / 2;
-    const aiCenter = aiX + CONFIG.paddleW / 2;
-    const deadband = 3;
-    aiKeys.left = aiCenter > aiDesiredCenter + deadband;
-    aiKeys.right = aiCenter < aiDesiredCenter - deadband;
+    // Use the AI's smoothly calculated position to determine key presses
+    const moveDelta = newAiX - aiX;
+    const deadband = 8; // Larger deadband to prevent vibration
 
-    if (aiKeys.left) aiX -= CONFIG.paddleSpeed * dtSec;
-    if (aiKeys.right) aiX += CONFIG.paddleSpeed * dtSec;
+    // Only simulate key press if movement is significant
+    aiKeys.left = moveDelta < -deadband * dtSec;
+    aiKeys.right = moveDelta > deadband * dtSec;
+
+    // Apply movement using AI's calculated speed, capped by paddle speed
+    if (aiKeys.left || aiKeys.right) {
+      const aiSpeed = Math.min(Math.abs(moveDelta) / dtSec, CONFIG.paddleSpeed);
+      if (aiKeys.left) aiX -= aiSpeed * dtSec;
+      if (aiKeys.right) aiX += aiSpeed * dtSec;
+    }
     aiX = clamp(aiX, 0, CONFIG.width - CONFIG.paddleW);
 
     ballX += ballVX * dtSec;
@@ -259,12 +264,8 @@ export async function startAiMatch(root: HTMLElement, CONFIG: any) {
     const won = scorePlayer >= CONFIG.scoreToWin;
 
     try {
-      await statsService.saveOfflineMatch({
-        playerScore: scorePlayer,
-        aiScore: scoreAI,
-        result: won ? 'win' : 'loss',
-        difficulty: AI_DIFFICULTY_LABELS[Math.floor(pongAiState.selectedAIDifficulty / 50)] || 'CUSTOM'
-      });
+      const difficulty = AI_DIFFICULTY_LABELS[Math.floor(pongAiState.selectedAIDifficulty / 50)] || 'CUSTOM';
+      await statsService.savePongAiMatch(scorePlayer, scoreAI, difficulty);
     } catch {
       // Failed to save stats
     }

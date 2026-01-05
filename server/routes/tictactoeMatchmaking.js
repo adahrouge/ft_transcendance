@@ -1,6 +1,6 @@
-import { getUserById } from '../database/db.js';
+import { getUserById, getMatchHistory, addMatchHistory } from '../database/db.js';
 
-// Queue of players waiting for a match: Array<{ socket, userId, username }>
+// Queue of players waiting for a match: Array<{ socket, userId, username, wins }>
 const matchmakingQueue = [];
 
 // Active games: Map<gameId, { player1, player2, board, currentPlayer, gameId }>
@@ -25,6 +25,31 @@ function broadcastQueueCount() {
       socket.send(JSON.stringify({ type: 'queue_update', count }));
     }
   });
+}
+
+// Find best match for a player based on win count (within ±5 wins, or closest available)
+function findBestMatch(player) {
+  if (matchmakingQueue.length < 2) return null;
+
+  const playerIndex = matchmakingQueue.findIndex(p => p.userId === player.userId);
+  if (playerIndex === -1) return null;
+
+  let bestMatch = null;
+  let bestDiff = Infinity;
+
+  for (let i = 0; i < matchmakingQueue.length; i++) {
+    if (i === playerIndex) continue;
+    const other = matchmakingQueue[i];
+    const diff = Math.abs(player.wins - other.wins);
+
+    // Prefer players within 5 wins difference
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      bestMatch = { index: i, player: other };
+    }
+  }
+
+  return bestMatch;
 }
 
 function checkWinner(board) {
@@ -105,7 +130,7 @@ function createGame(player1, player2) {
   return game;
 }
 
-function handleMove(socket, gameId, index) {
+async function handleMove(socket, gameId, index) {
   const game = activeGames.get(gameId);
   if (!game) {
     socket.send(JSON.stringify({ type: 'error', message: 'Game not found' }));
@@ -161,8 +186,27 @@ function handleMove(socket, gameId, index) {
     opponent.socket.send(JSON.stringify(updateMsg));
   }
 
-  // If game is over, clean up
+  // If game is over, save match history and clean up
   if (winner) {
+    // Save match history for both players
+    try {
+      if (winner === 'draw') {
+        // Both players get a draw
+        await addMatchHistory(player.userId, opponent.userId, 0, 0, 'draw', 'tictactoe');
+        await addMatchHistory(opponent.userId, player.userId, 0, 0, 'draw', 'tictactoe');
+      } else {
+        // winner is 'X' or 'O' - find who won
+        const playerWon = winner === player.symbol;
+        const winnerPlayer = playerWon ? player : opponent;
+        const loserPlayer = playerWon ? opponent : player;
+
+        await addMatchHistory(winnerPlayer.userId, loserPlayer.userId, 1, 0, 'win', 'tictactoe');
+        await addMatchHistory(loserPlayer.userId, winnerPlayer.userId, 0, 1, 'loss', 'tictactoe');
+      }
+    } catch (err) {
+      console.error('Failed to save match history:', err);
+    }
+
     setTimeout(() => {
       cleanupGame(gameId);
     }, 5000); // Keep game data for 5 seconds after end
@@ -259,17 +303,28 @@ export async function tictactoeMatchmakingRoutes(fastify) {
             return;
           }
 
-          // Add to queue
-          matchmakingQueue.push({ socket, userId, username });
+          // Get player's tictactoe wins for skill-based matching
+          const matches = await getMatchHistory(userId);
+          const tttWins = matches.filter(m => m.game_type === 'tictactoe' && m.result === 'win').length;
+
+          // Add to queue with win count
+          const newPlayer = { socket, userId, username, wins: tttWins };
+          matchmakingQueue.push(newPlayer);
           socket.send(JSON.stringify({ type: 'joined_queue' }));
           broadcastQueueCount();
 
-          // Try to match players
+          // Try to find best skill-based match
           if (matchmakingQueue.length >= 2) {
-            const player1 = matchmakingQueue.shift();
-            const player2 = matchmakingQueue.shift();
-            createGame(player1, player2);
-            broadcastQueueCount();
+            const match = findBestMatch(newPlayer);
+            if (match) {
+              // Remove both players from queue
+              const playerIndex = matchmakingQueue.findIndex(p => p.userId === newPlayer.userId);
+              const player1 = matchmakingQueue.splice(playerIndex, 1)[0];
+              const newMatchIndex = matchmakingQueue.findIndex(p => p.userId === match.player.userId);
+              const player2 = matchmakingQueue.splice(newMatchIndex, 1)[0];
+              createGame(player1, player2);
+              broadcastQueueCount();
+            }
           }
         }
 

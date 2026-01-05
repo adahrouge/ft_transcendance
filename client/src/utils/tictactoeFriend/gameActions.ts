@@ -76,17 +76,7 @@ export function getClickedCell(e: MouseEvent, canvas: HTMLCanvasElement): number
 
 export async function saveGameStats(winner: Player | 'draw' | null) {
   try {
-    let result: 'win' | 'loss' | 'draw' = 'draw';
-    if (winner === 'X') result = 'win';
-    if (winner === 'O') result = 'loss';
-
-    await statsService.saveOfflineMatch({
-      playerScore: winner === 'X' ? 1 : 0,
-      aiScore: winner === 'O' ? 1 : 0,
-      result,
-      difficulty: 'FRIEND',
-      gameType: 'tictactoe'
-    });
+    await statsService.saveTictactoeFriendMatch(winner);
   } catch {
     // Failed to save stats
   }

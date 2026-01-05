@@ -166,9 +166,11 @@ export class PongAI {
 
     let newX = paddleX + this.vx * dtSec;
 
-    // Tiny tremor
-    const tremor = (Math.random() * 2 - 1) * this.cfg.steadyJitter * 0.2;
-    newX += tremor;
+    // Tiny tremor - only apply occasionally to avoid constant vibration
+    if (Math.random() < 0.1) {
+      const tremor = (Math.random() * 2 - 1) * this.cfg.steadyJitter * 0.1;
+      newX += tremor;
+    }
 
     newX = clamp(newX, 0, c.tableW - c.paddleW);
     this.snap.targetX = target;

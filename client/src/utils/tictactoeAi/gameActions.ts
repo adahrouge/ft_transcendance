@@ -12,27 +12,22 @@ export function drawBoard(
 ) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw background
   ctx.fillStyle = customization.colors.background;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw border
   ctx.strokeStyle = customization.colors.border;
   ctx.lineWidth = 4;
   ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
 
-  // Draw grid
   ctx.strokeStyle = customization.colors.grid;
   ctx.lineWidth = 4;
   ctx.beginPath();
 
-  // Vertical lines
   ctx.moveTo(canvas.width / 3, 20);
   ctx.lineTo(canvas.width / 3, canvas.height - 20);
   ctx.moveTo(2 * canvas.width / 3, 20);
   ctx.lineTo(2 * canvas.width / 3, canvas.height - 20);
 
-  // Horizontal lines
   ctx.moveTo(20, canvas.height / 3);
   ctx.lineTo(canvas.width - 20, canvas.height / 3);
   ctx.moveTo(20, 2 * canvas.height / 3);
@@ -40,7 +35,6 @@ export function drawBoard(
 
   ctx.stroke();
 
-  // Draw pieces
   board.forEach((cell, i) => {
     if (cell) {
       const row = Math.floor(i / 3);
@@ -69,10 +63,7 @@ export function drawBoard(
   });
 }
 
-export function getClickedCell(
-  e: MouseEvent,
-  canvas: HTMLCanvasElement
-): number {
+export function getClickedCell(e: MouseEvent, canvas: HTMLCanvasElement): number {
   const rect = canvas.getBoundingClientRect();
   const x = e.clientX - rect.left;
   const y = e.clientY - rect.top;
@@ -91,18 +82,9 @@ export function getAIMoveIndex(board: Board): number {
 }
 
 export async function saveGameStats(winner: Player | 'draw' | null) {
+  const difficulty = AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM';
   try {
-    let result: 'win' | 'loss' | 'draw' = 'draw';
-    if (winner === 'X') result = 'win';
-    if (winner === 'O') result = 'loss';
-
-    await statsService.saveOfflineMatch({
-      playerScore: winner === 'X' ? 1 : 0,
-      aiScore: winner === 'O' ? 1 : 0,
-      result,
-      difficulty: AI_DIFFICULTY_LABELS[Math.floor(selectedAIDifficulty / 50)] || 'CUSTOM',
-      gameType: 'tictactoe'
-    });
+    await statsService.saveTictactoeAiMatch(winner, difficulty);
   } catch {
     // Failed to save stats
   }

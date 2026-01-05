@@ -28,9 +28,11 @@ function lerp(a: number, b: number, t: number): number {
 export function getAIConfigFromDifficulty(difficulty: number) {
   const t = difficulty / 100;
 
+  // AI maxSpeed should not exceed player paddleSpeed (400) to keep it fair
+  // AI wins through better prediction, not superhuman reflexes
   const easy = {
-    maxSpeed: 280,
-    maxAccel: 1200,
+    maxSpeed: 220,
+    maxAccel: 800,
     minReactionMs: 300,
     maxReactionMs: 450,
     minJitter: 25,
@@ -42,29 +44,29 @@ export function getAIConfigFromDifficulty(difficulty: number) {
   };
 
   const medium = {
-    maxSpeed: 600,
-    maxAccel: 8000,
-    minReactionMs: 60,
-    maxReactionMs: 120,
-    minJitter: 5,
-    maxJitter: 15,
-    defocusFrac: 0.1,
-    defocusMultiplier: 1.2,
-    visionMs: 300,
-    overshootBias: 0.05,
+    maxSpeed: 340,
+    maxAccel: 1500,
+    minReactionMs: 100,
+    maxReactionMs: 180,
+    minJitter: 8,
+    maxJitter: 20,
+    defocusFrac: 0.15,
+    defocusMultiplier: 1.3,
+    visionMs: 400,
+    overshootBias: 0.08,
   };
 
   const hard = {
-    maxSpeed: 1500,
-    maxAccel: 80000,
-    minReactionMs: 0,
-    maxReactionMs: 0,
-    minJitter: 0,
-    maxJitter: 0,
-    defocusFrac: 0.0,
-    defocusMultiplier: 1.0,
-    visionMs: 0,
-    overshootBias: 0.0,
+    maxSpeed: 400,
+    maxAccel: 2500,
+    minReactionMs: 40,
+    maxReactionMs: 80,
+    minJitter: 3,
+    maxJitter: 10,
+    defocusFrac: 0.05,
+    defocusMultiplier: 1.1,
+    visionMs: 200,
+    overshootBias: 0.02,
   };
 
   if (t <= 0.5) {

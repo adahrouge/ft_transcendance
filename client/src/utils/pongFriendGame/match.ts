@@ -205,12 +205,7 @@ export async function startFriendMatch(root: HTMLElement, CONFIG: any) {
     const won = scoreP1 >= CONFIG.scoreToWin;
 
     try {
-      await statsService.saveOfflineMatch({
-        playerScore: scoreP1,
-        aiScore: scoreP2,
-        result: won ? 'win' : 'loss',
-        difficulty: 'FRIEND'
-      });
+      await statsService.savePongFriendMatch(scoreP1, scoreP2);
     } catch {
       // Failed to save stats
     }

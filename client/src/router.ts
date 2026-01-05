@@ -82,8 +82,7 @@ export function setupRouter() {
       renderPage(renderCustomizeBoardPage());
     })
     .notFound(async () => {
-      const { renderNotFoundPage } = await import("./pages/notFound");
-      renderPage(renderNotFoundPage(), false);
+      navigateTo("/auth");
     });
 
   router.resolve();

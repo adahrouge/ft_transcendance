@@ -1,4 +1,3 @@
-import { statsService } from "../../services/stats";
 import type { Board } from "../../types/tictactoe";
 import type { XoBoardCustomization } from "../../types/boardCustomization";
 
@@ -74,16 +73,4 @@ export function getClickedCell(e: MouseEvent, canvas: HTMLCanvasElement): number
   return row * 3 + col;
 }
 
-export async function saveOnlineGameStats(result: 'win' | 'loss' | 'draw') {
-  try {
-    await statsService.saveOfflineMatch({
-      playerScore: result === 'win' ? 1 : 0,
-      aiScore: result === 'loss' ? 1 : 0,
-      result,
-      difficulty: 'ONLINE',
-      gameType: 'tictactoe'
-    });
-  } catch {
-    // Failed to save stats
-  }
-}
+// Note: Online match history is saved by the server, not the client

@@ -6,7 +6,7 @@ import { i18n } from "../../services/i18n";
 import { tictactoeMatchmakingService, type OnlineGameState } from "../../services/tictactoeMatchmaking";
 import type { Player } from "../../types/tictactoe";
 import type { XoBoardCustomization } from "../../types/boardCustomization";
-import { drawBoard, getClickedCell, saveOnlineGameStats } from "./gameActions";
+import { drawBoard, getClickedCell } from "./gameActions";
 import {
   createFindGame,
   createOnlineGameCanvas,
@@ -192,25 +192,20 @@ async function startOnlineMatch(root: HTMLElement) {
   updateStatus();
 }
 
-async function showOnlineGameOver(root: HTMLElement, winner: Player | 'draw', mySymbol: Player, opponentDisconnected = false) {
+function showOnlineGameOver(root: HTMLElement, winner: Player | 'draw', mySymbol: Player, opponentDisconnected = false) {
   let title = '';
-  let result = 'draw';
 
   if (opponentDisconnected) {
     title = i18n.t('opponent_disconnected') || 'Opponent disconnected - You win!';
-    result = 'win';
   } else if (winner === 'draw') {
     title = i18n.t('draw');
-    result = 'draw';
   } else if (winner === mySymbol) {
     title = i18n.t('you_win') || 'YOU WIN!';
-    result = 'win';
   } else {
     title = i18n.t('you_lose') || 'YOU LOSE!';
-    result = 'loss';
   }
 
-  await saveOnlineGameStats(result);
+  // Match history is saved by the server, no need to save here
 
   setTimeout(() => {
     root.innerHTML += createOnlineGameOverScreen(title);
