@@ -1,5 +1,4 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
 import { boardCustomizationService } from "../../services/boardCustomization";
 import { statsService } from "../../services/stats";
 import {
@@ -259,17 +258,15 @@ export async function startAiMatch(root: HTMLElement, CONFIG: any) {
     teardown();
     const won = scorePlayer >= CONFIG.scoreToWin;
 
-    if (isAuthenticated()) {
-      try {
-        await statsService.saveOfflineMatch({
-          playerScore: scorePlayer,
-          aiScore: scoreAI,
-          result: won ? 'win' : 'loss',
-          difficulty: AI_DIFFICULTY_LABELS[Math.floor(pongAiState.selectedAIDifficulty / 50)] || 'CUSTOM'
-        });
-      } catch {
-        // Failed to save stats
-      }
+    try {
+      await statsService.saveOfflineMatch({
+        playerScore: scorePlayer,
+        aiScore: scoreAI,
+        result: won ? 'win' : 'loss',
+        difficulty: AI_DIFFICULTY_LABELS[Math.floor(pongAiState.selectedAIDifficulty / 50)] || 'CUSTOM'
+      });
+    } catch {
+      // Failed to save stats
     }
 
     root.innerHTML = createGameOverScreen(won, scorePlayer, scoreAI);

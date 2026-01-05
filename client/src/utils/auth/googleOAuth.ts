@@ -1,4 +1,9 @@
-import type { GoogleOAuthResponse } from "../../types/auth";
+export interface GoogleUserInfo {
+  email: string;
+  name: string;
+  googleId: string;
+  accessToken: string;
+}
 
 let googleClientId: string | null = null;
 let googleScriptLoaded = false;
@@ -23,7 +28,7 @@ export function isGoogleReady(): boolean {
   return googleClientId !== null && (window as any).google !== undefined;
 }
 
-export function triggerGoogleSignIn(): Promise<GoogleOAuthResponse> {
+export function triggerGoogleSignIn(): Promise<GoogleUserInfo> {
   if (!isGoogleReady()) return Promise.reject(new Error('Google OAuth not configured'));
 
   return new Promise((resolve, reject) => {
@@ -33,33 +38,24 @@ export function triggerGoogleSignIn(): Promise<GoogleOAuthResponse> {
       callback: async (tokenResponse: any) => {
         if (tokenResponse.access_token) {
           try {
-            console.log('Fetching user info with access token...');
-            const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: {
-                'Authorization': `Bearer ${tokenResponse.access_token}`
-              }
+            const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { 'Authorization': `Bearer ${tokenResponse.access_token}` }
             });
 
-            if (!userInfoResponse.ok) {
-              const errorText = await userInfoResponse.text();
-              console.error('UserInfo fetch failed:', errorText);
-              throw new Error(`Failed to fetch user info: ${userInfoResponse.status}`);
-            }
+            if (!res.ok) throw new Error(`Failed to fetch user info: ${res.status}`);
 
-            const userInfo = await userInfoResponse.json();
-            console.log('User info received:', userInfo);
-
+            const userInfo = await res.json();
             if (!userInfo.email || !userInfo.sub) {
-              console.error('Incomplete user info:', userInfo);
               throw new Error('Email or user ID missing from Google response');
             }
 
             resolve({
-              credential: tokenResponse.access_token,
-              userInfo: userInfo
+              email: userInfo.email,
+              name: userInfo.name || userInfo.given_name || userInfo.email.split('@')[0],
+              googleId: userInfo.sub,
+              accessToken: tokenResponse.access_token
             });
           } catch (error) {
-            console.error('Error in access token flow:', error);
             reject(error);
           }
         } else if (tokenResponse.error) {

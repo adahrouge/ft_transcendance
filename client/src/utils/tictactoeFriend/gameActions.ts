@@ -1,4 +1,3 @@
-import { isAuthenticated } from "../auth";
 import { statsService } from "../../services/stats";
 import type { Board, Player } from "../../types/tictactoe";
 import type { XoBoardCustomization } from "../../types/boardCustomization";
@@ -76,17 +75,15 @@ export function getClickedCell(e: MouseEvent, canvas: HTMLCanvasElement): number
 }
 
 export async function saveGameStats(winner: Player | 'draw' | null) {
-  if (!isAuthenticated()) return;
-
   try {
-    let result = 'draw';
+    let result: 'win' | 'loss' | 'draw' = 'draw';
     if (winner === 'X') result = 'win';
     if (winner === 'O') result = 'loss';
 
     await statsService.saveOfflineMatch({
       playerScore: winner === 'X' ? 1 : 0,
       aiScore: winner === 'O' ? 1 : 0,
-      result: result,
+      result,
       difficulty: 'FRIEND',
       gameType: 'tictactoe'
     });

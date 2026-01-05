@@ -1,27 +1,10 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
-import { createLoginPrompt, createModeSelection } from "../../components/pong";
+import { createModeSelection } from "../../components/pong";
 
 export function setupPongPage() {
   const root = document.getElementById("game-root");
   if (!root) return;
 
-  if (!isAuthenticated()) {
-    showLoginPrompt(root);
-    return;
-  }
-
-  showModeSelection(root);
-}
-
-function showLoginPrompt(root: HTMLElement) {
-  root.innerHTML = createLoginPrompt();
-  
-  document.getElementById("btn-login")?.addEventListener("click", () => navigateTo("/auth"));
-  document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
-}
-
-function showModeSelection(root: HTMLElement) {
   root.innerHTML = createModeSelection();
 
   document.getElementById("btn-vs-ai")?.addEventListener("click", () => {

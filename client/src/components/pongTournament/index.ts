@@ -1,4 +1,3 @@
-export { createLoginPrompt } from "./loginPrompt";
 export { createTournamentSetup } from "./tournamentSetup";
 export { createBracketView } from "./bracketView";
 export { createMatchCanvas } from "./matchCanvas";

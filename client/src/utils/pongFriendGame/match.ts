@@ -1,5 +1,4 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
 import { boardCustomizationService } from "../../services/boardCustomization";
 import { statsService } from "../../services/stats";
 import {
@@ -205,17 +204,15 @@ export async function startFriendMatch(root: HTMLElement, CONFIG: any) {
     teardown();
     const won = scoreP1 >= CONFIG.scoreToWin;
 
-    if (isAuthenticated()) {
-      try {
-        await statsService.saveOfflineMatch({
-          playerScore: scoreP1,
-          aiScore: scoreP2,
-          result: won ? 'win' : 'loss',
-          difficulty: 'FRIEND'
-        });
-      } catch {
-        // Failed to save stats
-      }
+    try {
+      await statsService.saveOfflineMatch({
+        playerScore: scoreP1,
+        aiScore: scoreP2,
+        result: won ? 'win' : 'loss',
+        difficulty: 'FRIEND'
+      });
+    } catch {
+      // Failed to save stats
     }
 
     root.innerHTML = createGameOverScreen(won, scoreP1, scoreP2);

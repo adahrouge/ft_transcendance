@@ -275,10 +275,12 @@ export async function userRoutes(fastify) {
         let baseUsername = name ? name.toLowerCase().replace(/\s+/g, '_') : googleEmail.split('@')[0];
         let username = baseUsername;
         let counter = 1;
+        let suffix = '';
 
         // Ensure username is unique
         while (await getUserByUsername(username)) {
-          username = `${baseUsername}_${counter}`;
+          suffix = `_${counter}`;
+          username = `${baseUsername}${suffix}`;
           counter++;
         }
 
@@ -286,7 +288,9 @@ export async function userRoutes(fastify) {
         const randomPassword = Math.random().toString(36).slice(-32);
         const passwordHash = await bcrypt.hash(randomPassword, 10);
 
-        const newUser = await createUser(username, googleEmail, passwordHash, name || username);
+        // Apply same suffix to display name if needed
+        const displayName = name ? (suffix ? `${name}${suffix}` : name) : username;
+        const newUser = await createUser(username, googleEmail, passwordHash, displayName);
 
         // Set session
         request.session.userId = newUser.id;

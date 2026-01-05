@@ -6,6 +6,7 @@ import type {
   AuthResponse,
   User,
 } from "../types/auth";
+import type { GoogleUserInfo } from "../utils/auth/googleOAuth";
 import { navigateTo } from "../router";
 
 export const authService = {
@@ -27,10 +28,15 @@ export const authService = {
     return data;
   },
 
-  async googleAuth(idToken: string, email: string, name: string, googleId: string): Promise<AuthResponse> {
+  async googleAuth(userInfo: GoogleUserInfo): Promise<AuthResponse> {
     const data = await apiRequest<AuthResponse>("/api/users/google-auth", {
       method: "POST",
-      body: JSON.stringify({ idToken, email, name, googleId }),
+      body: JSON.stringify({
+        idToken: userInfo.accessToken,
+        email: userInfo.email,
+        name: userInfo.name,
+        googleId: userInfo.googleId
+      }),
     });
     setAuthenticated(true);
     return data;

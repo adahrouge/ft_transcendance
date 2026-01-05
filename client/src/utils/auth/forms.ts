@@ -2,7 +2,6 @@ import { authService } from "../../services/auth";
 import { navigateTo } from "../../router";
 import { i18n } from "../../services/i18n";
 import { showNotification } from "../notifications";
-import type { GoogleTokenPayload } from "../../types/auth";
 import { isGoogleReady, triggerGoogleSignIn } from "./googleOAuth";
 import { validateRegistration } from "./validation";
 
@@ -114,56 +113,14 @@ function setupGoogleLogin() {
     btn.disabled = true;
 
     try {
-      const response = await triggerGoogleSignIn();
-      if (response?.credential) {
-        let email: string;
-        let name: string;
-        let googleId: string;
+      const userInfo = await triggerGoogleSignIn();
+      const result = await authService.googleAuth(userInfo);
 
-        if ((response as any).userInfo) {
-          const userInfo = (response as any).userInfo;
-          console.log('Google userInfo:', userInfo);
-          email = userInfo.email;
-          name = userInfo.name || userInfo.given_name || email?.split('@')[0] || 'User';
-          googleId = userInfo.sub;
-        } else {
-          try {
-            const base64Url = response.credential.split('.')[1];
-            if (!base64Url) {
-              throw new Error('Invalid token format');
-            }
-
-            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-            const payload: GoogleTokenPayload = JSON.parse(atob(base64));
-
-            console.log('Google token payload:', payload);
-            email = payload.email;
-            name = payload.name;
-            googleId = payload.sub;
-          } catch (decodeError) {
-            console.error('Token decode error:', decodeError);
-            throw new Error('Failed to decode authentication token');
-          }
-        }
-
-        if (!email || !googleId) {
-          console.error('Missing required Google auth data:', { email, name, googleId });
-          throw new Error('Missing required user information from Google');
-        }
-
-        const result = await authService.googleAuth(
-          response.credential,
-          email,
-          name,
-          googleId
-        );
-
-        if (result?.user) {
-          showNotification('Login successful!', { type: 'success', duration: 2000 });
-          navigateTo("/home");
-        } else {
-          showNotification("Authentication failed", { type: 'error' });
-        }
+      if (result?.user) {
+        showNotification('Login successful!', { type: 'success', duration: 2000 });
+        navigateTo("/home");
+      } else {
+        showNotification("Authentication failed", { type: 'error' });
       }
     } catch (error) {
       const msg = (error as Error).message;

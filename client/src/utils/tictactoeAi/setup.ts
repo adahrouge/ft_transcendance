@@ -1,5 +1,4 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
 import { checkWinner } from "../tictactoe";
 import { xoBoardCustomizationService } from "../../services/boardCustomization";
 import { DEFAULT_XO_CUSTOMIZATION } from "../../types/boardCustomization";
@@ -9,18 +8,11 @@ import type { XoBoardCustomization } from "../../types/boardCustomization";
 import { selectedAIDifficulty, setAIDifficulty } from "./state";
 import { getDifficultyLabel } from "./config";
 import { drawBoard, getClickedCell, getAIMoveIndex, saveGameStats } from "./gameActions";
-import { createLoginPrompt, createMatchSetup, createGameCanvas, createGameOverScreen } from "../../components/tictactoeAi";
+import { createMatchSetup, createGameCanvas, createGameOverScreen } from "../../components/tictactoeAi";
 
 export function setupTicTacToeAi() {
   const root = document.getElementById("game-root");
   if (!root) return;
-
-  if (!isAuthenticated()) {
-    root.innerHTML = createLoginPrompt();
-    document.getElementById("btn-login")?.addEventListener("click", () => navigateTo("/auth"));
-    document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/tictactoe"));
-    return;
-  }
 
   showMatchSetup(root);
 }

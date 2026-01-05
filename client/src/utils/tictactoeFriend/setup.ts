@@ -1,5 +1,4 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
 import { checkWinner } from "../tictactoe";
 import { xoBoardCustomizationService } from "../../services/boardCustomization";
 import { DEFAULT_XO_CUSTOMIZATION } from "../../types/boardCustomization";
@@ -7,18 +6,11 @@ import { i18n } from "../../services/i18n";
 import type { Board, Player } from "../../types/tictactoe";
 import type { XoBoardCustomization } from "../../types/boardCustomization";
 import { drawBoard, getClickedCell, saveGameStats } from "./gameActions";
-import { createLoginPrompt, createGameCanvas, createGameOverScreen } from "../../components/tictactoeFriend";
+import { createGameCanvas, createGameOverScreen } from "../../components/tictactoeFriend";
 
 export function setupTicTacToeFriend() {
   const root = document.getElementById("game-root");
   if (!root) return;
-
-  if (!isAuthenticated()) {
-    root.innerHTML = createLoginPrompt();
-    document.getElementById("btn-login")?.addEventListener("click", () => navigateTo("/auth"));
-    document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/tictactoe"));
-    return;
-  }
 
   startMatch(root);
 }

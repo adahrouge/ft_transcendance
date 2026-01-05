@@ -1,8 +1,7 @@
 import { navigateTo } from "../../router";
-import { isAuthenticated } from "../auth";
 import { i18n } from "../../services/i18n";
 import { statsService } from "../../services/stats";
-import { createBracketView, createLoginPrompt, createTournamentSetup } from "../../components/pongTournament";
+import { createBracketView, createTournamentSetup } from "../../components/pongTournament";
 import { generateBots, createBracket } from "./bracketLogic";
 import { getActiveTournament, setActiveTournament, resetTournament } from "./tournament";
 import { simulateBotMatch } from "./matchLogic";
@@ -14,19 +13,7 @@ export function setupTournament() {
   const root = document.getElementById("game-root");
   if (!root) return;
 
-  if (!isAuthenticated()) {
-    showLoginPrompt(root);
-    return;
-  }
-
   showTournamentSetup(root);
-}
-
-function showLoginPrompt(root: HTMLElement) {
-  root.innerHTML = createLoginPrompt();
-  
-  document.getElementById("btn-login")?.addEventListener("click", () => navigateTo("/auth"));
-  document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
 }
 
 export function showTournamentSetup(root: HTMLElement) {
@@ -105,7 +92,7 @@ export function showTournamentBracket(root: HTMLElement) {
   const tournamentComplete = finalMatch.winner !== null;
   const playerEliminated = !playerInTournament && !tournamentComplete;
 
-  if (playerEliminated && !tournamentState.tournamentLossSaved && isAuthenticated()) {
+  if (playerEliminated && !tournamentState.tournamentLossSaved) {
     tournamentState.tournamentLossSaved = true;
     statsService.saveOfflineMatch({
       playerScore: t.size,
