@@ -64,6 +64,9 @@ export function triggerGoogleSignIn(): Promise<GoogleUserInfo> {
           reject(new Error('No token received'));
         }
       },
+      error_callback: (error: any) => {
+        reject(new Error(error?.message || 'popup_closed'));
+      },
     });
 
     try {
