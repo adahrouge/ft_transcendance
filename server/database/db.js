@@ -177,13 +177,13 @@ export async function initDatabase() {
   }
 }
 
-export async function createUser(username, email, passwordHash, displayName = null) {
+export async function createUser(username, email, passwordHash, displayName = null, authProvider = 'local') {
   // Normalize email to lowercase to prevent case-sensitivity issues
   const normalizedEmail = email.toLowerCase();
   await dbRun(
-    `INSERT INTO users (username, email, password_hash, display_name)
-     VALUES (?, ?, ?, ?)`,
-    [username, normalizedEmail, passwordHash, displayName || username]
+    `INSERT INTO users (username, email, password_hash, display_name, auth_provider)
+     VALUES (?, ?, ?, ?, ?)`,
+    [username, normalizedEmail, passwordHash, displayName || username, authProvider]
   );
   return getUserByUsername(username);
 }
