@@ -253,21 +253,9 @@
     @apply translate-y-1;
   }
 
-  /* Danger Zone */
-  .profile-danger-zone {
-    @apply mt-8 p-6 bg-red-900/20 border-2 border-red-500/30 rounded-lg;
-  }
-
-  .profile-danger-title {
-    @apply text-red-400 font-['Pixel_Game'] text-lg mb-2;
-  }
-
-  .profile-danger-description {
-    @apply text-red-300/80 text-sm mb-4 font-['Pixel_Game'];
-  }
-
+  /* Delete Button */
   .profile-delete-btn {
-    @apply w-full bg-gradient-to-b from-[#7f1d1d] to-[#450a0a] text-red-200 font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#991b1b] hover:to-[#7f1d1d] hover:text-white flex items-center justify-center gap-2;
+    @apply bg-gradient-to-b from-[#7f1d1d] to-[#450a0a] text-red-200 font-['Pixel_Game'] cursor-pointer transition-all duration-100 hover:from-[#991b1b] hover:to-[#7f1d1d] hover:text-white flex items-center justify-center gap-2;
     padding: 0.5rem 1rem;
     border: none;
     box-shadow: 0 -3px 0 0 #991b1b, 3px -3px 0 0 #991b1b, 3px 0 0 0 #991b1b,
@@ -277,9 +265,10 @@
 
   .profile-delete-btn:active {
     @apply translate-y-1;
-    box-shadow: 0 -2px 0 0 #991b1b, 2px -2px 0 0 #991b1b, 2px 0 0 0 #991b1b,
-      2px 2px 0 0 #991b1b, 0 2px 0 0 #991b1b, -2px 2px 0 0 #991b1b,
-      -2px 0 0 0 #991b1b, -2px -2px 0 0 #991b1b;
+  }
+
+  .profile-danger-warning {
+    @apply text-red-400/60 text-xs font-['Pixel_Game'] text-center mt-3;
   }
 
   /* Loading overlay */
@@ -414,8 +403,5 @@
       padding: 0.625rem 0.875rem;
     }
 
-    .profile-danger-title {
-      font-size: 0.875rem;
-    }
   }
 }

@@ -4,4 +4,3 @@ export { createAccountDetails } from "./accountDetails";
 export { createLanguageSection } from "./languageSection";
 export { createPasswordSection } from "./passwordSection";
 export { createActionButtons } from "./actionButtons";
-export { createDangerZone } from "./dangerZone";
