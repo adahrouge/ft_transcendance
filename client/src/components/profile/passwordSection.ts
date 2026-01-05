@@ -1,6 +1,11 @@
 import { i18n } from "../../services/i18n";
+import type { ProfileUser } from "../../types/profile";
 
-export function createPasswordSection(): string {
+export function createPasswordSection(user?: ProfileUser): string {
+  if (user?.auth_provider === 'google') {
+    return "";
+  }
+
   return `
     <div class="profile-section">
       <h3 class="profile-section-title">${i18n.t("change_password")}</h3>

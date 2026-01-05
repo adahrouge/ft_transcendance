@@ -38,6 +38,7 @@
   "change": "تغيير",
   "display_name": "الاسم المعروض",
   "change_password": "تغيير كلمة المرور",
+  "password_change_disabled_google": "تغيير كلمة المرور غير متاح لحسابات Google",
   "current_password": "كلمة المرور الحالية",
   "new_password": "كلمة المرور الجديدة",
   "save_changes": "حفظ التغييرات",

@@ -38,6 +38,7 @@
   "change": "MODIFIER",
   "display_name": "NOM D'AFFICHAGE",
   "change_password": "CHANGER LE MOT DE PASSE",
+  "password_change_disabled_google": "Le changement de mot de passe est désactivé pour les comptes Google",
   "current_password": "Mot de passe actuel",
   "new_password": "Nouveau mot de passe",
   "save_changes": "ENREGISTRER",

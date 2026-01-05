@@ -38,6 +38,7 @@
   "change": "CHANGE",
   "display_name": "DISPLAY NAME",
   "change_password": "CHANGE PASSWORD",
+  "password_change_disabled_google": "Password change is disabled for Google accounts",
   "current_password": "Current Password",
   "new_password": "New Password",
   "save_changes": "SAVE CHANGES",

@@ -16,7 +16,7 @@ export function createProfileBox(user: ProfileUser): string {
       <form id="profile-form" class="profile-form">
         ${createAccountDetails(user)}
         ${createLanguageSection()}
-        ${createPasswordSection()}
+        ${createPasswordSection(user)}
         ${createActionButtons()}
       </form>
     </div>

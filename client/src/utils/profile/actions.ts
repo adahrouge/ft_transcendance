@@ -27,8 +27,8 @@ export function setupFormSubmission(user: ProfileUser) {
     const newPasswordInput = document.getElementById("new-password") as HTMLInputElement;
 
     const displayName = displayNameInput.value.trim();
-    const currentPass = currentPasswordInput.value;
-    const newPass = newPasswordInput.value;
+    const currentPass = currentPasswordInput ? currentPasswordInput.value : '';
+    const newPass = newPasswordInput ? newPasswordInput.value : '';
     const activeLangBtn = document.querySelector(".profile-lang-btn.active") as HTMLElement;
     const newLang = activeLangBtn?.dataset.lang;
 

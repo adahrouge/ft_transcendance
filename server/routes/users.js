@@ -81,7 +81,7 @@ export async function userRoutes(fastify) {
       const passwordHash = await bcrypt.hash(password, 10);
       
       // Create user
-      const user = await createUser(username, email, passwordHash, display_name);
+      const user = await createUser(username, email, passwordHash, display_name, 'local');
       
       // Set session
       request.session.userId = user.id;
@@ -290,7 +290,7 @@ export async function userRoutes(fastify) {
 
         // Apply same suffix to display name if needed
         const displayName = name ? (suffix ? `${name}${suffix}` : name) : username;
-        const newUser = await createUser(username, googleEmail, passwordHash, displayName);
+        const newUser = await createUser(username, googleEmail, passwordHash, displayName, 'google');
 
         // Set session
         request.session.userId = newUser.id;

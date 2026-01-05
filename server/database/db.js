@@ -79,6 +79,7 @@ export async function initDatabase() {
       password_hash TEXT NOT NULL,
       display_name TEXT,
       avatar_url TEXT,
+      auth_provider TEXT DEFAULT 'local',
       last_active DATETIME,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -151,8 +152,15 @@ export async function initDatabase() {
       await dbRun('ALTER TABLE users ADD COLUMN last_active DATETIME');
       console.log('Added last_active column to users table');
     }
+
+    // Add auth_provider column if it doesn't exist
+    const hasAuthProviderColumn = tableInfo.some(col => col.name === 'auth_provider');
+    if (!hasAuthProviderColumn) {
+      await dbRun("ALTER TABLE users ADD COLUMN auth_provider TEXT DEFAULT 'local'");
+      console.log('Added auth_provider column to users table');
+    }
   } catch (err) {
-    console.error('Error adding board_customization column:', err);
+    console.error('Error adding columns to users table:', err);
   }
 
   // Add game_type column if it doesn't exist
@@ -165,13 +173,13 @@ export async function initDatabase() {
       console.log('Added game_type column to match_history table');
     }
   } catch (err) {
-    console.error('Error adding game_type column:', err);
-  }
-
-  console.log('Database initialized');
-}
-
-// User operations
+    console.error('Error adding game_type column:', err);, authProvider = 'local') {
+  // Normalize email to lowercase to prevent case-sensitivity issues
+  const normalizedEmail = email.toLowerCase();
+  await dbRun(
+    `INSERT INTO users (username, email, password_hash, display_name, auth_provider)
+     VALUES (?, ?, ?, ?, ?)`,
+    [username, normalizedEmail, passwordHash, displayName || username, authProvider
 export async function createUser(username, email, passwordHash, displayName = null) {
   // Normalize email to lowercase to prevent case-sensitivity issues
   const normalizedEmail = email.toLowerCase();
