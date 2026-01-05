@@ -173,13 +173,10 @@ export async function initDatabase() {
       console.log('Added game_type column to match_history table');
     }
   } catch (err) {
-    console.error('Error adding game_type column:', err);, authProvider = 'local') {
-  // Normalize email to lowercase to prevent case-sensitivity issues
-  const normalizedEmail = email.toLowerCase();
-  await dbRun(
-    `INSERT INTO users (username, email, password_hash, display_name, auth_provider)
-     VALUES (?, ?, ?, ?, ?)`,
-    [username, normalizedEmail, passwordHash, displayName || username, authProvider
+    console.error('Error adding game_type column:', err);
+  }
+}
+
 export async function createUser(username, email, passwordHash, displayName = null) {
   // Normalize email to lowercase to prevent case-sensitivity issues
   const normalizedEmail = email.toLowerCase();
