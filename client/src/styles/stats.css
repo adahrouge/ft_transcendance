@@ -23,7 +23,7 @@
   /* Main stats box */
   .stats-box {
     @apply relative bg-gradient-to-br from-[#0a1929]/95 to-[#0d2137]/95 backdrop-blur-sm mx-auto text-center flex flex-col overflow-y-auto;
-    width: 540px;
+    width: 100%;
     max-width: 95vw;
     max-height: 85vh;
     padding: 1.25rem;
