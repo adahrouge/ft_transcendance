@@ -8,6 +8,7 @@ import type {
 } from "../types/auth";
 import type { GoogleUserInfo } from "../utils/auth/googleOAuth";
 import { navigateTo } from "../router";
+import { presenceService } from "./presence";
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
@@ -48,6 +49,7 @@ export const authService = {
     } catch (err) {
       console.error("Logout failed", err);
     }
+    presenceService.disconnect();
     setAuthenticated(false);
     navigateTo('/auth');
   },

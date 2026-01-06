@@ -22,26 +22,11 @@ class PresenceService {
   private shouldReconnect = true;
 
   constructor() {
-    // Auto-connect on creation
     this.connect();
   }
 
   private getWebSocketUrl(): string {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || '';
-
-    if (apiUrl) {
-      // Use relative URL to go through Vite proxy (which preserves cookies)
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const host = window.location.hostname;
-      const port = window.location.port ? `:${window.location.port}` : '';
-      return `${protocol}//${host}${port}/api/presence`;
-    }
-
-    // Fallback: use current host
-    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.hostname;
-    const port = '3001';
-    return `${protocol}//${host}:${port}/api/presence`;
+    return `wss://${window.location.host}/api/presence`;
   }
 
   connect() {
@@ -55,7 +40,6 @@ class PresenceService {
       this.socket = new WebSocket(this.getWebSocketUrl());
 
       this.socket.onopen = () => {
-        console.log('Presence WebSocket connected');
         this.isConnecting = false;
       };
 
@@ -65,18 +49,16 @@ class PresenceService {
 
           switch (data.type) {
             case 'authenticated':
-              console.log('Presence authenticated for user:', data.userId);
+              // console.log('Presence authenticated for user:', data.userId);
               break;
 
             case 'friend_statuses_initial':
-              // Initial batch of friend statuses
               this.initialStatusesListeners.forEach(listener => {
                 listener(data.statuses);
               });
               break;
 
             case 'friend_status_change':
-              // A friend's status changed
               this.listeners.forEach(listener => {
                 listener(data.friendId, data.isOnline);
               });
@@ -88,7 +70,6 @@ class PresenceService {
             case 'friend_removed':
             case 'user_blocked':
             case 'user_unblocked':
-              // Friend-related events
               this.friendEventListeners.forEach(listener => {
                 listener(data as FriendEvent);
               });
@@ -140,11 +121,9 @@ class PresenceService {
     }
   }
 
-  // Listen to friend status changes
   onFriendStatusChange(listener: PresenceListener) {
     this.listeners.push(listener);
 
-    // Return cleanup function
     return () => {
       const index = this.listeners.indexOf(listener);
       if (index > -1) {
@@ -153,11 +132,9 @@ class PresenceService {
     };
   }
 
-  // Listen to initial friend statuses
   onInitialStatuses(listener: InitialStatusesListener) {
     this.initialStatusesListeners.push(listener);
 
-    // Return cleanup function
     return () => {
       const index = this.initialStatusesListeners.indexOf(listener);
       if (index > -1) {
@@ -166,11 +143,9 @@ class PresenceService {
     };
   }
 
-  // Listen to friend events (requests, accepts, rejects, removals)
   onFriendEvent(listener: FriendEventListener) {
     this.friendEventListeners.push(listener);
 
-    // Return cleanup function
     return () => {
       const index = this.friendEventListeners.indexOf(listener);
       if (index > -1) {
@@ -179,11 +154,9 @@ class PresenceService {
     };
   }
 
-  // Check if connected
   isConnected(): boolean {
     return this.socket !== null && this.socket.readyState === WebSocket.OPEN;
   }
 }
 
-// Singleton instance
 export const presenceService = new PresenceService();

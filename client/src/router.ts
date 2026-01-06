@@ -3,6 +3,91 @@ import { isAuthenticated } from "./utils/auth";
 
 const router = new Navigo("/");
 
+export function setupRouter() {
+  router
+    .on("/", async () => {
+      const module = await import("./pages/landingPage");
+      const renderLandingPage = module.renderLandingPage;
+      renderPage(renderLandingPage(), false);
+    })
+    .on("/auth", async () => {
+      const module = await import("./pages/auth");
+      const renderAuthPage = module.renderAuthPage;
+      renderPage(renderAuthPage(), false);
+    })
+    .on("/home", async () => {
+      const module = await import("./pages/home");
+      const renderHomePage = module.renderHomePage;
+      renderPage(renderHomePage());
+    })
+    .on("/pong", async () => {
+      const module = await import("./pages/pong");
+      const renderGamePage = module.renderGamePage;
+      renderPage(renderGamePage());
+    })
+    .on("/pong-ai", async () => {
+      const module = await import("./pages/pongAi");
+      const renderPongAiPage = module.renderPongAiPage;
+      renderPage(renderPongAiPage());
+    })
+    .on("/pong-friend", async () => {
+      const module = await import("./pages/pongFriendGame");
+      const renderFriendGamePage = module.renderFriendGamePage;
+      renderPage(renderFriendGamePage());
+    })
+    .on("/tournament", async () => {
+      const module = await import("./pages/pongTournament");
+      const renderTournamentPage = module.renderTournamentPage;
+      renderPage(renderTournamentPage());
+    })
+    .on("/tictactoe", async () => {
+      const module = await import("./pages/tictactoe");
+      const renderTicTacToePage = module.renderTicTacToePage;
+      renderPage(renderTicTacToePage());
+    })
+    .on("/tictactoe-ai", async () => {
+      const module = await import("./pages/tictactoeAi");
+      const renderTicTacToeAiPage = module.renderTicTacToeAiPage;
+      renderPage(renderTicTacToeAiPage());
+    })
+    .on("/tictactoe-friend", async () => {
+      const module = await import("./pages/tictactoeFriend");
+      const renderTicTacToeFriendPage = module.renderTicTacToeFriendPage;
+      renderPage(renderTicTacToeFriendPage());
+    })
+    .on("/tictactoe-online", async () => {
+      const module = await import("./pages/tictactoeOnline");
+      const renderTicTacToeOnlinePage = module.renderTicTacToeOnlinePage;
+      renderPage(renderTicTacToeOnlinePage());
+    })
+    .on("/profile", async () => {
+      const module = await import("./pages/profile");
+      const renderProfilePage = module.renderProfilePage;
+      renderPage(renderProfilePage());
+    })
+    .on("/friend", async () => {
+      const module = await import("./pages/friend");
+      const renderFriendPage = module.renderFriendPage;
+      renderPage(renderFriendPage());
+    })
+    .on("/stats", async () => {
+      const module = await import("./pages/stats");
+      const renderStatsPage = module.renderStatsPage;
+      renderPage(renderStatsPage());
+    })
+    .on("/customize-board", async () => {
+      const module = await import("./pages/customizeBoard");
+      const renderCustomizeBoardPage = module.renderCustomizeBoardPage;
+      renderPage(renderCustomizeBoardPage());
+    })
+    .notFound(async () => {
+      navigateTo("/auth");
+    });
+
+  router.resolve();
+}
+
+
 const getAppContainer = (): HTMLElement => {
   const app = document.querySelector("#app");
   if (!app) {
@@ -17,75 +102,6 @@ function renderPage(pageContent: string, needsAuth: boolean = true): void {
     return;
   }
   getAppContainer().innerHTML = pageContent;
-}
-
-export function setupRouter() {
-  router
-    .on("/", async () => {
-      const { renderLandingPage } = await import("./pages/landingPage");
-      renderPage(renderLandingPage(), false);
-    })
-    .on("/auth", async () => {
-      const { renderAuthPage } = await import("./pages/auth");
-      renderPage(renderAuthPage(), false);
-    })
-    .on("/home", async () => {
-      const { renderHomePage } = await import("./pages/home");
-      renderPage(renderHomePage());
-    })
-    .on("/pong", async () => {
-      const { renderGamePage } = await import("./pages/pong");
-      renderPage(renderGamePage());
-    })
-    .on("/pong-ai", async () => {
-      const { renderPongAiPage } = await import("./pages/pongAi");
-      renderPage(renderPongAiPage());
-    })
-    .on("/pong-friend", async () => {
-      const { renderFriendGamePage } = await import("./pages/pongFriendGame");
-      renderPage(renderFriendGamePage());
-    })
-    .on("/tournament", async () => {
-      const { renderTournamentPage } = await import("./pages/pongTournament");
-      renderPage(renderTournamentPage());
-    })
-    .on("/tictactoe", async () => {
-      const { renderTicTacToePage } = await import("./pages/tictactoe");
-      renderPage(renderTicTacToePage());
-    })
-    .on("/tictactoe-ai", async () => {
-      const { renderTicTacToeAiPage } = await import("./pages/tictactoeAi");
-      renderPage(renderTicTacToeAiPage());
-    })
-    .on("/tictactoe-friend", async () => {
-      const { renderTicTacToeFriendPage } = await import("./pages/tictactoeFriend");
-      renderPage(renderTicTacToeFriendPage());
-    })
-    .on("/tictactoe-online", async () => {
-      const { renderTicTacToeOnlinePage } = await import("./pages/tictactoeOnline");
-      renderPage(renderTicTacToeOnlinePage());
-    })
-    .on("/profile", async () => {
-      const { renderProfilePage } = await import("./pages/profile");
-      renderPage(renderProfilePage());
-    })
-    .on("/friend", async () => {
-      const { renderFriendPage } = await import("./pages/friend");
-      renderPage(renderFriendPage());
-    })
-    .on("/stats", async () => {
-      const { renderStatsPage } = await import("./pages/stats");
-      renderPage(renderStatsPage());
-    })
-    .on("/customize-board", async () => {
-      const { renderCustomizeBoardPage } = await import("./pages/customizeBoard");
-      renderPage(renderCustomizeBoardPage());
-    })
-    .notFound(async () => {
-      navigateTo("/auth");
-    });
-
-  router.resolve();
 }
 
 export function navigateTo(path: string) {
