@@ -144,16 +144,7 @@ export async function userRoutes(fastify) {
     const { playerScore, aiScore, result, difficulty, gameType } = request.body;
     
     // We'll use a special ID for AI opponent (e.g., 0 or -1) or handle it in addMatchHistory
-    // Since addMatchHistory expects an opponent_id which references users table, 
-    // we might need to ensure a "Bot" user exists or allow NULL.
-    // Let's check if we can pass NULL for opponent_id.
-    
-    // In db.js:
-    // FOREIGN KEY (opponent_id) REFERENCES users(id)
-    // This means opponent_id must be a valid ID or NULL (if the column allows NULL).
-    // The schema definition: opponent_id INTEGER
-    // It doesn't say NOT NULL, so NULL is allowed.
-    
+
     try {
       await addMatchHistory(user.id, null, playerScore, aiScore, result, gameType || 'pong');
       return { success: true };

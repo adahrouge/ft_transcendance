@@ -40,6 +40,11 @@ export function setupRouter() {
       const renderTournamentPage = module.renderTournamentPage;
       renderPage(renderTournamentPage());
     })
+    .on("/local-tournament", async () => {
+      const module = await import("./pages/pongLocalTournament");
+      const renderLocalTournamentPage = module.renderLocalTournamentPage;
+      renderPage(renderLocalTournamentPage());
+    })
     .on("/tictactoe", async () => {
       const module = await import("./pages/tictactoe");
       const renderTicTacToePage = module.renderTicTacToePage;

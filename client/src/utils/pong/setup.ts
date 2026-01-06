@@ -19,5 +19,9 @@ export function setupPongPage() {
     navigateTo("/tournament");
   });
 
+  document.getElementById("btn-local-tournament")?.addEventListener("click", () => {
+    navigateTo("/local-tournament");
+  });
+
   document.getElementById("btn-back")?.addEventListener("click", () => navigateTo("/home"));
 }

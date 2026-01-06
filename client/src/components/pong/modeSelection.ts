@@ -16,6 +16,10 @@ export function createModeSelection(): string {
           <span class="pong-mode-desc">${i18n.t('local_2_player')}</span>
         </button>
         <button class="pong-mode-btn" id="btn-tournament">
+          <span class="pong-mode-title">${i18n.t('bot_tournament')}</span>
+          <span class="pong-mode-desc">${i18n.t('bot_tournament_desc')}</span>
+        </button>
+        <button class="pong-mode-btn" id="btn-local-tournament">
           <span class="pong-mode-title">${i18n.t('local_tournament')}</span>
           <span class="pong-mode-desc">${i18n.t('local_tournament_desc')}</span>
         </button>

@@ -385,4 +385,120 @@
       min-height: 18px;
     }
   }
+
+  /* ============ LOCAL TOURNAMENT STYLES ============ */
+
+  /* Player name input */
+  .pong-input {
+    @apply w-full bg-[#0d1a28] text-[#e0f7ff] font-['Pixel_Game'] text-base px-4 py-3;
+    border: 2px solid #2c6b87;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .pong-input:focus {
+    border-color: #3d8aa8;
+    box-shadow: 0 0 10px rgba(61, 138, 168, 0.3);
+  }
+
+  .pong-input::placeholder {
+    color: #5db3d1;
+    opacity: 0.6;
+  }
+
+  .player-names-container {
+    @apply max-h-[300px] overflow-y-auto;
+  }
+
+  .player-name-input {
+    text-transform: uppercase;
+  }
+
+  .pong-error-message {
+    @apply text-red-400 font-['Pixel_Game'] text-sm text-center mt-2;
+    min-height: 20px;
+  }
+
+  /* Match announcement */
+  .match-announcement-box {
+    @apply text-center;
+  }
+
+  .match-announcement-players {
+    @apply flex items-center justify-center gap-4 my-8;
+    flex-wrap: wrap;
+  }
+
+  .match-player-card {
+    @apply bg-gradient-to-b from-[#1a2d40] to-[#0d1a28] px-6 py-4;
+    border: 2px solid #3d8aa8;
+    min-width: 120px;
+  }
+
+  .match-player-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-xl;
+  }
+
+  .match-vs-divider {
+    @apply text-[#5db3d1] font-['Pixel_Game'] text-2xl;
+  }
+
+  .match-controls-info {
+    @apply flex justify-center gap-8 my-4 flex-wrap;
+  }
+
+  .get-ready-text {
+    @apply text-yellow-400 animate-pulse text-xl mt-6;
+  }
+
+  /* Tournament winner overlay */
+  .tournament-winner-overlay {
+    @apply bg-black/90;
+  }
+
+  .tournament-winner-box {
+    @apply text-center py-10 px-12;
+  }
+
+  .tournament-winner-title {
+    @apply text-yellow-400;
+  }
+
+  .tournament-winner-name {
+    @apply text-[#e0f7ff] font-['Pixel_Game'] text-4xl my-6;
+  }
+
+  .fifa-winner-crown.large {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+  }
+
+  /* Local tournament responsive */
+  @media (max-width: 480px) {
+    .match-announcement-players {
+      @apply flex-col gap-2;
+    }
+
+    .match-player-card {
+      min-width: 100px;
+      @apply px-4 py-3;
+    }
+
+    .match-player-name {
+      @apply text-base;
+    }
+
+    .match-vs-divider {
+      @apply text-lg;
+    }
+
+    .match-controls-info {
+      @apply flex-col gap-2;
+    }
+
+    .pong-input {
+      @apply text-sm px-3 py-2;
+    }
+  }
 }
