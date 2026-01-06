@@ -47,6 +47,18 @@ class TictactoeMatchmakingService {
         return;
       }
 
+      // Close any existing socket that's not open (e.g., CONNECTING, CLOSING, CLOSED)
+      if (this.socket) {
+        this.socket.onclose = null;
+        this.socket.onerror = null;
+        this.socket.onmessage = null;
+        this.socket.onopen = null;
+        if (this.socket.readyState !== WebSocket.CLOSED) {
+          this.socket.close();
+        }
+        this.socket = null;
+      }
+
       try {
         this.socket = new WebSocket(this.getWebSocketUrl());
 
@@ -62,8 +74,11 @@ class TictactoeMatchmakingService {
           }
         };
 
-        this.socket.onclose = () => {
-          this.socket = null;
+        this.socket.onclose = (event) => {
+          // Only nullify if this is still the current socket
+          if (this.socket && this.socket === event.target) {
+            this.socket = null;
+          }
         };
       } catch (err) {
         reject(err);
